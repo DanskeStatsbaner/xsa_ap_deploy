@@ -87,5 +87,5 @@ def check_output(cmd, show_output=True, show_cmd=True):
 def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
-        
-check_output('xs apps', True, True)
+
+check_output(f'docker exec -it {containerName} /bin/sh -c "xs apps"', True, True)

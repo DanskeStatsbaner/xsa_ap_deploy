@@ -11,3 +11,9 @@ XSAuser = get_octopusvariable("dataART.XSAUser")
 XSAspace = get_octopusvariable("dataART.XSASpace")
 
 print(environment, projectName, releaseNumber, releaseNumber, containerName, XSAurl, XSAuser, XSAspace)
+
+print('Testing')
+
+import logging
+
+logging.error('Testing logging')

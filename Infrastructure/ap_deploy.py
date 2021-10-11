@@ -12,7 +12,7 @@ XSAspace = get_octopusvariable("dataART.XSASpace")
 
 find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
 
-with open('manifest.yml') as manifest:
+with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
     manifest_dict = yaml.safe_load(manifest_yaml)
     application = manifest_dict['applications'][0]
@@ -29,44 +29,44 @@ with open('manifest.yml') as manifest:
 
     manifest_yaml = yaml.dump(manifest_dict)
 
-with open('manifest.yml', 'w') as file:
+with open('../../manifest.yml', 'w') as file:
     file.write(manifest_yaml)
 
-with open('app/manifest', 'w') as file:
+with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
 
-with open('app/api.py') as api:
+with open('../../app/api.py') as api:
     api_content = api.read()
     app_router_url = find_url(api_content)
     api_content = api_content.replace(app_router_url, url.replace(f'{host}.', f'{app_router_name}.'))
 
-with open('app/api.py', 'w') as file:
+with open('../../app/api.py', 'w') as file:
     file.write(api_content)
 
-with open('app-router/xs-app.json') as file:
+with open('../../app-router/xs-app.json') as file:
     xs_app = json.loads(file.read())
     xs_app['welcomeFile'] = f"/{application['host']}"
     xs_app['routes'][0]['source'] = f"/{application['host']}(.*)"
     xs_app['routes'][0]['destination'] = app_name
     xs_app = json.dumps(xs_app, indent=2)
 
-with open('app-router/xs-app.json', 'w') as file:
+with open('../../app-router/xs-app.json', 'w') as file:
     file.write(xs_app)
 
-with open('app-router/package.json') as file:
+with open('../../app-router/package.json') as file:
     package = json.loads(file.read())
     package['name'] = f"{app_name}-approuter"
     package = json.dumps(package, indent=2)
 
-with open('app-router/package.json', 'w') as file:
+with open('../../app-router/package.json', 'w') as file:
     file.write(package)
 
-with open('xs-security.json') as file:
+with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
     xs_security['xsappname'] = app_name
     xs_security = json.dumps(xs_security, indent=2)
 
-with open('xs-security.json', 'w') as file:
+with open('../../xs-security.json', 'w') as file:
     file.write(xs_security)
 
 uaa = [service for service in application['services'] if '-uaa' in service][0]

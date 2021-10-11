@@ -1,4 +1,4 @@
-import os, subprocess, json, traceback, re, yaml
+import os, subprocess, json, traceback, re, yaml, sys
 
 environment = get_octopusvariable("Octopus.Environment.Name")
 
@@ -9,6 +9,7 @@ containerName = f"dataArt.{projectName}.{releaseNumber}.{environment}"
 XSAurl = get_octopusvariable("dataART.XSAUrl")
 XSAuser = get_octopusvariable("dataART.XSAUser")
 XSAspace = get_octopusvariable("dataART.XSASpace")
+XSAPW = sys.argv[1]
 
 find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
 
@@ -88,4 +89,4 @@ def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
 
-check_output(f'docker exec -it {containerName} /bin/sh -c "xs apps"', True, True)
+check_output(f'docker exec -it {containerName} /bin/sh -c "cd ../../ && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)

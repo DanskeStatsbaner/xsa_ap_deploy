@@ -12,12 +12,12 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        projectName  = "xsa_ps1_deploy"
+        projectName  = "xsa_ap_deploy"
         deployTo = "sit"
         version = "1.0.0.${env.BUILD_NUMBER}"
         suffix = "${env.GIT_COMMIT}-${env.GIT_BRANCH.replace('/', '-')}"
         packageVersion = "${version}-${suffix}"
-        jobName = "xsa_ps1_deploy"
+        jobName = "xsa_ap_deploy"
         artifactoryServerId = "artifactory"   
     }
 
@@ -25,6 +25,7 @@ pipeline {
         stage ("Stash files") {
             steps {
                 stash includes: "Infrastructure/*.ps1", name: "PSscripts", useDefaultExcludes: false
+                stash includes: "Infrastructure/*.py", name: "PYscripts", useDefaultExcludes: false
             }
         }
         
@@ -37,6 +38,7 @@ pipeline {
 		    }
                 steps {
                 unstash "PSscripts"
+                unstash "PYscripts"
                 
                 sh "rm -rf dataART.${projectName}.${version}"
                 fileOperations([ 

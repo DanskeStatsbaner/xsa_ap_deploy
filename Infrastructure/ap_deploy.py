@@ -1,7 +1,4 @@
-import os, subprocess, json, traceback, re, yaml
-from time import sleep
-
-sleep(300)
+import os, subprocess, json, traceback, re, yaml, tldextract
 
 environment = get_octopusvariable("Octopus.Environment.Name")
 
@@ -14,7 +11,3 @@ XSAuser = get_octopusvariable("dataART.XSAUser")
 XSAspace = get_octopusvariable("dataART.XSASpace")
 
 print(environment, projectName, releaseNumber, releaseNumber, containerName, XSAurl, XSAuser, XSAspace)
-
-print('Testing')
-
-printwarning('Tester')

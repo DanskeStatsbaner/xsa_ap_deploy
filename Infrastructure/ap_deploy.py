@@ -73,7 +73,7 @@ uaa = [service for service in application['services'] if '-uaa' in service][0]
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        print('Executing command: ', nl=False)
+        print('Executing command: ')
         print(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''

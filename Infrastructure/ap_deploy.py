@@ -1,4 +1,7 @@
 import os, subprocess, json, traceback, re, yaml
+from time import sleep
+
+sleep(300)
 
 environment = get_octopusvariable("Octopus.Environment.Name")
 
@@ -14,6 +17,4 @@ print(environment, projectName, releaseNumber, releaseNumber, containerName, XSA
 
 print('Testing')
 
-import logging
-
-logging.error('Testing logging')
+printwarning('Tester')

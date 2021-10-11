@@ -8,7 +8,7 @@ write-host " START deploy.ps1"
 write-host "*******************************************************************"
 
 ###############################################################################
-# Get all relevant parameters from octopus (variable set dataART)
+# Get all relevant parameters from octopus (variable set dataART) HEJ
 ###############################################################################
 
 $XSAPW = $args[0]

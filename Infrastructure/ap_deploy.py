@@ -128,11 +128,3 @@ if is_running:
     printhighlight(f'The application is running: {app_url}')
 else:
     failstep('The application crashed')
-
-print(environment)
-print(project_name)
-print(release_number)
-print(container_name)
-print(xsa_url)
-print(xsa_user)
-print(xsa_space)

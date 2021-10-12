@@ -90,12 +90,11 @@ def delete_manifest():
         os.remove('app/manifest')
 
 manifest_path = check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && find . -name manifest.yml"', True, True)
+deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
-print(manifest_path)
+print(deploy_path)
 
-check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && ls -a && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)
-
-
+check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)
 
 print(environment)
 print(projectName)

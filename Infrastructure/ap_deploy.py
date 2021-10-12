@@ -102,7 +102,35 @@ check_output(f'xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAsp
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
-check_output(f'cd /data/{deploy_path} && xs push {app_name}', True, False)
+output = check_output(f'xs service {uaa}', show_output=False)
+xs_security = '-c xs-security.json' if os.path.exists('xs-security.json') else ''
+
+if 'failed' in output:
+    failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
+elif not 'succeeded' in output:
+    output = check_output(f'xs create-service xsuaa default {uaa} {xs_security}', show_output=False)
+    if 'FAILED' in output:
+        failstep(f'Creation of the service "{uaa}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+    else:
+        printhighlight(f'The service "{uaa}" was succesfully created')
+else:
+    output = check_output(f'xs update-service {uaa} {xs_security}', show_output=False)
+
+    if 'failed' in output:
+        failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
+        
+output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
+
+app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
+
+output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
+
+is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
+
+if is_running:
+    printhighlight(f'The application is running: {app_url}')
+else:
+    failstep('The application crashed')
 
 print(environment)
 print(projectName)

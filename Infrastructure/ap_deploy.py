@@ -6,9 +6,9 @@ project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 
-xsa_url = get_octopusvariable("dataART.xsa_url")
-xsa_user = get_octopusvariable("dataART.xsa_user")
-xsa_space = get_octopusvariable("dataART.xsa_space")
+xsa_url = get_octopusvariable("dataART.XSAUrl")
+xsa_user = get_octopusvariable("dataART.XSAUser")
+xsa_space = get_octopusvariable("dataART.XSASpace")
 
 hana_environment = get_octopusvariable("dataART.Database").lower()
 

@@ -9,6 +9,9 @@ containerName = f"dataArt.{projectName}.{releaseNumber}.{environment}"
 XSAurl = get_octopusvariable("dataART.XSAUrl")
 XSAuser = get_octopusvariable("dataART.XSAUser")
 XSAspace = get_octopusvariable("dataART.XSASpace")
+
+hana_environment = get_octopusvariable("dataART.Database")
+
 XSAPW = sys.argv[1]
 
 find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
@@ -94,7 +97,7 @@ deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
 print(deploy_path)
 
-printhighlight(check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False))
+check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name}"', True, False)
 
 print(environment)
 print(projectName)

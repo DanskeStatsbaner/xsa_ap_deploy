@@ -91,6 +91,9 @@ def check_output(cmd, show_output=True, show_cmd=True):
 def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
+        
+printhighlight(projectName)
+printhighlight(hana_environment)
 
 manifest_path = check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && find . -name manifest.yml"', True, True)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')

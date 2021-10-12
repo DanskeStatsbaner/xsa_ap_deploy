@@ -2,13 +2,13 @@ import os, subprocess, json, traceback, re, yaml, sys
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
-projectName = get_octopusvariable("Octopus.Project.Name")
-releaseNumber = get_octopusvariable("Octopus.Release.Number")
-containerName = f"dataArt.{projectName}.{releaseNumber}.{environment}"
+project_name = get_octopusvariable("Octopus.Project.Name")
+release_number = get_octopusvariable("Octopus.Release.Number")
+container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 
-XSAurl = get_octopusvariable("dataART.XSAUrl")
-XSAuser = get_octopusvariable("dataART.XSAUser")
-XSAspace = get_octopusvariable("dataART.XSASpace")
+xsa_url = get_octopusvariable("dataART.xsa_url")
+xsa_user = get_octopusvariable("dataART.xsa_user")
+xsa_space = get_octopusvariable("dataART.xsa_space")
 
 hana_environment = get_octopusvariable("dataART.Database").lower()
 
@@ -77,7 +77,7 @@ uaa = [service for service in application['services'] if '-uaa' in service][0]
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
-        cmd = f'docker exec -it {containerName} /bin/sh -c "{cmd}"'
+        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
     if show_cmd:
         print('Executing command: ')
         print(cmd)
@@ -93,11 +93,8 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
 def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
-        
-printhighlight(projectName)
-printhighlight(hana_environment)
 
-check_output(f'xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace}', show_cmd=False)
+check_output(f'xs login -u {xsa_user} -p {XSAPW} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
@@ -133,9 +130,9 @@ else:
     failstep('The application crashed')
 
 print(environment)
-print(projectName)
-print(releaseNumber)
-print(containerName)
-print(XSAurl)
-print(XSAuser)
-print(XSAspace)
+print(project_name)
+print(release_number)
+print(container_name)
+print(xsa_url)
+print(xsa_user)
+print(xsa_space)

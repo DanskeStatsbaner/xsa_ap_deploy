@@ -1,6 +1,6 @@
 import os, subprocess, json, traceback, re, yaml, sys
 
-environment = get_octopusvariable("Octopus.Environment.Name")
+environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
 projectName = get_octopusvariable("Octopus.Project.Name")
 releaseNumber = get_octopusvariable("Octopus.Release.Number")
@@ -10,7 +10,7 @@ XSAurl = get_octopusvariable("dataART.XSAUrl")
 XSAuser = get_octopusvariable("dataART.XSAUser")
 XSAspace = get_octopusvariable("dataART.XSASpace")
 
-hana_environment = get_octopusvariable("dataART.Database")
+hana_environment = get_octopusvariable("dataART.Database").lower()
 
 XSAPW = sys.argv[1]
 
@@ -26,7 +26,7 @@ with open('../../manifest.yml') as manifest:
 
     destinations = json.loads(app_router['env']['destinations'])
     destinations[0]['name'] = app_name
-    url = destinations[0]['url']
+    url = destinations[0]['url'].replace('nu0.dsb.dk', f'{hana_environment}.dsb.dk')
     host = url.replace('https://', '').split('.')[0]
     destinations[0]['url'] = url.replace(f'{host}.', f'{application["host"]}.')
     manifest_dict['applications'][1]['env']['destinations'] = json.dumps(destinations)

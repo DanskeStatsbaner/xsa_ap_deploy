@@ -75,7 +75,9 @@ with open('../../xs-security.json', 'w') as file:
 
 uaa = [service for service in application['services'] if '-uaa' in service][0]
 
-def check_output(cmd, show_output=True, show_cmd=True):
+def check_output(cmd, show_output=True, show_cmd=True, docker=True):
+    if docker:
+        cmd = f'docker exec -it {containerName} /bin/sh -c "{cmd}"'
     if show_cmd:
         print('Executing command: ')
         print(cmd)
@@ -95,12 +97,12 @@ def delete_manifest():
 printhighlight(projectName)
 printhighlight(hana_environment)
 
-manifest_path = check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && find . -name manifest.yml"', True, True)
+check_output(f'xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace}', show_cmd=False)
+
+manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
-print(deploy_path)
-
-check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name}"', True, False)
+check_output(f'cd /data/{deploy_path} && xs push {app_name}', True, False)
 
 print(environment)
 print(projectName)

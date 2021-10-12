@@ -74,15 +74,15 @@ uaa = [service for service in application['services'] if '-uaa' in service][0]
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        print('Executing command: ')
-        print(cmd)
+        printhighlight('Executing command: ')
+        printhighlight(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            printhighlight(line)
     return output
 
 def delete_manifest():
@@ -94,7 +94,7 @@ deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
 print(deploy_path)
 
-check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)
+printhighlight(check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data/{deploy_path} && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False))
 
 print(environment)
 print(projectName)

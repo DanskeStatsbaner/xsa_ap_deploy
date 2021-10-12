@@ -91,6 +91,8 @@ def delete_manifest():
 
 check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && ls -a && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)
 
+
+
 print(environment)
 print(projectName)
 print(releaseNumber)
@@ -101,4 +103,4 @@ print(XSAspace)
 
 from time import sleep
 
-sleep(600)
+sleep(6000)

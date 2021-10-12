@@ -89,6 +89,10 @@ def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
 
+manifest_path = check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && find . -name manifest.yml"', True, True)
+
+print(manifest_path)
+
 check_output(f'docker exec -it {containerName} /bin/sh -c "cd /data && ls -a && xs login -u {XSAuser} -p {XSAPW} -a {XSAurl} -o orgname -s {XSAspace} && xs push {app_name} > /data/{containerName}.log"', True, False)
 
 
@@ -100,7 +104,3 @@ print(containerName)
 print(XSAurl)
 print(XSAuser)
 print(XSAspace)
-
-from time import sleep
-
-sleep(6000)

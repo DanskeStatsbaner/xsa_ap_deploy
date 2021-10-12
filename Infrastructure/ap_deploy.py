@@ -96,6 +96,8 @@ def delete_manifest():
 
 check_output(f'xs login -u {xsa_user} -p {XSAPW} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
+printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
 

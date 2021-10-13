@@ -158,4 +158,4 @@ for role_collection in role_collections:
 
 for role_collection in role_collections:
     for role in roles:
-        printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} --app {project_name} -s {xsa_space} -t {role} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+        printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))

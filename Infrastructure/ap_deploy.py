@@ -132,18 +132,18 @@ else:
     if 'failed' in output:
         failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
         
-output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
+# output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
 
-app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
+# app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
 
-output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
+# output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
 
-is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
+# is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
 
-if is_running:
-    printhighlight(f'The application is running: {app_url}')
-else:
-    failstep('The application crashed')
+# if is_running:
+#     printhighlight(f'The application is running: {app_url}')
+# else:
+#     failstep('The application crashed')
 
 
 printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))

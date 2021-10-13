@@ -152,6 +152,10 @@ printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAP
 printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
 printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
+rem = ['AP_WEB_PYTHON_NU0_AP_WEB_PYTHON_USER', 'AP_WEB_PYTHON_NU0_AP_WEB_PYTHON_ADMIN', 'AP_WEB_PYTHON', 'FORM']
+
+for r in rem:
+    printhighlight(check_output(f'xs delete-role-collection {r} -f -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 for role_collection in role_collections:
     printhighlight(check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False))

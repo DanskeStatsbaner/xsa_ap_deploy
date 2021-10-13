@@ -102,6 +102,8 @@ printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAP
 printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
 printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
+printhighlight(check_output(f'xs create-role-collection {project_name} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
 

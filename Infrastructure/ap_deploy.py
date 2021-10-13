@@ -73,10 +73,16 @@ with open('../../xs-security.json') as file:
     
     for index, scope in enumerate(xs_security['scopes']):
         xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP.{hana_environment_upper}_{project_name}_{scope["name"]}'
+        
+    scopes = [scope['name'] for scope in xs_security['scopes']]
+    role_collections = []
 
     for index, role in enumerate(xs_security['role-templates']):
         xs_security['role-templates'][index]['name'] = f'{hana_environment_upper}_{project_name}_{role["name"]}'
-        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP.{hana_environment_upper}_{project_name}_{scope}' for scope in role['scope-references']]
+        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP_{hana_environment_upper}_{project_name}_{scope}' for scope in role['scope-references']]
+        role_collections += [f'{project_name}_{role["name"]}']
+        
+    roles = [role['name'] for role in xs_security['role-templates']]
     
     xs_security = json.dumps(xs_security, indent=2)
 
@@ -147,8 +153,9 @@ else:
 # printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 
-# for role_collection in role_collections:
-#     printhighlight(check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+for role_collection in role_collections:
+    printhighlight(check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
-# for role_collection in role_collections:
-#     printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} --app {project_name} -s {xsa_space} -t {template} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+for role_collection in role_collections:
+    for role in roles:
+        printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} --app {project_name} -s {xsa_space} -t {role} -u {xsa_user} -p {XSAPW}', show_cmd=False))

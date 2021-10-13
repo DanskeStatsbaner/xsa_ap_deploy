@@ -153,5 +153,6 @@ else:
 # printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 for role_collection in role_collections:
+    check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {XSAPW}', show_cmd=False)
     check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False)
     check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False)

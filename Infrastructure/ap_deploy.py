@@ -146,11 +146,11 @@ else:
     failstep('The application crashed')
 
 
-# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
+printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
+printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 
 for role_collection in role_collections:

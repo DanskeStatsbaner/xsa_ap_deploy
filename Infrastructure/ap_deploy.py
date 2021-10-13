@@ -132,34 +132,26 @@ else:
     if 'failed' in output:
         failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
         
-# output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
+output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
 
-# app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
+app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
 
-# output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
+output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
 
-# is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
+is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
 
-# if is_running:
-#     printhighlight(f'The application is running: {app_url}')
-# else:
-#     failstep('The application crashed')
+if is_running:
+    printhighlight(f'The application is running: {app_url}')
+else:
+    failstep('The application crashed')
 
 
-printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
-
-rem = ['AP_WEB_PYTHON_NU0_AP_WEB_PYTHON_USER', 'AP_WEB_PYTHON_NU0_AP_WEB_PYTHON_ADMIN', 'AP_WEB_PYTHON', 'FORM']
-
-for r in rem:
-    printhighlight(check_output(f'xs delete-role-collection {r} -f -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 for role_collection in role_collections:
-    printhighlight(check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-
-for role_collection in role_collections:
-    for role in roles:
-        printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+    check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False)
+    check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False)

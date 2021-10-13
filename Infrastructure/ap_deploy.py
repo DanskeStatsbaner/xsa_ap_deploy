@@ -65,16 +65,18 @@ with open('../../app-router/package.json') as file:
 with open('../../app-router/package.json', 'w') as file:
     file.write(package)
 
+hana_environment_upper = hana_environment.upper()
+
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
     xs_security['xsappname'] = app_name
     
     for index, scope in enumerate(xs_security['scopes']):
-        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP.{hana_environment}.{project_name}_{scope}'
+        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP.{hana_environment_upper}.{project_name}_{scope["name"]}'
 
     for index, role in enumerate(xs_security['role-templates']):
-        xs_security['role-templates'][index]['name'] = f'$XSAPPNAME.{hana_environment}.{project_name}_{scope["name"]}'
-        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP.{hana_environment}.{project_name}_{scope}' for scope in role['scope-references']]
+        xs_security['role-templates'][index]['name'] = f'$XSAPPNAME.{hana_environment_upper}.{project_name}_{role["name"]}'
+        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP.{hana_environment_upper}.{project_name}_{scope}' for scope in role['scope-references']]
     
     xs_security = json.dumps(xs_security, indent=2)
 

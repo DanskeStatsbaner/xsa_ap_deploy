@@ -111,19 +111,19 @@ deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
 printhighlight(check_output(f'cat /data/{deploy_path}/xs-security.json'))
 
-output = check_output(f'xs service {uaa}', show_output=False)
+output = check_output(f'xs service {uaa}', show_output=True)
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
 
 if 'failed' in output:
     failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
-    output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa} {xs_security}', show_output=False)
+    output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa} {xs_security}', show_output=True)
     if 'FAILED' in output:
         failstep(f'Creation of the service "{uaa}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:   
         printhighlight(f'The service "{uaa}" was succesfully created')
 else:
-    output = check_output(f'cd /data/{deploy_path} && xs update-service {uaa} {xs_security}', show_output=False)
+    output = check_output(f'cd /data/{deploy_path} && xs update-service {uaa} {xs_security}', show_output=True)
 
     if 'failed' in output:
         failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')

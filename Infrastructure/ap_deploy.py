@@ -68,6 +68,14 @@ with open('../../app-router/package.json', 'w') as file:
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
     xs_security['xsappname'] = app_name
+    
+    for index, scope in enumerate(xs_security['scopes']):
+        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP.{hana_environment}.{project_name}_{scope}'
+
+    for index, role in enumerate(xs_security['role-templates']):
+        xs_security['role-templates'][index]['name'] = f'$XSAPPNAME.{hana_environment}.{project_name}_{scope["name"]}'
+        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP.{hana_environment}.{project_name}_{scope}' for scope in role['scope-references']]
+    
     xs_security = json.dumps(xs_security, indent=2)
 
 with open('../../xs-security.json', 'w') as file:
@@ -95,14 +103,6 @@ def delete_manifest():
         os.remove('app/manifest')
 
 check_output(f'xs login -u {xsa_user} -p {XSAPW} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
-
-printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
-printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
-
-printhighlight(check_output(f'xs create-role-collection {project_name} -u {xsa_user} -p {XSAPW}', show_cmd=False))
 
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
@@ -136,3 +136,17 @@ if is_running:
     printhighlight(f'The application is running: {app_url}')
 else:
     failstep('The application crashed')
+
+
+# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
+
+
+# for role_collection in role_collections:
+#     printhighlight(check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False))
+
+# for role_collection in role_collections:
+#     printhighlight(check_output(f'xs update-role-collection {role_collection} --add-role {role} --app {project_name} -s {xsa_space} -t {template} -u {xsa_user} -p {XSAPW}', show_cmd=False))

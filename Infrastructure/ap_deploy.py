@@ -75,7 +75,7 @@ with open('../../xs-security.json') as file:
         xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP.{hana_environment_upper}.{project_name}_{scope["name"]}'
 
     for index, role in enumerate(xs_security['role-templates']):
-        xs_security['role-templates'][index]['name'] = f'$XSAPPNAME.{hana_environment_upper}.{project_name}_{role["name"]}'
+        xs_security['role-templates'][index]['name'] = f'{hana_environment_upper}.{project_name}_{role["name"]}'
         xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP.{hana_environment_upper}.{project_name}_{scope}' for scope in role['scope-references']]
     
     xs_security = json.dumps(xs_security, indent=2)

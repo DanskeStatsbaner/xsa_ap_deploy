@@ -72,15 +72,15 @@ with open('../../xs-security.json') as file:
     xs_security['xsappname'] = app_name
     
     for index, scope in enumerate(xs_security['scopes']):
-        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.SHIP_{hana_environment_upper}_{project_name}_{scope["name"]}'
+        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{project_name}_{scope["name"]}'
         
     scopes = [scope['name'] for scope in xs_security['scopes']]
     role_collections = []
 
     for index, role in enumerate(xs_security['role-templates']):
-        xs_security['role-templates'][index]['name'] = f'{hana_environment_upper}_{project_name}_{role["name"]}'
-        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.SHIP_{hana_environment_upper}_{project_name}_{scope}' for scope in role['scope-references']]
         role_collections += [f'{project_name}_{role["name"]}']
+        xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
+        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{project_name}_{scope}' for scope in role['scope-references']]
         
     roles = [role['name'] for role in xs_security['role-templates']]
     

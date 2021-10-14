@@ -26,8 +26,8 @@ if project_type != 'python':
 services = manifest_dict['services']
 
 host = project_name.lower().replace('_', '-')
-app_router = f'{host}-sso'
-uaa_service = f'{host}-uaa'
+app_router = f'{project_name}-sso'
+uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
 
 services += [uaa_service]
@@ -166,11 +166,6 @@ else:
     failstep('The application crashed')
 
 
-# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
-# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
-# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
-# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {xsa_pass}', show_cmd=False))
-# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {xsa_pass}', show_cmd=False))
 
 for role_collection in role_collections:
     check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)

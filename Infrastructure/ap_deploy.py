@@ -88,7 +88,7 @@ with open('../../xs-security.json') as file:
     xs_security['xsappname'] = project_name
     
     for index, scope in enumerate(xs_security['scopes']):
-        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{project_name}_{scope["name"]}'
+        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
         
     scopes = [scope['name'] for scope in xs_security['scopes']]
     role_collections = []

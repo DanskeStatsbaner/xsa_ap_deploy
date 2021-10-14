@@ -43,6 +43,7 @@ manifest_dict = {
         },
         {
             'name': app_router,
+            'host': app_router.lower().replace('_', '-'),
             'path': './app-router/',
             'env': {
                 'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])

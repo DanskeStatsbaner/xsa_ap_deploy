@@ -9,10 +9,9 @@ container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
+xsa_pass = sys.argv[1]
 
 hana_environment = get_octopusvariable("dataART.Database").lower()
-
-XSAPW = sys.argv[1]
 
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
@@ -96,7 +95,7 @@ with open('../../xs-security.json') as file:
     for index, role in enumerate(xs_security['role-templates']):
         role_collections += [f'{project_name}_{role["name"]}']
         xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
-        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{project_name}_{scope}' for scope in role['scope-references']]
+        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
         
     roles = [role['name'] for role in xs_security['role-templates']]
     
@@ -124,7 +123,7 @@ def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
 
-check_output(f'xs login -u {xsa_user} -p {XSAPW} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
@@ -160,13 +159,13 @@ else:
     failstep('The application crashed')
 
 
-# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {XSAPW}', show_cmd=False))
-# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {XSAPW}', show_cmd=False))
+# printhighlight(check_output(f'xs roles web -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
+# printhighlight(check_output(f'xs role-templates web -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
+# printhighlight(check_output(f'xs role User -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False))
+# printhighlight(check_output(f'xs role-collections -u {xsa_user} -p {xsa_pass}', show_cmd=False))
+# printhighlight(check_output(f'xs assigned-role-collections MILIMAT0810 -u {xsa_user} -p {xsa_pass}', show_cmd=False))
 
 for role_collection in role_collections:
-    check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {XSAPW}', show_cmd=False)
-    check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {XSAPW}', show_cmd=False)
-    check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {XSAPW}', show_cmd=False)
+    check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+    check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+    check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)

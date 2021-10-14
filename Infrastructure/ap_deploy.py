@@ -30,6 +30,31 @@ with open('../../manifest.yml') as manifest:
     host = url.replace('https://', '').split('.')[0]
     destinations[0]['url'] = url.replace(f'{host}.', f'{application["host"]}.')
     manifest_dict['applications'][1]['env']['destinations'] = json.dumps(destinations)
+    
+    manifest_dict = {
+        'applications': [
+            {
+                'name': project_name,
+                'host': host,
+                'path': './app/',
+                'command': 'python api.py',
+                'services': [
+                    'P_DEMAND_PRICING-container',
+                    '{host}-uaa'
+                ]
+            },
+            {
+                'name': '{host}-secure',
+                'path': './app-router/',
+                'env': {
+                    'destinations': '[{"name": "{project_name}", "url": "https://{host}.xsabi{hana_environment}.dsb.dk:30033", "forwardAuthToken": true}]'
+                },
+                'services': [
+                    '{host}-uaa'
+                ]
+            }
+        ]
+    }
 
     manifest_yaml = yaml.dump(manifest_dict)
 

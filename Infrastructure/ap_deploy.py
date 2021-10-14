@@ -15,39 +15,46 @@ hana_environment = get_octopusvariable("dataART.Database").lower()
 
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
-    manifest_dict = yaml.safe_load(manifest_yaml)
+    
+manifest_dict = yaml.safe_load(manifest_yaml)
 
-    host = project_name.lower().replace('_', '-')
-    app_router = f'{host}-sso'
-    uaa_service = f'{host}-uaa'
-    url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
+project_type = manifest_yaml['type']
 
-    manifest_dict = {
-        'applications': [
-            {
-                'name': project_name,
-                'host': host,
-                'path': './app/',
-                'command': 'python api.py',
-                'services': [
-                    'P_DEMAND_PRICING-container',
-                    uaa_service
-                ]
+if project_type != 'python':
+    failstep('The pipeline only supports Python XSA applications.')
+
+services = manifest_yaml['services']
+
+host = project_name.lower().replace('_', '-')
+app_router = f'{host}-sso'
+uaa_service = f'{host}-uaa'
+url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
+
+services += [uaa_service]
+
+manifest_dict = {
+    'applications': [
+        {
+            'name': project_name,
+            'host': host,
+            'path': './app/',
+            'command': 'python api.py',
+            'services': services
+        },
+        {
+            'name': app_router,
+            'path': './app-router/',
+            'env': {
+                'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
             },
-            {
-                'name': app_router,
-                'path': './app-router/',
-                'env': {
-                    'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
-                },
-                'services': [
-                    uaa_service
-                ]
-            }
-        ]
-    }
+            'services': [
+                uaa_service
+            ]
+        }
+    ]
+}
 
-    manifest_yaml = yaml.dump(manifest_dict)
+manifest_yaml = yaml.dump(manifest_dict)
 
 with open('../../manifest.yml', 'w') as file:
     file.write(manifest_yaml)

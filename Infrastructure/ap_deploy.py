@@ -19,18 +19,12 @@ find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
     manifest_dict = yaml.safe_load(manifest_yaml)
-    application = manifest_dict['applications'][0]
-    app_router = manifest_dict['applications'][1]
-    app_name = application['name']
-    app_router_name = app_router['name']
 
-    destinations = json.loads(app_router['env']['destinations'])
-    destinations[0]['name'] = app_name
-    url = destinations[0]['url'].replace('nu0.dsb.dk', f'{hana_environment}.dsb.dk')
-    host = url.replace('https://', '').split('.')[0]
-    destinations[0]['url'] = url.replace(f'{host}.', f'{application["host"]}.')
-    manifest_dict['applications'][1]['env']['destinations'] = json.dumps(destinations)
-    
+    host = project_name.lower().replace('_', '-')
+    app_router = f'{host}-secure'
+    uaa_service = f'{host}-uaa'
+    url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
+
     manifest_dict = {
         'applications': [
             {
@@ -40,17 +34,17 @@ with open('../../manifest.yml') as manifest:
                 'command': 'python api.py',
                 'services': [
                     'P_DEMAND_PRICING-container',
-                    '{host}-uaa'
+                    uaa_service
                 ]
             },
             {
-                'name': '{host}-secure',
+                'name': app_router,
                 'path': './app-router/',
                 'env': {
-                    'destinations': '[{"name": "{project_name}", "url": "https://{host}.xsabi{hana_environment}.dsb.dk:30033", "forwardAuthToken": true}]'
+                    'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
                 },
                 'services': [
-                    '{host}-uaa'
+                    uaa_service
                 ]
             }
         ]
@@ -66,17 +60,16 @@ with open('../../app/manifest', 'w') as file:
 
 with open('../../app/api.py') as api:
     api_content = api.read()
-    app_router_url = find_url(api_content)
-    api_content = api_content.replace(app_router_url, url.replace(f'{host}.', f'{app_router_name}.'))
+    api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router))
 
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)
 
 with open('../../app-router/xs-app.json') as file:
     xs_app = json.loads(file.read())
-    xs_app['welcomeFile'] = f"/{application['host']}"
-    xs_app['routes'][0]['source'] = f"/{application['host']}(.*)"
-    xs_app['routes'][0]['destination'] = app_name
+    xs_app['welcomeFile'] = f"/{host}"
+    xs_app['routes'][0]['source'] = f"/{host}(.*)"
+    xs_app['routes'][0]['destination'] = project_name
     xs_app = json.dumps(xs_app, indent=2)
 
 with open('../../app-router/xs-app.json', 'w') as file:
@@ -84,7 +77,7 @@ with open('../../app-router/xs-app.json', 'w') as file:
 
 with open('../../app-router/package.json') as file:
     package = json.loads(file.read())
-    package['name'] = f"{app_name}-approuter"
+    package['name'] = f"{host}-approuter"
     package = json.dumps(package, indent=2)
 
 with open('../../app-router/package.json', 'w') as file:
@@ -94,7 +87,7 @@ hana_environment_upper = hana_environment.upper()
 
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
-    xs_security['xsappname'] = app_name
+    xs_security['xsappname'] = project_name
     
     for index, scope in enumerate(xs_security['scopes']):
         xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{project_name}_{scope["name"]}'
@@ -113,8 +106,6 @@ with open('../../xs-security.json') as file:
 
 with open('../../xs-security.json', 'w') as file:
     file.write(xs_security)
-
-uaa = [service for service in application['services'] if '-uaa' in service][0]
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
@@ -142,28 +133,28 @@ deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
 printhighlight(check_output(f'cat /data/{deploy_path}/app/manifest'))
 
-output = check_output(f'xs service {uaa}', show_output=True)
+output = check_output(f'xs service {uaa_service}', show_output=True)
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
 
 if 'failed' in output:
-    failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
+    failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
-    output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa} {xs_security}', show_output=True)
+    output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa_service} {xs_security}', show_output=True)
     if 'FAILED' in output:
-        failstep(f'Creation of the service "{uaa}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+        failstep(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:   
-        printhighlight(f'The service "{uaa}" was succesfully created')
+        printhighlight(f'The service "{uaa_service}" was succesfully created')
 else:
-    output = check_output(f'cd /data/{deploy_path} && xs update-service {uaa} {xs_security}', show_output=True)
+    output = check_output(f'cd /data/{deploy_path} && xs update-service {uaa_service} {xs_security}', show_output=True)
 
     if 'failed' in output:
-        failstep(f'The service "{uaa}" is broken. Try to delete the service with: "xs delete-service {uaa}" and rerun xs_push.py.')
+        failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
         
-output = check_output(f'cd /data/{deploy_path} && xs push {app_router_name}')
+output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
 
-app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + app_name
+app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
-output = check_output(f'cd /data/{deploy_path} && xs push {app_name}')
+output = check_output(f'cd /data/{deploy_path} && xs push {project_name}')
 
 is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
 

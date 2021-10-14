@@ -1,4 +1,4 @@
-import os, subprocess, json, traceback, re, yaml, sys
+import os, subprocess, json, traceback, yaml, sys
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
@@ -14,14 +14,12 @@ hana_environment = get_octopusvariable("dataART.Database").lower()
 
 XSAPW = sys.argv[1]
 
-find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
-
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
     manifest_dict = yaml.safe_load(manifest_yaml)
 
     host = project_name.lower().replace('_', '-')
-    app_router = f'{host}-secure'
+    app_router = f'{host}-sso'
     uaa_service = f'{host}-uaa'
     url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
 
@@ -130,8 +128,6 @@ check_output(f'xs login -u {xsa_user} -p {XSAPW} -a {xsa_url} -o orgname -s {xsa
 
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
-
-printhighlight(check_output(f'cat /data/{deploy_path}/app/manifest'))
 
 output = check_output(f'xs service {uaa_service}', show_output=True)
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''

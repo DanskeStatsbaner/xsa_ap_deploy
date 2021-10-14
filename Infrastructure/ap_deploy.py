@@ -27,6 +27,7 @@ services = manifest_dict['services']
 
 host = project_name.lower().replace('_', '-')
 app_router = f'{project_name}-sso'
+app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
 
@@ -43,7 +44,7 @@ manifest_dict = {
         },
         {
             'name': app_router,
-            'host': app_router.lower().replace('_', '-'),
+            'host': app_router_host,
             'path': './app-router/',
             'env': {
                 'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
@@ -65,7 +66,7 @@ with open('../../app/manifest', 'w') as file:
 
 with open('../../app/api.py') as api:
     api_content = api.read()
-    api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router))
+    api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router_host))
 
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)

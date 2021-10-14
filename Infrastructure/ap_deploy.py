@@ -18,12 +18,12 @@ with open('../../manifest.yml') as manifest:
     
 manifest_dict = yaml.safe_load(manifest_yaml)
 
-project_type = manifest_yaml['type']
+project_type = manifest_dict['type']
 
 if project_type != 'python':
     failstep('The pipeline only supports Python XSA applications.')
 
-services = manifest_yaml['services']
+services = manifest_dict['services']
 
 host = project_name.lower().replace('_', '-')
 app_router = f'{host}-sso'

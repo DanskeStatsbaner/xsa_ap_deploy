@@ -100,14 +100,17 @@ with open('../../xs-security.json') as file:
         
     scopes = [scope['name'] for scope in xs_security['scopes']]
     role_collections = []
+    mappings = []
 
     for index, role in enumerate(xs_security['role-templates']):
-        role_collections += [f'{project_name}_{role["name"]}']
+        role_collection = f'{project_name}_{role["name"]}'
+        role_collections += [role_collection]
+        mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
         xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
         xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
         
     roles = [role['name'] for role in xs_security['role-templates']]
-    
+
     xs_security = json.dumps(xs_security, indent=2)
 
 with open('../../xs-security.json', 'w') as file:
@@ -173,3 +176,9 @@ for role_collection in role_collections:
     check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+
+printhighlight(json.dumps(mappings))
+
+check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
+
+check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{json.dumps(mappings)}'")

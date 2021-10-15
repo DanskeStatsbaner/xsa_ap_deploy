@@ -14,7 +14,7 @@ write-host "*******************************************************************"
 $workdirPath = $pwd.ToString()
 
 $artifactoryPW = $args[0]
-$login = $OctopusParameters["artifactory.login"]
+$login = exit
 $registry = $OctopusParameters["artifactory.registry"]
 $projectName = $OctopusParameters["Octopus.Project.Name"]
 $releaseNumber = $OctopusParameters["Octopus.Release.Number"]

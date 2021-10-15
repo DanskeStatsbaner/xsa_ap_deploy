@@ -30,8 +30,7 @@ docker container prune -f
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
-
-docker login -u $login -p $artifactoryPW   $registry
+Write-Output "$artifactoryPW" | docker login -u $login --password-stdin   $registry
 docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 docker run -v C:\Octopus\Work:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 

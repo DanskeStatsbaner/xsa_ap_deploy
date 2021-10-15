@@ -25,9 +25,10 @@ def check_output(cmd, show_output=True, show_cmd=True):
 @click.option('-u', '--xsa-user', required=True)
 @click.option('-p', '--xsa-pass', required=True)
 @click.option('-a', '--xsa-url', required=True)
-@click.option('-av', '--attribute-value', required=True)
-@click.option('-rc', '--role-collection', required=True)
-def saml_role_collection(xsa_user, xsa_pass, xsa_url, attribute_value, role_collection):
+@click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
+def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
+    
+    mappings = json.loads(mappings)
     
     cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
 
@@ -54,23 +55,25 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, attribute_value, role_coll
     saml_id = body[0]['id']
 
     driver.quit()
+    
+    for role_collection, attribute_value in mappings:
 
-    body = {
-        "attributeName": "Groups",
-        "attributeValue": attribute_value,
-        "roleCollection": role_collection,
-        "operation": "equals"
-    }
+        body = {
+            "attributeName": "Groups",
+            "attributeValue": attribute_value,
+            "roleCollection": role_collection,
+            "operation": "equals"
+        }
 
-    cmd = f"""
-        curl -s '{cockpit_url}/ajax/samlGroupsCall/{saml_id}' \
-        -H 'X-ClientSession-Id: {session_id}' \
-        -H 'Cookie: {cookie}' \
-        -d '{json.dumps(body)}'
-    """
+        cmd = f"""
+            curl -s '{cockpit_url}/ajax/samlGroupsCall/{saml_id}' \
+            -H 'X-ClientSession-Id: {session_id}' \
+            -H 'Cookie: {cookie}' \
+            -d '{json.dumps(body)}'
+        """
 
-    check_output(cmd, show_cmd=False)
-  
+        check_output(cmd, show_cmd=False)
+
 try:
     saml_role_collection()
 except Exception as ex:

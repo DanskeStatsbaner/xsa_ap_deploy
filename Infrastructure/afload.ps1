@@ -1,4 +1,4 @@
-﻿$environment = $OctopusParameters["Octopus.Environment.Name"]
+$environment = $OctopusParameters["Octopus.Environment.Name"]
 
 # exit if environment is Sandbox (sit)
 if($environment -eq "sit") { Exit }
@@ -28,12 +28,11 @@ if ($(docker container ls -aq -f name="$containerName").length -gt 0){ docker co
 docker container prune -f
 
 ###############################################################################
-# Login to artifactory, pull and start XSA_CLI_DEPLOY container
+# Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
-
-docker login -u $login -p $artifactoryPW   $registry
-docker pull artifactory.azure.dsb.dk/docker/xsa_cli_deploy
-docker run -v C:\Octopus\Work:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_cli_deploy
+Write-Output "$artifactoryPW" | docker login -u $login --password-stdin   $registry
+docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
+docker run -v C:\Octopus\Work:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 
 write-host "*******************************************************************"
 write-host " STOP afload.ps1"

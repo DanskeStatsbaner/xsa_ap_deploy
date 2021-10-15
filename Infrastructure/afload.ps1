@@ -1,4 +1,4 @@
-﻿$environment = $OctopusParameters["Octopus.Environment.Name"]
+$environment = $OctopusParameters["Octopus.Environment.Name"]
 
 # exit if environment is Sandbox (sit)
 if($environment -eq "sit") { Exit }

@@ -179,32 +179,6 @@ for role_collection in role_collections:
 
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 
-credentials = check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url}", show_cmd=False, show_output=False)
-credentials = json.loads(credentials)
+mappings = json.dumps(mappings).replace('"', '\\"')
 
-print(credentials)
-
-for role_collection, attribute_value in mappings:
-
-    printhighlight(f'Mapping: {role_collection} -> {attribute_value}')
-
-    body = {
-        "attributeName": "Groups",
-        "attributeValue": attribute_value,
-        "roleCollection": role_collection,
-        "operation": "equals"
-    }
-
-    cmd = f"""
-        curl '{credentials['cockpit_url']}/ajax/samlGroupsCall/{credentials['saml_id']}' \
-        -H 'X-ClientSession-Id: {credentials['session_id']}' \
-        -H 'Cookie: {credentials['cookie']}' \
-        -d '{json.dumps(body)}'
-    """
-
-    response = check_output(cmd, show_cmd=True, show_output=True)
-    
-    printhighlight(response)
-    
-    # if response != 'null' or :
-    #     failstep(f'Creation of {role_collection} -> {attribute_value} failed:\n{response}')
+check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)

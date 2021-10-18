@@ -202,7 +202,7 @@ for role_collection, attribute_value in mappings:
         -d '{json.dumps(body)}'
     """
 
-    response = check_output(cmd, show_cmd=True, show_output=True, docker=False)
+    response = check_output(cmd, show_cmd=True, show_output=True)
     
     printhighlight(response)
     

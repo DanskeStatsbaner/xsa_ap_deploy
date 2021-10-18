@@ -25,10 +25,7 @@ def check_output(cmd, show_output=True, show_cmd=True):
 @click.option('-u', '--xsa-user', required=True)
 @click.option('-p', '--xsa-pass', prompt=True, hide_input=True)
 @click.option('-a', '--xsa-url', required=True)
-@click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
-def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
-    
-    mappings = json.loads(mappings)
+def saml_role_collection(xsa_user, xsa_pass, xsa_url):
     
     cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
 
@@ -56,23 +53,12 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
     driver.quit()
     
-    for role_collection, attribute_value in mappings:
-
-        body = {
-            "attributeName": "Groups",
-            "attributeValue": attribute_value,
-            "roleCollection": role_collection,
-            "operation": "equals"
-        }
-
-        cmd = f"""
-            curl -s '{cockpit_url}/ajax/samlGroupsCall/{saml_id}' \
-            -H 'X-ClientSession-Id: {session_id}' \
-            -H 'Cookie: {cookie}' \
-            -d '{json.dumps(body)}'
-        """
-
-        check_output(cmd, show_cmd=False)
+    click.echo(json.dumps({
+        'cockpit_url': cockpit_url,
+        'saml_id': saml_id,
+        'session_id': session_id,
+        'cookie': cookie
+    }))
 
 try:
     saml_role_collection()

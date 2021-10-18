@@ -197,8 +197,12 @@ for role_collection, attribute_value in mappings:
         -H 'Cookie: {credentials['cookie']}' \
         -d '{json.dumps(body)}'
     """
+    
+    printhighlight(cmd)
 
     response = check_output(cmd, show_cmd=False, show_output=True)
+    
+    printhighlight(response)
     
     # if response != 'null' or :
     #     failstep(f'Creation of {role_collection} -> {attribute_value} failed:\n{response}')

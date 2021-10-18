@@ -28,9 +28,7 @@ def check_output(cmd, show_output=True, show_cmd=True):
 @click.option('-a', '--xsa-url', required=True)
 @click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
 def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
-    
-    sys.exit()
-    
+
     mappings = json.loads(mappings)
     
     cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
@@ -49,7 +47,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
     driver.get(f'{cockpit_url}/cockpit#/xsa/trustConfiguration')
 
-    request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=120)
+    request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=300)
 
     session_id = request.headers['X-ClientSession-Id']
     cookie = request.headers['Cookie']
@@ -77,7 +75,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
         response = check_output(cmd, show_cmd=False, show_output=False)
         if response != 'null':
-            click.echo(click.style(f'Creation of mapping {role_collection} -> {attribute_value} failed', fg='red'))
+            click.echo(f'Creation of mapping {role_collection} -> {attribute_value} failed')
             Abort()
         else:
             click.echo(f'Mapping {role_collection} -> {attribute_value} created')

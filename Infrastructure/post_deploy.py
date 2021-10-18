@@ -1,5 +1,34 @@
 import os, subprocess, json, traceback, yaml, sys
-from ap_deploy import check_output, project_name, xsa_url, xsa_user, xsa_space, xsa_pass, hana_environment_upper
+#from ap_deploy import check_output
+
+environment = get_octopusvariable("Octopus.Environment.Name").lower()
+
+project_name = get_octopusvariable("Octopus.Project.Name")
+release_number = get_octopusvariable("Octopus.Release.Number")
+container_name = f"dataArt.{project_name}.{release_number}.{environment}"
+
+xsa_url = get_octopusvariable("dataART.XSAUrl")
+xsa_user = get_octopusvariable("dataART.XSAUser")
+xsa_space = get_octopusvariable("dataART.XSASpace")
+xsa_pass = sys.argv[1]
+
+hana_environment = get_octopusvariable("dataART.Database").lower()
+hana_environment_upper = hana_environment.upper()
+
+def check_output(cmd, show_output=True, show_cmd=True, docker=True):
+    if docker:
+        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
+    if show_cmd:
+        print('Executing command: ')
+        print(cmd)
+    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    output = ''
+    while popen.poll() is None:
+        line = popen.stdout.readline()
+        output += line
+        if show_output:
+            print(line)
+    return output
 
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())

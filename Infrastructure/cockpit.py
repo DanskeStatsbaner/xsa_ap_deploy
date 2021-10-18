@@ -7,6 +7,7 @@ from getpass import getpass
 import json, subprocess, traceback
 import click
 from click import Abort
+import sys
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
@@ -28,8 +29,7 @@ def check_output(cmd, show_output=True, show_cmd=True):
 @click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
 def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
     
-    click.echo(click.style(f'Testing abort', fg='red'))
-    Abort()
+    sys.exit()
     
     mappings = json.loads(mappings)
     

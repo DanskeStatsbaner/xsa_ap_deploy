@@ -1,4 +1,5 @@
 import os, subprocess, json, traceback, yaml, sys
+from ap_deploy import check_output
 
 xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
@@ -35,31 +36,23 @@ with open('../../xs-security.json') as file:
 
     xs_security = json.dumps(xs_security, indent=2)
 
-def check_output(cmd, show_output=True, show_cmd=True, docker=True):
-    if docker:
-        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
-    if show_cmd:
-        print('Executing command: ')
-        print(cmd)
-    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output = ''
-    while popen.poll() is None:
-        line = popen.stdout.readline()
-        output += line
-        if show_output:
-            print(line)
-    return output
-
 check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 for role_collection in role_collections:
     user = role_collection
     password = 'A1a' + role_collection
     check_output(f' xs create-user {user} {password}',show_output=True, show_cmd=True)
+    printhighlight(f'User {user} has been created')
     check_output(f' xs assign-role-collection {role_collection} {user}' ,show_output=True, show_cmd=True)
-    # Insert endpoint check
-    # Exit with code if fails
-    #check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+    printhighlight(f'User {user} has been assiged role collection {role_collection}')
+    # Insert endpoint check below    
+    if 1==0:    
+        check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+        printhighlight(f'User {user} has been deleted')
+    # exit
+    else:
+        check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+        printhighlight(f'User {user} has been deleted')
 
 
 

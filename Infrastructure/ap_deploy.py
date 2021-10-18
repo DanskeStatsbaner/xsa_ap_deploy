@@ -180,12 +180,7 @@ for role_collection in role_collections:
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 
 credentials = check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url}", show_cmd=False, show_output=False)
-
-printhighlight(credentials)
-
 credentials = json.loads(credentials)
-
-printhighlight(credentials)
 
 for role_collection, attribute_value in mappings:
 
@@ -202,10 +197,8 @@ for role_collection, attribute_value in mappings:
         -H 'Cookie: {credentials['cookie']}' \
         -d '{json.dumps(body)}'
     """
-    
-    printhighlight(cmd)
 
-    response = check_output(cmd, show_cmd=False, show_output=True)
+    response = check_output(cmd, show_cmd=False, show_output=True, docker=False)
     
     printhighlight(response)
     

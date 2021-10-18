@@ -182,7 +182,11 @@ check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=Fa
 credentials = check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url}", show_cmd=False, show_output=False)
 credentials = json.loads(credentials)
 
+print(credentials)
+
 for role_collection, attribute_value in mappings:
+
+    printhighlight(f'Mapping: {role_collection} -> {attribute_value}')
 
     body = {
         "attributeName": "Groups",
@@ -198,7 +202,7 @@ for role_collection, attribute_value in mappings:
         -d '{json.dumps(body)}'
     """
 
-    response = check_output(cmd, show_cmd=False, show_output=True, docker=False)
+    response = check_output(cmd, show_cmd=True, show_output=True, docker=False)
     
     printhighlight(response)
     

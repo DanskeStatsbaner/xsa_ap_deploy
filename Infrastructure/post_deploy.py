@@ -41,17 +41,17 @@ check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {
 for role_collection in role_collections:
     user = role_collection
     password = 'A1a' + role_collection
-    check_output(f' xs create-user {user} {password}',show_output=True, show_cmd=True)
+    check_output(f' xs create-user -p {xsa_pass} {user} {password}',show_output=True, show_cmd=True)
     printhighlight(f'User {user} has been created')
-    check_output(f' xs assign-role-collection {role_collection} {user}' ,show_output=True, show_cmd=True)
+    check_output(f' xs assign-role-collection -p {xsa_pass} {role_collection} {user}' ,show_output=True, show_cmd=True)
     printhighlight(f'User {user} has been assiged role collection {role_collection}')
     # Insert endpoint check below    
     if 1==0:    
-        check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+        check_output(f' xs delete-user -p {xsa_pass} {user} {password}',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been deleted')
     # exit
     else:
-        check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+        check_output(f' xs delete-user -p {xsa_pass} {user} {password}',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been deleted')
 
 

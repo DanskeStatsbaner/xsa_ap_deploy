@@ -179,7 +179,7 @@ for role_collection in role_collections:
 
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 
-credentials = check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url}", show_cmd=False)
+credentials = check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url}", show_cmd=False, show_output=False)
 credentials = json.loads(credentials)
 
 for role_collection, attribute_value in mappings:
@@ -198,7 +198,7 @@ for role_collection, attribute_value in mappings:
         -d '{json.dumps(body)}'
     """
 
-    response = check_output(cmd, show_cmd=False, show_output=False)
+    response = check_output(cmd, show_cmd=False, show_output=True)
     
-    if response != 'null':
-        failstep(f'Creation of {role_collection} -> {attribute_value} failed:\n{response}')
+    # if response != 'null' or :
+    #     failstep(f'Creation of {role_collection} -> {attribute_value} failed:\n{response}')

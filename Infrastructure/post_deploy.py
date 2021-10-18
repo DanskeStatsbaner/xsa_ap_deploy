@@ -59,7 +59,7 @@ for role_collection in role_collections:
     check_output(f' xs assign-role-collection {role_collection} {user}' ,show_output=True, show_cmd=True)
     # Insert endpoint check
     # Exit with code if fails
-    check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+    #check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
 
 
 

@@ -11,6 +11,10 @@ xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
 xsa_pass = sys.argv[1]
+
+hana_environment = get_octopusvariable("dataART.Database").lower()
+hana_environment_upper = hana_environment.upper()
+
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
     xs_security['xsappname'] = project_name

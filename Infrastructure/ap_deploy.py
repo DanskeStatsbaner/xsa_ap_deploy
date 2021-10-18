@@ -196,7 +196,7 @@ for role_collection, attribute_value in mappings:
     }
 
     cmd = f"""
-        curl -s '{credentials['cockpit_url']}/ajax/samlGroupsCall/{credentials['saml_id']}' \
+        curl '{credentials['cockpit_url']}/ajax/samlGroupsCall/{credentials['saml_id']}' \
         -H 'X-ClientSession-Id: {credentials['session_id']}' \
         -H 'Cookie: {credentials['cookie']}' \
         -d '{json.dumps(body)}'

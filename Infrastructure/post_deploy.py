@@ -1,19 +1,16 @@
 import os, subprocess, json, traceback, yaml, sys
 from ap_deploy import check_output
 
-xsa_url = get_octopusvariable("dataART.XSAUrl")
-xsa_user = get_octopusvariable("dataART.XSAUser")
-xsa_space = get_octopusvariable("dataART.XSASpace")
-xsa_pass = sys.argv[1]
-
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
 project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
-hana_environment = get_octopusvariable("dataART.Database").lower()
-hana_environment_upper = hana_environment.upper()
 
+xsa_url = get_octopusvariable("dataART.XSAUrl")
+xsa_user = get_octopusvariable("dataART.XSAUser")
+xsa_space = get_octopusvariable("dataART.XSASpace")
+xsa_pass = sys.argv[1]
 with open('../../xs-security.json') as file:
     xs_security = json.loads(file.read())
     xs_security['xsappname'] = project_name

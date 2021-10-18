@@ -53,12 +53,14 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url):
 
     driver.quit()
     
-    click.echo(json.dumps({
+    credentials = json.dumps({
         'cockpit_url': cockpit_url,
         'saml_id': saml_id,
         'session_id': session_id,
         'cookie': cookie
-    }))
+    })
+    
+    click.echo(credentials)
 
 try:
     saml_role_collection()

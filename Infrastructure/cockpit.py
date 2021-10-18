@@ -23,7 +23,7 @@ def check_output(cmd, show_output=True, show_cmd=True):
   
 @click.command()
 @click.option('-u', '--xsa-user', required=True)
-@click.option('-p', '--xsa-pass', required=True)
+@click.option('-p', '--xsa-pass', prompt=True, hide_input=True)
 @click.option('-a', '--xsa-url', required=True)
 @click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
 def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
@@ -46,7 +46,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
     driver.get(f'{cockpit_url}/cockpit#/xsa/trustConfiguration')
 
-    request = driver.wait_for_request('/ajax/listSamlIDPs')
+    request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=30)
 
     session_id = request.headers['X-ClientSession-Id']
     cookie = request.headers['Cookie']

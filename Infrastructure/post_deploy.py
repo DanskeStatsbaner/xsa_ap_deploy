@@ -1,16 +1,13 @@
 import os, subprocess, json, traceback, yaml, sys
 
-environment = get_octopusvariable("Octopus.Environment.Name").lower()
-
-project_name = get_octopusvariable("Octopus.Project.Name")
-release_number = get_octopusvariable("Octopus.Release.Number")
-container_name = f"dataArt.{project_name}.{release_number}.{environment}"
-
 xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
 xsa_pass = sys.argv[1]
 
+project_name = get_octopusvariable("Octopus.Project.Name")
+release_number = get_octopusvariable("Octopus.Release.Number")
+container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
@@ -51,9 +48,16 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
             print(line)
     return output
 
-for scope in scopes:
-    printhighlight(scope)
+check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 for role_collection in role_collections:
-    printhighlight(role_collection)
+    user = role_collection
+    password = 'A1a' + role_collection
+    check_output(f' xs create-user {user} {password}',show_output=True, show_cmd=True)
+    check_output(f' xs assign-role-collection {role_collection} {user}' ,show_output=True, show_cmd=True)
+    # Insert endpoint check
+    # Insert endpoint check
+    #check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+
+
 

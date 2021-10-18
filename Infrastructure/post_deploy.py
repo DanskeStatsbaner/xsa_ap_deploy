@@ -5,6 +5,8 @@ xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
 xsa_pass = sys.argv[1]
 
+environment = get_octopusvariable("Octopus.Environment.Name").lower()
+
 project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
@@ -56,8 +58,8 @@ for role_collection in role_collections:
     check_output(f' xs create-user {user} {password}',show_output=True, show_cmd=True)
     check_output(f' xs assign-role-collection {role_collection} {user}' ,show_output=True, show_cmd=True)
     # Insert endpoint check
-    # Insert endpoint check
-    #check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
+    # Exit with code if fails
+    check_output(f' xs delete-user {user} {password}',show_output=True, show_cmd=True)
 
 
 

@@ -10,15 +10,15 @@ from click import Abort
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        print('Executing command: ')
-        print(cmd)
+        click.echo('Executing command: ', nl=False)
+        click.echo(click.style(cmd, fg='yellow'))
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            click.echo(line, nl=False)
     return output
   
 @click.command()

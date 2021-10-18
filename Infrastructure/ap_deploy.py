@@ -181,4 +181,6 @@ printhighlight(json.dumps(mappings))
 
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 
-check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{json.dumps(mappings)}'")
+mappings = json.dumps(mappings).replace('"', '\\"')
+
+check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'")

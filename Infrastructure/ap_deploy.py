@@ -63,7 +63,7 @@ manifest_dict = {
         }
         ]
     }
-        # IF WEBAPP, appended app_router part to manifest_dict
+        # IF WEBAPP, appended app_router part to manifest_dicti
 
 app_router_dict =  {
             'name': app_router,

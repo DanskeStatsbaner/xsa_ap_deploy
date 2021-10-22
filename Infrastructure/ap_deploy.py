@@ -180,11 +180,13 @@ else:
 # Web Starts
 if is_web:       
     app_router_output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
+    printhighlight(app_router_output)
 # Web Ends
 
 app_output = check_output(f'cd /data/{deploy_path} && xs push {project_name}')
-
+printhighlight(app_output)
 output = app_router_output if is_web else app_output 
+printhighlight(output)
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 

@@ -104,8 +104,7 @@ with open('../../app/framework/task.py', error="ignore") as task:
 with open('../../app/framework/task.py', 'w', error="ignore") as file:
     file.write(task_content)
 
-#IF WEBAPP RUN APP-ROUTER things 90-131
-#web Starts
+# Web Section Starts
 if isweb:
     with open('../../app-router/xs-app.json') as file:
         xs_app = json.loads(file.read())
@@ -176,9 +175,10 @@ else:
     if 'failed' in output:
         failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
-#Web part
+# Web Starts
 if isweb:       
     output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
+# Web Ends
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
@@ -191,12 +191,13 @@ if is_running:
 else:
     failstep('The application crashed')
 
-
+# Web Starts
 if isweb:  
     for role_collection in role_collections:
         check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+# Web Ends
 
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 

@@ -32,7 +32,6 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
             print(line)
     return output
 
-failstep("A friendly message")
 
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()

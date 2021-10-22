@@ -97,11 +97,11 @@ with open('../../app/api.py') as api:
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)
 
-with open('../../app/framework/task.py', error="ignore") as task:
+with open('../../app/framework/task.py', errors="ignore") as task:
     task_content = task.read()
     task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
 
-with open('../../app/framework/task.py', 'w', error="ignore") as file:
+with open('../../app/framework/task.py', 'w', errors="ignore") as file:
     file.write(task_content)
 
 # Web Section Starts

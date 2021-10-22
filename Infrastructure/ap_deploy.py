@@ -159,14 +159,15 @@ check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {
 manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
 deploy_path = os.path.dirname(manifest_path).replace('./', '')
 
-output = check_output(f'xs service {uaa_service}', show_output=True)
+output = check_output(f'xs service {uaa_service}', show_output=True).lower()
+
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
 
 if 'failed' in output:
     failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
     output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa_service} {xs_security}', show_output=True)
-    if 'FAILED' in output:
+    if 'failed' in output:
         failstep(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:   
         printhighlight(f'The service "{uaa_service}" was succesfully created')

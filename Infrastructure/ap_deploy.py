@@ -106,49 +106,49 @@ with open('../../app/framework/task.py', 'w') as file:
 
 #IF WEBAPP RUN APP-ROUTER things 90-131
 #web Starts
+if isweb:
+    with open('../../app-router/xs-app.json') as file:
+        xs_app = json.loads(file.read())
+        xs_app['welcomeFile'] = f"/{host}"
+        xs_app['routes'][0]['source'] = f"/{host}(.*)"
+        xs_app['routes'][0]['destination'] = project_name
+        xs_app = json.dumps(xs_app, indent=2)
 
-with open('../../app-router/xs-app.json') as file:
-    xs_app = json.loads(file.read())
-    xs_app['welcomeFile'] = f"/{host}"
-    xs_app['routes'][0]['source'] = f"/{host}(.*)"
-    xs_app['routes'][0]['destination'] = project_name
-    xs_app = json.dumps(xs_app, indent=2)
+    with open('../../app-router/xs-app.json', 'w') as file:
+        file.write(xs_app)
 
-with open('../../app-router/xs-app.json', 'w') as file:
-    file.write(xs_app)
+    with open('../../app-router/package.json') as file:
+        package = json.loads(file.read())
+        package['name'] = f"{host}-approuter"
+        package = json.dumps(package, indent=2)
 
-with open('../../app-router/package.json') as file:
-    package = json.loads(file.read())
-    package['name'] = f"{host}-approuter"
-    package = json.dumps(package, indent=2)
+    with open('../../app-router/package.json', 'w') as file:
+        file.write(package)
 
-with open('../../app-router/package.json', 'w') as file:
-    file.write(package)
-
-with open('../../xs-security.json') as file:
-    xs_security = json.loads(file.read())
-    xs_security['xsappname'] = project_name
-    
-    for index, scope in enumerate(xs_security['scopes']):
-        xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
+    with open('../../xs-security.json') as file:
+        xs_security = json.loads(file.read())
+        xs_security['xsappname'] = project_name
         
-    scopes = [scope['name'] for scope in xs_security['scopes']]
-    role_collections = []
-    mappings = []
+        for index, scope in enumerate(xs_security['scopes']):
+            xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
+            
+        scopes = [scope['name'] for scope in xs_security['scopes']]
+        role_collections = []
+        mappings = []
 
-    for index, role in enumerate(xs_security['role-templates']):
-        role_collection = f'{project_name}_{role["name"]}'
-        role_collections += [role_collection]
-        mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
-        xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
-        xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
-        
-    roles = [role['name'] for role in xs_security['role-templates']]
+        for index, role in enumerate(xs_security['role-templates']):
+            role_collection = f'{project_name}_{role["name"]}'
+            role_collections += [role_collection]
+            mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+            xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
+            xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
+            
+        roles = [role['name'] for role in xs_security['role-templates']]
 
-    xs_security = json.dumps(xs_security, indent=2)
+        xs_security = json.dumps(xs_security, indent=2)
 
-with open('../../xs-security.json', 'w') as file:
-    file.write(xs_security)
+    with open('../../xs-security.json', 'w') as file:
+        file.write(xs_security)
 # Web Ends
 def delete_manifest():
     if os.path.exists('app/manifest'):
@@ -176,8 +176,9 @@ else:
     if 'failed' in output:
         failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
-#Web part       
-output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
+#Web part
+if isweb:       
+    output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
@@ -191,11 +192,11 @@ else:
     failstep('The application crashed')
 
 
-#Web part
-for role_collection in role_collections:
-    check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-    check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-    check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+if isweb:  
+    for role_collection in role_collections:
+        check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
 
 check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
 

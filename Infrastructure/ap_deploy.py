@@ -15,7 +15,7 @@ xsa_pass = sys.argv[1]
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
-isweb = os.path.exists('../../app-router')
+is_web = os.path.exists('../../app-router')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
@@ -77,7 +77,7 @@ app_router_dict =  {
             ]
         }
 
-if isweb:
+if is_web:
     manifest_dict['applications'] += [app_router_dict]     
     
 
@@ -105,7 +105,7 @@ with open('../../app/framework/task.py', 'w', errors="ignore") as file:
     file.write(task_content)
 
 # Web Section Starts
-if isweb:
+if is_web:
     with open('../../app-router/xs-app.json') as file:
         xs_app = json.loads(file.read())
         xs_app['welcomeFile'] = f"/{host}"
@@ -176,13 +176,15 @@ else:
         failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
 # Web Starts
-if isweb:       
-    output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
+if is_web:       
+    app_router_output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
 # Web Ends
 
-app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
+app_output = check_output(f'cd /data/{deploy_path} && xs push {project_name}')
 
-output = check_output(f'cd /data/{deploy_path} && xs push {project_name}')
+output = app_router_output if is_web else app_output 
+
+app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
 is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
 
@@ -192,7 +194,7 @@ else:
     failstep('The application crashed')
 
 # Web Starts
-if isweb:  
+if is_web:  
     for role_collection in role_collections:
         check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)

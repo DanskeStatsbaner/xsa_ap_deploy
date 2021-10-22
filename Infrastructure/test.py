@@ -1,4 +1,4 @@
-import os, subprocess, json, traceback, yaml, sys
+import subprocess, json, sys
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
@@ -51,7 +51,7 @@ with open('../../xs-security.json') as file:
 
     xs_security = json.dumps(xs_security, indent=2)
 
-check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+#check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 #Checking User without scope
 

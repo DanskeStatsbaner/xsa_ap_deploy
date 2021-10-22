@@ -5,6 +5,7 @@ environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
+humio_ingest_token = get_octopusvariable("dataART.HumioIngestToken")
 
 xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
@@ -13,6 +14,8 @@ xsa_pass = sys.argv[1]
 
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
+
+isweb = os.path.exists('../../app-router')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
@@ -57,8 +60,12 @@ manifest_dict = {
             'path': './app/',
             'command': 'python api.py',
             'services': services
-        },
-        {
+        }
+        ]
+    }
+        # IF WEBAPP, appended app_router part to manifest_dict
+
+app_router_dict =  {
             'name': app_router,
             'host': app_router_host,
             'path': './app-router/',
@@ -69,8 +76,11 @@ manifest_dict = {
                 uaa_service
             ]
         }
-    ]
-}
+
+if isweb:
+    manifest_dict['applications'] += [app_router_dict]     
+    
+
 
 manifest_yaml = yaml.dump(manifest_dict)
 
@@ -86,6 +96,16 @@ with open('../../app/api.py') as api:
 
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)
+
+with open('../../app/framework/task.py') as task:
+    task_content = task.read()
+    task_content = task.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
+
+with open('../../app/framework/task.py', 'w') as file:
+    file.write(task)
+
+#IF WEBAPP RUN APP-ROUTER things 90-131
+#web Starts
 
 with open('../../app-router/xs-app.json') as file:
     xs_app = json.loads(file.read())
@@ -129,7 +149,7 @@ with open('../../xs-security.json') as file:
 
 with open('../../xs-security.json', 'w') as file:
     file.write(xs_security)
-
+# Web Ends
 def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
@@ -155,7 +175,8 @@ else:
 
     if 'failed' in output:
         failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
-        
+
+#Web part       
 output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
@@ -170,7 +191,7 @@ else:
     failstep('The application crashed')
 
 
-
+#Web part
 for role_collection in role_collections:
     check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)

@@ -97,12 +97,12 @@ with open('../../app/api.py') as api:
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)
 
-with open('../../app/framework/task.py') as task:
+with open('../../app/framework/task.py', error="ignore") as task:
     task_content = task.read()
-    task_content = task.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
+    task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
 
-with open('../../app/framework/task.py', 'w') as file:
-    file.write(task)
+with open('../../app/framework/task.py', 'w', error="ignore") as file:
+    file.write(task_content)
 
 #IF WEBAPP RUN APP-ROUTER things 90-131
 #web Starts

@@ -1,6 +1,5 @@
 import subprocess, sys
 
-
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")

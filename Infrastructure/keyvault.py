@@ -1,5 +1,6 @@
-import subprocess, json, click
+import subprocess, json, click, traceback
 from hdbcli import dbapi
+
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
@@ -13,7 +14,6 @@ def check_output(cmd, show_output=True, show_cmd=True):
         if show_output:
             click.echo(line, nl=False)
     return output
-
   
 @click.command()
 @click.option('-n', '--project-name', required=True)
@@ -32,6 +32,11 @@ def insert_key(project_name,hana_host,xsa_keyuser,xsa_pass):
    
     conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass) 
     conn.cursor().execute(f"""
-    UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{data}') WHERE APPNAME = '{project_name}'
+        UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{data}') WHERE APPNAME = '{project_name}'
     """) 
     
+try:
+    insert_key()
+except Exception as ex:
+    click.echo(click.style(f'Something went wrong', fg='red'))
+    click.echo(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))

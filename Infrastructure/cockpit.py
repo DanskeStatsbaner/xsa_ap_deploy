@@ -83,5 +83,5 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 try:
     saml_role_collection()
 except Exception as ex:
-    click.echo(click.style(f'XSA application deployment aborted', fg='red'))
+    click.echo(click.style(f'Something went wrong', fg='red'))
     click.echo(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))

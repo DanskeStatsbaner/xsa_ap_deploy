@@ -37,14 +37,10 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
 #check_output(f'xs env {app_name} --export-json env.json', show_cmd=False)
 def get_credentials():    
     check_output(f'xs env {project_name} --export-json env.json')
+    env_json = check_output(f'cat env.json')
 
-    with open('env.json', 'r') as json_file:
-        data = json.load(json_file)
-
-        data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
-       
-
-    os.remove('env.json')
+    data = json.load(env_json)
+    data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
 
     return json.dumps(data)
 

@@ -1,7 +1,7 @@
 try:
-    import subprocess, sys
-except:
-    failstep('Package import failed.')
+    import subprocess, sys, traceback
+except Exception as ex:
+    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")

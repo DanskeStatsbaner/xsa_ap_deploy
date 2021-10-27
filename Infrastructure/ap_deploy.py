@@ -1,7 +1,7 @@
 try:
-    import os, subprocess, json, traceback, yaml, sys
-except:
-    failstep('Package import failed.')
+    import os, subprocess, json, yaml, sys, traceback
+except Exception as ex:
+    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()

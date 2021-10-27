@@ -1,4 +1,7 @@
-import subprocess, sys
+try:
+    import subprocess, sys
+except:
+    failstep('Package import failed.')
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")

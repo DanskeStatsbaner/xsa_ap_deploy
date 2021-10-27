@@ -1,4 +1,7 @@
-import subprocess, json, sys, os
+try:
+    import subprocess, json
+except:
+    failstep('Package import failed.')
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 

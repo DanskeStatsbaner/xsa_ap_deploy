@@ -30,5 +30,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     return output
 
 check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
-    
-check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+try:  
+    check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+except:
+    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))

@@ -78,7 +78,7 @@ if is_web:
     # Checking User with different scopes
     for role_collection in role_collections:
         user = role_collection
-        password = 'A1a' + role_collection
+        password = 'A1apassword' + role_collection
         check_output(f' xs create-user -p {xsa_pass} {user} {password} -f',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been created')
         check_output(f' xs assign-role-collection -p {xsa_pass} {role_collection} {user} -f' ,show_output=True, show_cmd=True)

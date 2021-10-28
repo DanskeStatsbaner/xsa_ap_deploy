@@ -1,7 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, Request, Depends
-
-from framework.env import databases, auth
+from framework.env import auth
 import json
 
 scope = APIRouter()

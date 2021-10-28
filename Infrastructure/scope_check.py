@@ -1,7 +1,7 @@
 from typing import Optional
-from fastapi import FastAPI, Request, Depends
+from fastapi import APIRouter, Request, Depends
 
-scope = FastAPI()
+scope = APIRouter()
 
 
 async def common_parameters(q: Optional[str] = None, skip: int = 0, limit: int = 100):

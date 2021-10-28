@@ -1,6 +1,9 @@
 from typing import Optional
 from fastapi import APIRouter, Request, Depends
 
+from framework.env import databases, auth
+import json
+
 scope = APIRouter()
 
 
@@ -29,7 +32,7 @@ async def read_items(commons: dict = Depends(common_parameters)):
 
 # Using Request instance
 @scope.get("/url-list-from-request")
-def get_all_urls_from_request(request: Request):
+def get_all_urls_from_request(request: Request, security_context=Depends(auth(scope='openid'))):
     url_list = [
         {"path": route.path, "name": route.name} for route in request.scope.routes
     ]

@@ -16,6 +16,12 @@ xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
 xsa_pass = sys.argv[1]
 
+printhighlight(get_octopusvariable("Octopus.Action.Package.CustomInstallationDirectory"))
+
+printhighlight(get_octopusvariable("Octopus.Action.Package.InstallationDirectoryPath"))
+
+printhighlight(get_octopusvariable("Octopus.Action.Package.NugetPackageId"))
+
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 

@@ -28,14 +28,6 @@ if ($(docker container ls -aq -f name="$containerName").length -gt 0){ docker co
 docker container prune -f
 
 ###############################################################################
-# Make Directory
-###############################################################################
-
-mkdir C:\Octopus\Work\"$projectName"
-Set-Location C:\Octopus\Work\"$projectName"
-
-
-###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
 Write-Output "$artifactoryPW" | docker login -u $login --password-stdin   $registry

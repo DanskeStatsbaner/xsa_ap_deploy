@@ -23,7 +23,7 @@ $containerName = "dataArt.$($projectName).$($releaseNumber).$($environment)"
 ###############################################################################
 # Stop and delete containers
 ###############################################################################
-Write-Output "$containerName"
+Write-host "$containerName"
 if ($(docker container ls -aq -f name="$containerName").length -gt 0){ docker container stop $($containerName) }
 docker container prune -f
 

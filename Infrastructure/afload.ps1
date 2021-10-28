@@ -38,8 +38,6 @@ Write-host "$parentdir"
 docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 docker run -v ${$parentdir}:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 
-docker run -v C:\Octopus\Work:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
-
 write-host "*******************************************************************"
 write-host " STOP afload.ps1"
 write-host "*******************************************************************"

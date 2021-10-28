@@ -28,22 +28,11 @@ if ($(docker container ls -aq -f name="$containerName").length -gt 0){ docker co
 docker container prune -f
 
 ###############################################################################
-# Make Directory
-###############################################################################
-
-mkdir C:\Octopus\Work\"$projectName"
-<<<<<<< HEAD
-Set-Location C:\Octopus\Work\"$projectName"
-=======
-cd C:\Octopus\Work\"$projectName"
->>>>>>> f2810b2d8513d4e4edc1822438c2619906d27c3d
-
-###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
 Write-Output "$artifactoryPW" | docker login -u $login --password-stdin   $registry
 docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
-docker run -v C:\Octopus\Work\$($projectName):/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
+docker run -v C:\Octopus\Work:/data --name $containerName --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy
 
 write-host "*******************************************************************"
 write-host " STOP afload.ps1"

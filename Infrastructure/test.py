@@ -1,5 +1,5 @@
 try:
-    import subprocess, json, traceback
+    import subprocess, json, traceback, string, random
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
@@ -34,23 +34,32 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
             print(line)
     return output
 
+def get_random_password():
+    random_source = string.ascii_letters + string.digits + string.punctuation
+    # select 1 lowercase
+    password = random.choice(string.ascii_lowercase)
+    # select 1 uppercase
+    password += random.choice(string.ascii_uppercase)
+    # select 1 digit
+    password += random.choice(string.digits)
+    # select 1 special symbol
+    # password += random.choice(string.punctuation)
 
+    # generate other characters
+    for i in range(8):
+        password += random.choice(random_source)
+
+    password_list = list(password)
+    # shuffle all characters
+    random.SystemRandom().shuffle(password_list)
+    password = ''.join(password_list)
+    return password
 
 #check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 #Checking User without scope
 
-user = project_name
-password = 'A1a' + project_name
-check_output(f' xs create-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-printhighlight(f'User {user} has been created')
-if 1==0:    
-    check_output(f' xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-    printhighlight(f'User {user} has been deleted')
-    # exit
-else:
-    check_output(f' xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-    printhighlight(f'User {user} has been deleted')
+
 
 if is_web:
     with open('../../xs-security.json') as file:
@@ -75,11 +84,25 @@ if is_web:
 
         xs_security = json.dumps(xs_security, indent=2)
     
+
+    user = project_name
+
+    check_output(f' xs create-user -p {xsa_pass} {user} {get_random_password()} -f',show_output=True, show_cmd=True)
+    printhighlight(f'User {user} has been created')
+    if 1==0:    
+        check_output(f' xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
+        printhighlight(f'User {user} has been deleted')
+        # exit
+    else:
+        check_output(f' xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
+        printhighlight(f'User {user} has been deleted')
+
+
     # Checking User with different scopes
     for role_collection in role_collections:
         user = role_collection
         password = 'A1apassword' + role_collection
-        check_output(f' xs create-user -p {xsa_pass} {user} {password} -f',show_output=True, show_cmd=True)
+        check_output(f' xs create-user -p {xsa_pass} {user} {get_random_password()} -f',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been created')
         check_output(f' xs assign-role-collection -p {xsa_pass} {role_collection} {user} -f' ,show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been assiged role collection {role_collection}')

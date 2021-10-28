@@ -31,6 +31,7 @@ if (Test-Path c:\Octopus\Work\$($containerName)-SQLoneLine.txt) { Remove-Item c:
 if (Test-Path c:\Octopus\Work\$($containerName)-serviceName.txt) { Remove-Item c:\Octopus\Work\$($containerName)-serviceName.txt }
 if (Test-Path c:\Octopus\Work\$($containerName)-serviceKey.txt) { Remove-Item c:\Octopus\Work\$($containerName)-serviceKey.txt }
 if (Test-Path c:\Octopus\Work\$($containerName).mtar) { Remove-Item c:\Octopus\Work\$($containerName).mtar }
+if (Test-Path c:\Octopus\Work\$("$projectName")) { Remove-Item c:\Octopus\Work\$("$projectName") }
 
 write-host "*******************************************************************"
 write-host " STOP cleanup.ps1"

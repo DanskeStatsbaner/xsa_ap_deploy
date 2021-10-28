@@ -32,11 +32,8 @@ docker container prune -f
 ###############################################################################
 
 mkdir C:\Octopus\Work\"$projectName"
-<<<<<<< HEAD
 Set-Location C:\Octopus\Work\"$projectName"
-=======
-cd C:\Octopus\Work\"$projectName"
->>>>>>> f2810b2d8513d4e4edc1822438c2619906d27c3d
+
 
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container

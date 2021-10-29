@@ -1,4 +1,5 @@
 import os, subprocess, json, yaml, sys, traceback
+from pathlib import Path
 
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()

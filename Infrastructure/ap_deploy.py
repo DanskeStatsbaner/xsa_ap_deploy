@@ -230,6 +230,7 @@ if is_web:
         check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        check_output(f'xs assign-role-collection {role_collection} {created_by_username} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
     try:
         check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')
@@ -237,5 +238,3 @@ if is_web:
     except:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
-
-check_output(f'xs assign-role-collection {role_collection} {created_by_username} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)

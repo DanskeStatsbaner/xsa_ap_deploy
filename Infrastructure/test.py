@@ -4,7 +4,6 @@ except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
-
 project_name = get_octopusvariable("Octopus.Project.Name")
 release_number = get_octopusvariable("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
@@ -58,9 +57,6 @@ def get_random_password():
 #check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 #Checking User without scope
-
-
-
 if is_web:
     with open('../../xs-security.json') as file:
         xs_security = json.loads(file.read())
@@ -101,7 +97,6 @@ if is_web:
     # Checking User with different scopes
     for role_collection in role_collections:
         user = role_collection
-        password = 'A1apassword' + role_collection
         check_output(f'xs create-user  {user} {get_random_password()} -p {xsa_pass}',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been created')
         check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=True)
@@ -114,6 +109,20 @@ if is_web:
         else:
             check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
             printhighlight(f'User {user} has been deleted')
+    if environment == 'dev' or 'tst':
+        
+        template = ''
 
-
-
+       
+       
+        for role_collection in role_collections:     
+            password = get_random_password()                            
+            check_output(f'xs create-user  {user} {password} -p {xsa_pass}',show_output=True, show_cmd=True)   
+            check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=True)
+            template += f"""
+            Username: {role_collection}
+            Password: {password}
+            """
+            # Insert endpoint check below    
+       
+    set_octopusvariable("App.Development.Users", template, True)

@@ -130,4 +130,4 @@ if is_web:
             """
             # Insert endpoint check below    
        
-    set_octopusvariable("App.Development.Users", template, True)
+    set_octopusvariable("Users", template, True)

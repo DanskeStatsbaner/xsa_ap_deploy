@@ -1,8 +1,7 @@
-try:
-    import os, subprocess, json, yaml, sys, traceback
-except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+import os, subprocess, json, yaml, sys, traceback
+from pathlib import Path
 
+created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
@@ -18,6 +17,10 @@ xsa_pass = sys.argv[1]
 
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
+
+artifactory_login = get_octopusvariable("artifactory.login")
+artifactory_registry = get_octopusvariable("artifactory.registry")
+artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('../../app-router')
 
@@ -35,6 +38,26 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         if show_output:
             print(line)
     return output
+
+###############################################################################
+# Stop and delete containers
+###############################################################################
+
+print(container_name)
+
+check_output(f'docker container stop {container_name}', docker=False)
+check_output('docker container prune -f', docker=False)
+
+###############################################################################
+# Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
+###############################################################################
+
+pwd = Path.cwd().parent.parent
+
+check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, docker=False)
+
+check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
 
 with open('../../manifest.yml') as manifest:
@@ -160,11 +183,6 @@ def delete_manifest():
 
 check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
-manifest_path = check_output(f'cd /data && find . -name manifest.yml', show_output=False, show_cmd=False)
-printhighlight('manifest path is: ' + manifest_path)
-deploy_path = os.path.dirname(manifest_path).replace('./', '')
-printhighlight('Deploypath is: ' + deploy_path)
-
 output = check_output(f'xs service {uaa_service}', show_output=True).lower()
 #printhighlight('output 1' + output)
 
@@ -173,14 +191,14 @@ xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') 
 if 'failed' in output:
     failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
-    output = check_output(f'cd /data/{deploy_path} && xs create-service xsuaa default {uaa_service} {xs_security}', show_output=True)
+    output = check_output(f'cd /data && xs create-service xsuaa default {uaa_service} {xs_security}', show_output=True)
     if 'failed' in output:
         failstep(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:  
         #printhighlight('output 3' + output) 
         printhighlight(f'The service "{uaa_service}" was succesfully created')
 else:
-    output = check_output(f'cd /data/{deploy_path} && xs update-service {uaa_service} {xs_security}', show_output=True)
+    output = check_output(f'cd /data && xs update-service {uaa_service} {xs_security}', show_output=True)
     #printhighlight('output 4' + output)
 
     if 'failed' in output:
@@ -188,11 +206,11 @@ else:
 
 # Web Starts
 if is_web:       
-    app_router_output = check_output(f'cd /data/{deploy_path} && xs push {app_router}')
+    app_router_output = check_output(f'cd /data && xs push {app_router}')
     #printhighlight('app_router_output :' + app_router_output)
 # Web Ends
 
-app_output = check_output(f'cd /data/{deploy_path} && xs push {project_name}')
+app_output = check_output(f'cd /data && xs push {project_name}')
 #printhighlight('app output: ' +app_output)
 output = app_router_output if is_web else app_output 
 
@@ -212,6 +230,7 @@ if is_web:
         check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        check_output(f'xs assign-role-collection {role_collection} {created_by_username} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
     try:
         check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')
@@ -219,4 +238,3 @@ if is_web:
     except:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
-

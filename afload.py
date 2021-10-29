@@ -1,4 +1,5 @@
 import os, subprocess, json, yaml, sys, traceback
+from pathlib import Path
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
@@ -47,12 +48,13 @@ check_output('docker container prune -f')
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
 
-check_output('docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}')
+pwd = Path.cwd().parent.parent
+
+check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}')
 
 check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
-check_output('docker run -v C:\Octopus\Work:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
+check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
 
 print("*******************************************************************")
 print(" STOP afload.ps1")
 print("*******************************************************************")
-

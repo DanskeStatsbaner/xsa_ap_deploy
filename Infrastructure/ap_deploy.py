@@ -1,7 +1,7 @@
 import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
-created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
+
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 

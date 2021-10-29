@@ -18,6 +18,11 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../app-router')
 
+mail = get_octopusvariable("Octopus.Deployment.CreatedBy.EmailAddress")
+printhighlight(mail)
+created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
+printhighlight(created_by_username)
+
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
         cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'

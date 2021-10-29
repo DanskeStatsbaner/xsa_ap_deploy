@@ -1,9 +1,9 @@
-import os, subprocess, json, yaml, sys, traceback
+import subprocess, sys
 from pathlib import Path
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        print('Executing command: ', nl=False)
+        print('Executing command: ')
         print(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
@@ -11,7 +11,7 @@ def check_output(cmd, show_output=True, show_cmd=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line, nl=False)
+            print(line)
     return output
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()

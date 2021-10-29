@@ -1,3 +1,6 @@
+from os import environ
+
+
 try:
     import subprocess, json, traceback, string, random
 except Exception as ex:
@@ -114,11 +117,12 @@ if is_web:
         else:
             check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
             printhighlight(f'User {user} has been deleted')
-    if environment == 'dev' or 'tst':
-        
+    if environment == 'dev' or environment == 'tst':
+        user = project_name
         template = ''
 
-       
+        for role_collection in role_collections: 
+            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
        
         for role_collection in role_collections:     
             password = get_random_password()                            

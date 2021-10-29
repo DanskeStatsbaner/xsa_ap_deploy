@@ -17,6 +17,10 @@ xsa_pass = sys.argv[1]
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
+artifactory_login = get_octopusvariable("artifactory.login")
+artifactory_registry = get_octopusvariable("artifactory.registry")
+artifactory_pass = sys.argv[2]
+
 is_web = os.path.exists('../../app-router')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
@@ -33,10 +37,6 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         if show_output:
             print(line)
     return output
-
-artifactory_login = get_octopusvariable("artifactory.login")
-artifactory_registry = get_octopusvariable("artifactory.registry")
-artifactory_pass = sys.argv[1]
 
 ###############################################################################
 # Stop and delete containers

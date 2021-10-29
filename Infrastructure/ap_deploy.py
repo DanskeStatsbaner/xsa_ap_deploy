@@ -44,8 +44,8 @@ artifactory_pass = sys.argv[1]
 
 print(container_name)
 
-check_output(f'docker container stop {container_name}')
-check_output('docker container prune -f')
+check_output(f'docker container stop {container_name}', docker=False)
+check_output('docker container prune -f', docker=False)
 
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
@@ -53,10 +53,10 @@ check_output('docker container prune -f')
 
 pwd = Path.cwd().parent.parent
 
-check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}')
+check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', docker=False)
 
-check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
-check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
+check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
 
 with open('../../manifest.yml') as manifest:

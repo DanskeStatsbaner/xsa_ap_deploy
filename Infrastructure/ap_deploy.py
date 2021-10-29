@@ -2,6 +2,12 @@ import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
 
+created_by_id = get_octopusvariable("Octopus.Deployment.CreatedBy.Id")
+created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username")
+
+printhighlight(created_by_id)
+printhighlight(created_by_username)
+
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
 project_name = get_octopusvariable("Octopus.Project.Name")
@@ -237,3 +243,4 @@ if is_web:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
 
+#check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)

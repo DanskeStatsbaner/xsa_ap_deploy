@@ -104,7 +104,7 @@ if is_web:
         password = 'A1apassword' + role_collection
         check_output(f'xs create-user  {user} {get_random_password()} -p {xsa_pass}',show_output=True, show_cmd=True)
         printhighlight(f'User {user} has been created')
-        check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=True)
+        check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been assiged role collection {role_collection}')
         # Insert endpoint check below    
         if 1==0:    

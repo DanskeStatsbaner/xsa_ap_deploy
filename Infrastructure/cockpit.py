@@ -6,7 +6,7 @@ try:
     from selenium.webdriver.chrome.options import Options
     import click
     from click import Abort
-except Exception as ex:
+
     print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
     sys.exit(1)
 

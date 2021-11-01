@@ -232,6 +232,6 @@ if is_web:
         check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')
         check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
-    except:
+    except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends

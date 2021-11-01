@@ -120,7 +120,7 @@ if is_web:
         
 
         for role_collection in role_collections:  
-            user = role_collection
+            user = role_collection + '_DEV'
             password = get_random_password()
             check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=True)
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)

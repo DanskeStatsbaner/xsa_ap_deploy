@@ -15,11 +15,6 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../app-router')
 
-mail = get_octopusvariable("Octopus.Deployment.CreatedBy.EmailAddress")
-printhighlight(mail)
-created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
-printhighlight(created_by_username)
-
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
         cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
@@ -109,9 +104,7 @@ if is_web:
             password = get_random_password()
             check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
-            template += f"""Username: {user}\nPassword: {password}"""
+            template += f"""Username: {user}\nPassword: {password}\n\n"""
             # Insert endpoint check below 
-        
-        printhighlight(template) 
        
         set_octopusvariable("Users", template, True)

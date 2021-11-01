@@ -116,17 +116,16 @@ if is_web:
         
         template = ''
 
-        for role_collection in role_collections: 
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
-       
-        user = project_name +'dev'
                
-        for role_collection in role_collections:     
-            password = get_random_password()
+        
+
+        for role_collection in role_collections:  
+            user = role_collection   
+            #password = get_random_password()
             password = 'Pass1234'                            
             check_output(f'xs create-user  {user}{password} -p {xsa_pass}',show_output=True, show_cmd=False)   
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
-            check_output(f'xs assign-role-collection XS_CONTROLLER_USER {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
+            #check_output(f'xs assign-role-collection XS_CONTROLLER_USER {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
             template += f"""
             Username: {role_collection}
             Password: {password}

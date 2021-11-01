@@ -117,7 +117,7 @@ if is_web:
         else:
             check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
             printhighlight(f'User {user} has been deleted')
-    if environment == 'dev' or environment == 'tst':
+    if environment == 'dev':
         user = project_name
         template = ''
 
@@ -132,6 +132,7 @@ if is_web:
             Username: {role_collection}
             Password: {password}
             """
-            # Insert endpoint check below    
+            # Insert endpoint check below 
+    printhighlight(template) 
        
     set_octopusvariable("Users", template, True)

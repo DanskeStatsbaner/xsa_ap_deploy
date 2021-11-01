@@ -78,7 +78,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
         response = check_output(cmd, show_cmd=False, show_output=False)
         if response != 'null':
             click.echo(f'Creation of mapping {role_collection} -> {attribute_value} failed')
-            Abort()
+            sys.exit(1)
         else:
             click.echo(f'Mapping {role_collection} -> {attribute_value} created')
 

@@ -1,7 +1,4 @@
-try:
-    import subprocess, json, traceback, string, random
-except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+import subprocess, json, string, random
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")

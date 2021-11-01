@@ -1,8 +1,10 @@
+import subprocess, json, traceback, sys
 try:
-    import subprocess, json, click, traceback
+    import click
     from hdbcli import dbapi
 except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    sys.exit(1)
 
 
 def check_output(cmd, show_output=True, show_cmd=True):

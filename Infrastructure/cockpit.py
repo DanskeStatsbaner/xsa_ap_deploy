@@ -1,14 +1,14 @@
+import json, subprocess, traceback, sys
 try:
     from seleniumwire import webdriver
     from seleniumwire.utils import decode
     from selenium.webdriver.common.by import By
     from selenium.webdriver.chrome.options import Options
-    from getpass import getpass
-    import json, subprocess, traceback
     import click
     from click import Abort
 except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    sys.exit(1)
 
 
 def check_output(cmd, show_output=True, show_cmd=True):

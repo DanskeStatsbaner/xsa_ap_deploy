@@ -112,7 +112,7 @@ if is_web:
             check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
             printhighlight(f'User {user} has been deleted')
     if environment == 'dev':
-        user = project_name
+        user = project_name +'dev'
         template = ''
 
         for role_collection in role_collections: 
@@ -122,7 +122,7 @@ if is_web:
             password = get_random_password()                            
             check_output(f'xs create-user  {user} Pass1234 -p {xsa_pass}',show_output=True, show_cmd=False)   
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
-            check_output(f'xs assign-role-collection XS-CONTROLLER-USER {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
+            check_output(f'xs assign-role-collection XS_CONTROLLER_USER {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
             template += f"""
             Username: {role_collection}
             Password: {password}

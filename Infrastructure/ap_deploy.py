@@ -1,7 +1,7 @@
 import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
-created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
+
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
@@ -125,11 +125,11 @@ with open('../../app/api.py') as api:
 with open('../../app/api.py', 'w') as file:
     file.write(api_content)
 
-with open('../../app/framework/task.py', errors="ignore") as task:
+with open('../../app/framework/task.py', encoding="utf-8") as task:
     task_content = task.read()
     task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
 
-with open('../../app/framework/task.py', 'w', errors="ignore") as file:
+with open('../../app/framework/task.py', 'w', encoding="utf-8") as file:
     file.write(task_content)
 
 # Web Section Starts
@@ -230,7 +230,6 @@ if is_web:
         check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-        check_output(f'xs assign-role-collection {role_collection} {created_by_username} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
     try:
         check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')

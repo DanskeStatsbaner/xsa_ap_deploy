@@ -234,4 +234,10 @@ if is_web:
         check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
     except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+        
+    try:
+        check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
+        check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+    except Exception as ex:
+        failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends

@@ -1,4 +1,4 @@
-import subprocess, json, string, random
+import subprocess, json, string, random, sys, os
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
@@ -82,35 +82,23 @@ if is_web:
 
         xs_security = json.dumps(xs_security, indent=2)
     
-
-    user = project_name
-
-    check_output(f'xs create-user -p {xsa_pass} {user} {get_random_password()} -f',show_output=True, show_cmd=True)
-    printhighlight(f'User {user} has been created')
-    if 1==0:    
-        check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-        printhighlight(f'User {user} has been deleted')
-        # exit
-    else:
-        check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-        printhighlight(f'User {user} has been deleted')
-
-
     # Checking User with different scopes
-    for role_collection in role_collections:
+    for role_collection in [project_name] + role_collections:
         user = role_collection
-        check_output(f'xs create-user  {user} {get_random_password()} -p {xsa_pass}',show_output=True, show_cmd=False)
+        password = get_random_password()
+        check_output(f'xs create-user  {user} {password} -p {xsa_pass}',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
-        check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
-        printhighlight(f'User {user} has been assiged role collection {role_collection}')
-        # Insert endpoint check below    
-        if 1==0:    
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-            printhighlight(f'User {user} has been deleted')
-        # exit
-        else:
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-            printhighlight(f'User {user} has been deleted')
+        if role_collection != project_name:
+            check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
+            printhighlight(f'User {user} has been assiged role collection {role_collection}')
+        
+        if environment != 'dev':
+            if 1 == 0:
+                check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+                printhighlight(f'User {user} has been deleted')
+            else:
+                check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+                printhighlight(f'User {user} has been deleted')
     
     if environment == 'dev':
         
@@ -119,13 +107,11 @@ if is_web:
         for role_collection in role_collections:
             user = role_collection
             password = get_random_password()
-            check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=True)
+            check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
-            template += f"""
-                Username: {user}
-                Password: {password}
-            """
+            template += f"""Username: {user}\nPassword: {password}"""
             # Insert endpoint check below 
-    printhighlight(template) 
+        
+        printhighlight(template) 
        
-    set_octopusvariable("Users", template, True)
+        set_octopusvariable("Users", template, True)

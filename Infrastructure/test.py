@@ -115,17 +115,14 @@ if is_web:
     if environment == 'dev':
         
         template = ''
-
-               
         
-
-        for role_collection in role_collections:  
-            user = role_collection + '_DEV'
+        for role_collection in role_collections:
+            user = role_collection
             password = get_random_password()
             check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=True)
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
             template += f"""
-                Username: {role_collection}
+                Username: {user}
                 Password: {password}
             """
             # Insert endpoint check below 

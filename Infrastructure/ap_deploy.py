@@ -236,6 +236,8 @@ if is_web:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
         
     try:
+        xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
+        hana_host = get_octopusvariable("dataART.Host").split('.')[0]
         check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
         check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
     except Exception as ex:

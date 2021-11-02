@@ -215,7 +215,7 @@ output = app_router_output if is_web else app_output
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
-is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
+is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
 if is_running:
     printhighlight(f'The application is running: {app_url}')

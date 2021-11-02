@@ -84,6 +84,10 @@ if is_web:
         user = role_collection
         password = get_random_password()
         users += [(user, password)]
+        
+        if environment == 'dev':
+            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+        
         check_output(f'xs create-user  {user} {password} -p {xsa_pass}',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
         if role_collection != project_name:

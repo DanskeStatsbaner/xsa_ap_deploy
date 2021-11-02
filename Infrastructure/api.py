@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, File, UploadFile, Depends
 from fastapi.responses import Response, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 from routes import router
 from scope_check import scope
-import uvicorn, os
+import uvicorn, os, aiofiles
+from framework.env import auth
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
 app.add_middleware(GZipMiddleware)
@@ -31,6 +32,14 @@ async def add_CORS_header(request: Request, call_next):
     response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
     return response
+
+@router.post("/upload")
+async def upload(path: str = '', file: UploadFile=File(...), security_context=Depends(auth(scope='uaa.resource'))):
+    async with aiofiles.open(f'{path}{file.filename}', 'wb') as out_file:
+        content = await file.read()
+        await out_file.write(content)
+
+    return {"Result": "OK"}
 
 app.include_router(router)
 app.include_router(scope)

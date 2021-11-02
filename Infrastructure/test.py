@@ -107,4 +107,4 @@ if is_web:
             template += f"""Username: {user}\nPassword: {password}\n\n"""
             # Insert endpoint check below 
        
-        set_octopusvariable("Users", template, True)
+        set_octopusvariable("Users", template.strip(), True)

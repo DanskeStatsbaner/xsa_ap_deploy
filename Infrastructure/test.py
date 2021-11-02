@@ -88,7 +88,7 @@ if is_web:
         if environment == 'dev':
             check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
         
-        check_output(f'xs create-user  {user} {password} -p {xsa_pass}',show_output=True, show_cmd=False)
+        check_output(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
         if role_collection != project_name:
             check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)

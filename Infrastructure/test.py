@@ -27,7 +27,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            print(line, end='')
     return output
 
 def get_random_password():

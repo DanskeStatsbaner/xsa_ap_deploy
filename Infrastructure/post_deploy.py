@@ -23,7 +23,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            print(line, end='')
     return output
 
 check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)

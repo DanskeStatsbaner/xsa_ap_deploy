@@ -9,15 +9,15 @@ except Exception as ex:
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        click.echo('Executing command: ', nl=False)
-        click.echo(click.style(cmd, fg='yellow'))
+        print('Executing command: ')
+        print(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
-            click.echo(line, nl=False)
+            print(line, end='')
     return output
   
 @click.command()

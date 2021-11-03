@@ -254,6 +254,8 @@ with open('env.json') as env_json:
 
 jwt = check_output(f'curl -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', docker=False)
 
+jwt = json.loads(jwt)['access_token']
+
 command = f'curl -X POST https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"'
 
 output = check_output(command, docker=False)

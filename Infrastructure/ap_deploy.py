@@ -28,7 +28,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
-    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()

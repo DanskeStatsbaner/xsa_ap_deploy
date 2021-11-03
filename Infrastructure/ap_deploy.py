@@ -244,4 +244,19 @@ try:
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
-# check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
+
+# read /data/env.json 
+
+# jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
+
+# command = f"""
+#     curl -X 'POST' \
+#         '{url}/scope-check' \
+#         -H 'accept: application/json' \
+#         -H 'Authorization: Bearer {jwt}'
+# """
+
+# output = check_output(command)
+
+# set octopus variable = output
+

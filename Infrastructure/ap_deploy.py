@@ -244,7 +244,7 @@ try:
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
-with open('/data/Deployment/Scripts/env.json') as env_json:
+with open('env.json') as env_json:
     data = json.load(env_json)
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
     clientid = data["clientid"]

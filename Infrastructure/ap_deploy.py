@@ -222,7 +222,7 @@ if is_running:
 else:
     failstep('The application crashed')
 
-check_output(f'cd /data/Deployment/Scripts && xs env {project_name} --export-json env.json')
+check_output(f'cd /data/Deployment/Scripts && xs env {project_name} --export-json env.json', show_output=True, show_cmd=True)
 
 # Web Starts
 if is_web:  
@@ -243,8 +243,8 @@ try:
     check_output(f"python3 /data/Deployment/Scripts/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-
-
+from time import sleep
+sleep(300)
 with open('env.json') as env_json:
     data = json.load(env_json)
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}

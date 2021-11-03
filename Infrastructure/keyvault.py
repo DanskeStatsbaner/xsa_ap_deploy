@@ -28,8 +28,6 @@ def check_output(cmd, show_output=True, show_cmd=True):
 
 def insert_key(project_name,hana_host,xsa_keyuser,xsa_pass):
     hana_port = 30015
-   
-    check_output(f'xs env {project_name} --export-json env.json')
     
     with open('env.json') as env_json:
         data = json.load(env_json)

@@ -222,6 +222,8 @@ if is_running:
 else:
     failstep('The application crashed')
 
+check_output(f'cd /data && xs env {project_name} --export-json env.json')
+
 # Web Starts
 if is_web:  
     for role_collection in role_collections:
@@ -229,17 +231,17 @@ if is_web:
         check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     try:
-        check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')
-        check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
-    except Exception as ex:
-        failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-        
-    try:
-        xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
-        hana_host = get_octopusvariable("dataART.Host").split('.')[0]
-        check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
-        check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+        check_output(f"python3 /data/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
     except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
+
+try:
+    xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
+    hana_host = get_octopusvariable("dataART.Host").split('.')[0]
+    check_output(f"python3 /data/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+except Exception as ex:
+    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+
+# check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')

@@ -222,7 +222,7 @@ if is_running:
 else:
     failstep('The application crashed')
 
-check_output(f'cd /data && xs env {project_name} --export-json env.json')
+check_output(f'cd /data/Deployment/Scripts && xs env {project_name} --export-json env.json')
 
 # Web Starts
 if is_web:  

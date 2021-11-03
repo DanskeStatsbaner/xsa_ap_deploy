@@ -252,11 +252,11 @@ with open('env.json') as env_json:
     url = data["url"]
 
 
-jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
-url = f"https://{host}.xsabi{hana_environment}.dsb.dk:30033"
+jwt = check_output(f'curl -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"')
+
 command = f"""
-    curl -X 'POST' \
-        '{url}/scope-check' \
+    curl -X POST \
+        https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check \
         -H 'accept: application/json' \
         -H 'Authorization: Bearer {jwt}'
 """

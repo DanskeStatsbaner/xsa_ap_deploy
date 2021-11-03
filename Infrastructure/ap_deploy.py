@@ -34,7 +34,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            print(line, end='')
     return output
 
 ###############################################################################
@@ -215,7 +215,7 @@ output = app_router_output if is_web else app_output
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
 
-is_running = output.rfind('RUNNING') > output.rfind('CRASHED')
+is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
 if is_running:
     printhighlight(f'The application is running: {app_url}')
@@ -232,6 +232,14 @@ if is_web:
         check_output(f'docker cp cockpit.py {container_name}:/tmp/cockpit.py', docker=False)
         mappings = json.dumps(mappings).replace('"', '\\"')
         check_output(f"python3 /tmp/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
-    except:
+    except Exception as ex:
+        failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+        
+    try:
+        xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
+        hana_host = get_octopusvariable("dataART.Host").split('.')[0]
+        check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
+        check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+    except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends

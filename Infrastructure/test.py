@@ -1,4 +1,4 @@
-import subprocess, json, string, random
+import subprocess, json, string, random, sys, os
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
@@ -15,11 +15,6 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../app-router')
 
-mail = get_octopusvariable("Octopus.Deployment.CreatedBy.EmailAddress")
-printhighlight(mail)
-created_by_username = get_octopusvariable("Octopus.Deployment.CreatedBy.Username").split('@')[0]
-printhighlight(created_by_username)
-
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
         cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
@@ -32,7 +27,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            print(line, end='')
     return output
 
 def get_random_password():
@@ -82,51 +77,31 @@ if is_web:
 
         xs_security = json.dumps(xs_security, indent=2)
     
-
-    user = project_name
-
-    check_output(f'xs create-user -p {xsa_pass} {user} {get_random_password()} -f',show_output=True, show_cmd=True)
-    printhighlight(f'User {user} has been created')
-    if 1==0:    
-        check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-        printhighlight(f'User {user} has been deleted')
-        # exit
-    else:
-        check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-        printhighlight(f'User {user} has been deleted')
-
-
+    users = []
+    
     # Checking User with different scopes
-    for role_collection in role_collections:
+    for role_collection in [project_name] + role_collections:
         user = role_collection
-        check_output(f'xs create-user  {user} {get_random_password()} -p {xsa_pass}',show_output=True, show_cmd=True)
+        password = get_random_password()
+        users += [(user, password)]
+        
+        if environment == 'dev':
+            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+        
+        check_output(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
-        check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=False)
-        printhighlight(f'User {user} has been assiged role collection {role_collection}')
-        # Insert endpoint check below    
-        if 1==0:    
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
-            printhighlight(f'User {user} has been deleted')
-        # exit
-        else:
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=True)
+        if role_collection != project_name:
+            check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
+            printhighlight(f'User {user} has been assiged role collection {role_collection}')
+        
+        if environment != 'dev':
+            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
             printhighlight(f'User {user} has been deleted')
     
     if environment == 'dev':
         
-        template = ''               
-        
-
-        for role_collection in role_collections:  
-            user = role_collection + '_DEV'   
-            password = get_random_password()                                     
-            check_output(f'xs create-user {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=True)   
-            check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}' ,show_output=True, show_cmd=True)
-            template += f"""
-            Username: {role_collection}
-            Password: {password}
-            """
-            # Insert endpoint check below 
-    
+        template = ''
+        for user, password in users:
+            template += f"Username: {user}\nPassword: {password}\n\n"
        
-    set_octopusvariable("Users", template, True)
+        set_octopusvariable("Users", template.strip(), True)

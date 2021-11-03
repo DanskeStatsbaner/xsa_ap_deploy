@@ -9,15 +9,15 @@ except Exception as ex:
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        click.echo('Executing command: ', nl=False)
-        click.echo(click.style(cmd, fg='yellow'))
+        print('Executing command: ')
+        print(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
-            click.echo(line, nl=False)
+            print(line, end='')
     return output
   
 @click.command()
@@ -30,18 +30,19 @@ def insert_key(project_name,hana_host,xsa_keyuser,xsa_pass):
     hana_port = 30015
    
     check_output(f'xs env {project_name} --export-json env.json')
-    env_json = check_output(f'cat env.json', show_output=False)
-
-    data = json.loads(env_json)
-    data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
-    data = json.dumps(data)
-    conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass) 
-    conn.cursor().execute(f"""
-        UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{data}') WHERE APPNAME = '{project_name}'
-    """) 
+    
+    with open('env.json') as env_json:
+        data = json.load(env_json)
+        data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
+        data = json.dumps(data)
+        conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass) 
+        conn.cursor().execute(f"""
+            UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{data}') WHERE APPNAME = '{project_name}'
+        """) 
     
 try:
     insert_key()
 except Exception as ex:
-    click.echo(click.style(f'Something went wrong', fg='red'))
-    click.echo(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    print('Something went wrong')
+    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    sys.exit(1)

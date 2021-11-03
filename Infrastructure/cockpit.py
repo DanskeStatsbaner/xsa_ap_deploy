@@ -13,15 +13,15 @@ except Exception as ex:
 
 def check_output(cmd, show_output=True, show_cmd=True):
     if show_cmd:
-        click.echo('Executing command: ', nl=False)
-        click.echo(click.style(cmd, fg='yellow'))
+        print('Executing command: ', nl=False)
+        print(cmd)
     popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
-            click.echo(line, nl=False)
+            print(line, end='')
     return output
   
 @click.command()
@@ -77,13 +77,14 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
         response = check_output(cmd, show_cmd=False, show_output=False)
         if response != 'null':
-            click.echo(f'Creation of mapping {role_collection} -> {attribute_value} failed')
-            Abort()
+            print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
+            sys.exit(1)
         else:
-            click.echo(f'Mapping {role_collection} -> {attribute_value} created')
+            print(f'Mapping {role_collection} -> {attribute_value} created')
 
 try:
     saml_role_collection()
 except Exception as ex:
-    click.echo(click.style(f'Something went wrong', fg='red'))
-    click.echo(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    print(f'Something went wrong')
+    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    sys.exit(1)

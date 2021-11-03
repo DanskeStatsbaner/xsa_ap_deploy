@@ -23,12 +23,12 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            print(line, end='')
     return output
 
 check_output(f'docker cp keyvault.py {container_name}:/tmp/keyvault.py', docker=False)
 
 try:  
     check_output(f"python3 /tmp/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
-except:
+except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))

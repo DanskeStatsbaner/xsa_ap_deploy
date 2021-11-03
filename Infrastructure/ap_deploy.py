@@ -24,7 +24,7 @@ is_web = os.path.exists('../../app-router')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:
-        cmd = f"docker exec -it {container_name} /bin/sh -c '{cmd}'"
+        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
     if show_cmd:
         print('Executing command: ')
         print(cmd)
@@ -252,9 +252,9 @@ with open('env.json') as env_json:
     url = data["url"]
 
 
-jwt = check_output(f'curl -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"')
+jwt = check_output(f"curl -X POST {url}/oauth/token -u \\'{clientid}:{clientsecret}\\' -d \\'grant_type=client_credentials&token_format=jwt\\'")
 
-command = f"curl -X POST https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H \'accept: application/json\' -H \'Authorization: Bearer {jwt}\'"
+command = f"curl -X POST https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H \\'accept: application/json\\' -H \\'Authorization: Bearer {jwt}\\'"
 
 output = check_output(command)
 

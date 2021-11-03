@@ -232,7 +232,7 @@ if is_web:
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     try:
         mappings = json.dumps(mappings).replace('"', '\\"')
-        check_output(f"python3 /data/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
+        check_output(f"python3 /data/Deployment/Scripts/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
     except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
@@ -240,7 +240,7 @@ if is_web:
 try:
     xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
     hana_host = get_octopusvariable("dataART.Host").split('.')[0]
-    check_output(f"python3 /data/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+    check_output(f"python3 /data/Deployment/Scripts/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 

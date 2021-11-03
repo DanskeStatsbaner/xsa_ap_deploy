@@ -250,10 +250,11 @@ with open('env.json') as env_json:
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
     clientid = data["clientid"]
     clientsecret = data["clientsecret"]
+    url = data["url"]
 
 
 jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
-url = f"https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check"
+url = f"https://{host}.xsabi{hana_environment}.dsb.dk:30033"
 command = f"""
     curl -X 'POST' \
         '{url}/scope-check' \

@@ -8,7 +8,7 @@ import pandas as pd
 from fastapi import WebSocket
 from pydantic import BaseModel
 import httpx
-from env import uaa_service
+from framework.env import uaa_service
 
 def run(file_path: str, action: str, uuid: str, databases: dict = None, params: dict = None) -> str:
     try:

@@ -243,9 +243,8 @@ try:
     check_output(f"python3 /data/Deployment/Scripts/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-from time import sleep
-sleep(300)
-with open('env.json') as env_json:
+
+with open('/data/Deployment/Scripts/env.json') as env_json:
     data = json.load(env_json)
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
     clientid = data["clientid"]

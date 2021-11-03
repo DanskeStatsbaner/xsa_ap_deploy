@@ -245,18 +245,24 @@ except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
 
+with open('env.json') as env_json:
+    data = json.load(env_json)
+    data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
+    clientid = data["clientid"]
+    clientsecret = data["clientsecret"]
 # read /data/env.json 
 
-# jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
+jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
+url = f"https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check"
+command = f"""
+    curl -X 'POST' \
+        '{url}/scope-check' \
+        -H 'accept: application/json' \
+        -H 'Authorization: Bearer {jwt}'
+"""
 
-# command = f"""
-#     curl -X 'POST' \
-#         '{url}/scope-check' \
-#         -H 'accept: application/json' \
-#         -H 'Authorization: Bearer {jwt}'
-# """
+output = check_output(command)
 
-# output = check_output(command)
-
+printhighlight(output)
 # set octopus variable = output
 

@@ -265,4 +265,4 @@ output = check_output(command)
 
 printhighlight(output)
 # set octopus variable = output
-
+set_octopusvariable("Scopes", 'Test')

@@ -44,7 +44,7 @@ async def upload(path: str = '', file: UploadFile=File(...), security_context=De
 
     return {"Result": "OK"}
 
-@scope.get("/scope-check")
+@app.get("/scope-check")
 async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]

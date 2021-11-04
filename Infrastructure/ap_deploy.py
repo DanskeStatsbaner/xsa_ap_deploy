@@ -257,6 +257,7 @@ credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{c
 jwt = json.loads(credentials)['access_token']
 
 output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
+set_octopusvariable("Hardcode", 'Hardcode')
 set_octopusvariable("Test", output)
 output = json.loads(output)
 

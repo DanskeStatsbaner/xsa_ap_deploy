@@ -266,6 +266,5 @@ for title, endpoints in output.items():
     for endpoint, scope in endpoints.items():
         template += f"{endpoint:{margin}}{scope}\n"
     
-template = template.strip()
-set_octopusvariable("Scopes", template)
+set_octopusvariable("Scopes", template.strip())
 

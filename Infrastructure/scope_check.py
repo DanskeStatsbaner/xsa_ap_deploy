@@ -6,7 +6,7 @@ from framework.env import auth
 scope = APIRouter()
 
 @scope.get("/scope-check")
-async def get_all_urls_from_request(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
+async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
     

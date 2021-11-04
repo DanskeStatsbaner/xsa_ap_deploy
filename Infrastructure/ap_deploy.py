@@ -252,13 +252,11 @@ with open('env.json') as env_json:
     url = data["url"]
 
 
-credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', docker=False)
+credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False, docker=False)
 
 jwt = json.loads(credentials)['access_token']
 
-command = f'curl -s -X POST https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"'
-
-output = check_output(command, docker=False)
+output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
 
 printhighlight(output)
-set_octopusvariable("Scopes", 'Test')
+set_octopusvariable("Scopes", output)

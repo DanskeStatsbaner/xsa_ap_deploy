@@ -267,4 +267,6 @@ for title, endpoints in output.items():
         template += f"{endpoint:{margin}}{scope}\n"
     
 set_octopusvariable("Scopes", template.strip())
+set_octopusvariable("Test", output)
+set_octopusvariable("Hardcode", 'Hardcode')
 

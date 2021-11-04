@@ -28,7 +28,7 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
-    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
@@ -232,7 +232,7 @@ if is_web:
         check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     try:
         mappings = json.dumps(mappings).replace('"', '\\"')
-        check_output(f"python3 /data/Deployment/Scripts/cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
+        check_output(f"cd /data/Deployment/Scripts && python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", show_cmd=False)
     except Exception as ex:
         failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
@@ -240,11 +240,11 @@ if is_web:
 try:
     xsa_keyuser = get_octopusvariable("dataART.XSAKeyUser")
     hana_host = get_octopusvariable("dataART.Host").split('.')[0]
-    check_output(f"python3 /data/Deployment/Scripts/keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
+    check_output(f"cd /data/Deployment/Scripts && python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", show_cmd=False)
 except Exception as ex:
     failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
-with open('/data/Deployment/Scripts/env.json') as env_json:
+with open('env.json') as env_json:
     data = json.load(env_json)
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
     clientid = data["clientid"]
@@ -252,17 +252,13 @@ with open('/data/Deployment/Scripts/env.json') as env_json:
     url = data["url"]
 
 
-jwt = check_output(f'curl -X POST -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt" {url}/oauth/token')
-url = f"https://{host}.xsabi{hana_environment}.dsb.dk:30033"
-command = f"""
-    curl -X 'POST' \
-        '{url}/scope-check' \
-        -H 'accept: application/json' \
-        -H 'Authorization: Bearer {jwt}'
-"""
+credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False, docker=False)
 
-output = check_output(command)
+jwt = json.loads(credentials)['access_token']
 
+output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
+
+<<<<<<< HEAD
 template = ''
 margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
 for title, endpoints in output.items():
@@ -272,3 +268,7 @@ for title, endpoints in output.items():
     
 template = template.strip()
 set_octopusvariable("Scopes", template)
+=======
+printhighlight(output)
+set_octopusvariable("Scopes", output)
+>>>>>>> e3042767404d279db44b346504eadcb1651aeb5f

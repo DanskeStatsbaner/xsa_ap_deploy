@@ -6,7 +6,7 @@ from framework.env import auth
 scope = APIRouter()
 
 @scope.get("/scope-check")
-async def get_all_urls_from_request(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
+async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
     
@@ -14,6 +14,13 @@ async def get_all_urls_from_request(request: Request, security_context=Depends(a
     
     unprotected_endpoints = {route.path: None for route in endpoints if route.path not in protected_endpoints.keys()}
 
-    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets}
+    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if len(route.dependant.dependencies) > 0}
+    unprotected_websockets = {route.path: None for route in websockets if len(route.dependant.dependencies) == 0}
     
-    return [protected_endpoints, unprotected_endpoints, protected_websockets]
+    return {
+        "Protected endpoints": protected_endpoints,
+        "Unprotected endpoints": unprotected_endpoints,
+        "Protected websockets": protected_websockets,
+        "Unprotected websockets": unprotected_websockets
+    }
+

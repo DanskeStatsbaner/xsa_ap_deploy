@@ -266,7 +266,10 @@ for title, endpoints in output.items():
     template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
     for endpoint, scope in endpoints.items():
         template += f"{endpoint:{margin}}{scope}\n"
-    
-set_octopusvariable("Scopes", template.strip())
+
+template = template.strip()
+
+set_octopusvariable("Scopes", template)
+printhighlight(template)
 set_octopusvariable("Hardcode", 'Hardcode')
 

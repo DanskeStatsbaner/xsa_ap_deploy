@@ -117,6 +117,10 @@ with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
 
 router_paths = check_output("grep -rwl ./ -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
+humio_paths = check_output("grep -rwl ./ -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
+printhighlight(router_paths)
+printhighlight(humio_paths)
+
 for router_path in router_paths:
 
     with open(router_path) as api:
@@ -125,8 +129,6 @@ for router_path in router_paths:
 
     with open(router_path, 'w') as file:
         file.write(api_content)
-
-humio_paths = check_output("grep -rwl ./ -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
 
 for humio_path in humio_paths:
     with open(humio_path, encoding="utf-8") as task:

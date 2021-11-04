@@ -16,4 +16,8 @@ async def scope_check(request: Request, security_context=Depends(auth(scope='uaa
 
     protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets}
     
-    return [protected_endpoints, unprotected_endpoints, protected_websockets]
+    return {
+        "Protected endpoints": protected_endpoints,
+        "Unprotected endpoints": unprotected_endpoints,
+        "Protected websockets": protected_websockets
+    }

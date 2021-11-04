@@ -52,7 +52,7 @@ check_output('docker container prune -f', docker=False)
 
 pwd = Path.cwd().parent.parent
 
-check_output(f'echo({artifactory_pass}|docker login -u {artifactory_login} --password-stdin {artifactory_registry}', show_cmd=False, docker=False)
+check_output(f'echo {artifactory_pass} | docker login -u {artifactory_login} --password-stdin {artifactory_registry}', show_cmd=False, docker=False)
 
 check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)

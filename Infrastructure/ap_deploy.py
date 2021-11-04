@@ -263,5 +263,12 @@ command = f"""
 
 output = check_output(command)
 
-printhighlight(output)
-set_octopusvariable("Scopes", 'Test')
+template = ''
+margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
+for title, endpoints in output.items():
+    template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
+    for endpoint, scope in endpoints.items():
+        template += f"{endpoint:{margin}}{scope}\n"
+    
+template = template.strip()
+set_octopusvariable("Scopes", template)

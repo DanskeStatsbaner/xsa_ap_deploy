@@ -251,23 +251,22 @@ with open('env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
-try: 
-    credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False, docker=False)
 
-    jwt = json.loads(credentials)['access_token']
+credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False, docker=False)
 
-    output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
-    output = json.loads(output)
+jwt = json.loads(credentials)['access_token']
 
-    template = ''
-    margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
-    for title, endpoints in output.items():
-        template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
-        for endpoint, scope in endpoints.items():
-            template += f"{endpoint:{margin}}{scope}\n"        
-   
-    set_octopusvariable("Scopes", template.strip())
-except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
+output = json.loads(output)
 
+template = ''
+margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
+for title, endpoints in output.items():
+    template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
+    for endpoint, scope in endpoints.items():
+        template += f"{endpoint:{margin}}{scope}\n"
+    
+set_octopusvariable("Scopes", template.strip())
+#Workaround for scope update
+set_octopusvariable("Hardcode", 'Hardcode') 
 

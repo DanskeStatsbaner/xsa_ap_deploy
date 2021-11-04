@@ -123,19 +123,26 @@ printhighlight(humio_paths)
 
 for router_path in router_paths:
 
-    with open(router_path) as api:
+    if '/app' not in router_path:
+        continue
+
+    with open('../../' + router_path) as api:
         api_content = api.read()
         api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router_host))
 
-    with open(router_path, 'w') as file:
+    with open('../../' + router_path, 'w') as file:
         file.write(api_content)
 
 for humio_path in humio_paths:
-    with open(humio_path, encoding="utf-8") as task:
+
+    if '/app' not in humio_path:
+        continue
+
+    with open('../../' + humio_path, encoding="utf-8") as task:
         task_content = task.read()
         task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
 
-    with open(humio_path, 'w', encoding="utf-8") as file:
+    with open('../../' + humio_path, 'w', encoding="utf-8") as file:
         file.write(task_content)
 
 # Web Section Starts

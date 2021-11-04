@@ -257,8 +257,7 @@ credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{c
 jwt = json.loads(credentials)['access_token']
 
 output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
-
-<<<<<<< HEAD
+output = json.loads(output)
 template = ''
 margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
 for title, endpoints in output.items():
@@ -268,7 +267,3 @@ for title, endpoints in output.items():
     
 template = template.strip()
 set_octopusvariable("Scopes", template)
-=======
-printhighlight(output)
-set_octopusvariable("Scopes", output)
->>>>>>> e3042767404d279db44b346504eadcb1651aeb5f

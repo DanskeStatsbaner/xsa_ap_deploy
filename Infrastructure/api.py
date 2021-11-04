@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request, File, UploadFile, Depends
 from fastapi.responses import Response, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.routing import APIRoute, APIWebSocketRoute
 from routes import router
-from scope_check import scope
 import uvicorn, os, aiofiles
 from framework.env import auth
 
@@ -33,7 +33,10 @@ async def add_CORS_header(request: Request, call_next):
     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
     return response
 
-@router.post("/upload")
+
+app.include_router(router)
+
+@app.post("/upload")
 async def upload(path: str = '', file: UploadFile=File(...), security_context=Depends(auth(scope='uaa.resource'))):
     async with aiofiles.open(f'{path}{file.filename}', 'wb') as out_file:
         content = await file.read()
@@ -41,8 +44,25 @@ async def upload(path: str = '', file: UploadFile=File(...), security_context=De
 
     return {"Result": "OK"}
 
-app.include_router(router)
-app.include_router(scope)
+@scope.get("/scope-check")
+async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
+    endpoints = [route for route in request.app.routes if type(route) == APIRoute]
+    websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
+    
+    protected_endpoints = {route.path: security_requirement.security_scheme.scope for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements}
+    
+    unprotected_endpoints = {route.path: None for route in endpoints if route.path not in protected_endpoints.keys()}
+
+    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if len(route.dependant.dependencies) > 0}
+    unprotected_websockets = {route.path: None for route in websockets if len(route.dependant.dependencies) == 0}
+    
+    return {
+        "Protected endpoints": protected_endpoints,
+        "Unprotected endpoints": unprotected_endpoints,
+        "Protected websockets": protected_websockets,
+        "Unprotected websockets": unprotected_websockets
+    }
+
 
 if __name__ == "__main__":
     uvicorn.run("api:app", host="0.0.0.0", port=int(os.environ.get('PORT', 3000)), reload=True)

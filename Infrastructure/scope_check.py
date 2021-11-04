@@ -14,8 +14,8 @@ async def scope_check(request: Request, security_context=Depends(auth(scope='uaa
     
     unprotected_endpoints = {route.path: None for route in endpoints if route.path not in protected_endpoints.keys()}
 
-    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if 'dependant' in dir(route)}
-    unprotected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if 'dependant' not in dir(route)}
+    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if len(route.dependant.dependencies) > 0}
+    unprotected_websockets = {route.path: None for route in websockets if len(route.dependant.dependencies) == 0}
     
     return {
         "Protected endpoints": protected_endpoints,
@@ -23,3 +23,4 @@ async def scope_check(request: Request, security_context=Depends(auth(scope='uaa
         "Protected websockets": protected_websockets,
         "Unprotected websockets": unprotected_websockets
     }
+

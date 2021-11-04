@@ -266,7 +266,7 @@ margin = max([len(endpoint) for title, endpoints in output.items() for endpoint,
 for title, endpoints in output.items():
     template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
     for endpoint, scope in endpoints.items():
-        template += f"{endpoint:{margin}}{scope}\n"
+        template += f"{endpoint:{margin+len(endpoint)}}{scope}\n"
 
 template = template.strip()
 

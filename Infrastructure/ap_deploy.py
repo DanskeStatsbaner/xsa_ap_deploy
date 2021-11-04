@@ -116,19 +116,25 @@ with open('../../manifest.yml', 'w') as file:
 with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
 
-with open('../../app/api.py') as api:
-    api_content = api.read()
-    api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router_host))
+router_paths = check_output("grep -rwl ./ -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
+for router_path in router_paths:
 
-with open('../../app/api.py', 'w') as file:
-    file.write(api_content)
+    with open(router_path) as api:
+        api_content = api.read()
+        api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router_host))
 
-with open('../../app/framework/task.py', encoding="utf-8") as task:
-    task_content = task.read()
-    task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
+    with open(router_path, 'w') as file:
+        file.write(api_content)
 
-with open('../../app/framework/task.py', 'w', encoding="utf-8") as file:
-    file.write(task_content)
+humio_paths = check_output("grep -rwl ./ -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
+
+for humio_path in humio_paths:
+    with open(humio_path, encoding="utf-8") as task:
+        task_content = task.read()
+        task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
+
+    with open(humio_path, 'w', encoding="utf-8") as file:
+        file.write(task_content)
 
 # Web Section Starts
 if is_web:

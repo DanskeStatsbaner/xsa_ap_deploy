@@ -116,8 +116,8 @@ with open('../../manifest.yml', 'w') as file:
 with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
 
-router_paths = check_output("grep -rwl ./ -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
-humio_paths = check_output("grep -rwl ./ -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
+router_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
+humio_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
 printhighlight(router_paths)
 printhighlight(humio_paths)
 

@@ -127,14 +127,18 @@ for variable, value in environment_variables.items():
     paths = check_output(f"cd /data/app && grep -rwl -e '{variable}'").split('\n')
     
     for path in paths:
-        printhighlight(path)
+        printhighlight('../../app/' + path)
+        printhighlight(os.path.exists('../../app/' + path))
 
-        with open('../../app/' + path) as file:
-            content = file.read()
-            content = content.replace(variable, value)
+        try:
+            with open('../../app/' + path) as file:
+                content = file.read()
+                content = content.replace(variable, value)
 
-        with open('../../app/' + path, 'w') as file:
-            file.write(content)
+            with open('../../app/' + path, 'w') as file:
+                file.write(content)
+        except:
+            pass
 
 # Web Section Starts
 if is_web:

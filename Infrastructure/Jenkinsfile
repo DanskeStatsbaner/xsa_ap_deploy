@@ -1,4 +1,5 @@
 pipeline {
+
     agent {
         label "linux"
     }
@@ -11,73 +12,57 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        projectName  = "xsa_cli_deploy"
+        projectName  = "xsa_ap_deploy"
         deployTo = "sit"
         version = "1.0.0.${env.BUILD_NUMBER}"
         suffix = "${env.GIT_COMMIT}-${env.GIT_BRANCH.replace('/', '-')}"
         packageVersion = "${version}-${suffix}"
-        jobName = "XSA_CLI_DEPLOY"
+        jobName = "xsa_ap_deploy"
         artifactoryServerId = "artifactory"   
     }
+
     stages {
-
-        stage("Prepare Files") {
-
-        steps {
-            
-            rtDownload(
-                        spec: '''{ "files": [
-                            {
-                                "pattern": "octopus-dataarten/dataART.xsa_cli_deploy.*",
-                                "sortBy": ["created"],
-                                "sortOrder": "desc",
-                                "limit": 1
-                            }
-                        ] }''',
-                        serverId: "${artifactoryServerId}"
-                    )
-                    
-                    sh "cp dataART.xsa_cli_deploy.*.nupkg dataART.xsa_cli_deploy.zip"
-                    
-                    unzip zipFile: "$WORKSPACE/dataART.xsa_cli_deploy.zip", dir: "$WORKSPACE/"
-
-
-        }
-            fileOperations([
-                fileDeleteOperation(
-                    includes: '$WORKSPACE/Dockerfile'),
-                fileDeleteOperation(
-                    includes: '$WORKSPACE/Dockerfile.*')])
-                folderCopyOperation(
-                    sourceFolderPath: "SAP_HANA_CLIENT", 
-                    destinationFolderPath: "$WORKSPACE/XSA_AP_DEPLOY_DOCKER/"),
-                folderCopyOperation(
-                    sourceFolderPath: "XS_CLIENT00P_138-70001320", 
-                    destinationFolderPath: "$WORKSPACE/XSA_AP_DEPLOY_DOCKER/"),
-
-        }
-
-        stage ("Build docker") {
+        stage ("Stash files") {
             steps {
-                sh "docker build -f XSA_DEPLOY_DOCKER/Dockerfile -t ${artifactoryDocker}/${projectName}:${packageVersion} --build-arg XSZIP=XSA_DEPLOY_DOCKER/XS_CLIENT00P_138-70001320 --build-arg HDBCLIZIP=XSA_DEPLOY_DOCKER/SAP_HANA_CLIENT ."
-                sh "docker tag ${artifactoryDocker}/${projectName}:${packageVersion} ${artifactoryDocker}/${projectName}:latest"
-                rtDockerPush(
-                    serverId: "${artifactoryServerId}",
-                    image: "${artifactoryDocker}/${projectName}:${packageVersion}",
-                    targetRepo: 'docker-local',
-                    buildNumber: "${packageVersion}",
-                    buildName: "${projectName}"
-                )
-                rtDockerPush(
-                    serverId: "${artifactoryServerId}",
-                    image: "${artifactoryDocker}/${projectName}:latest",
-                    targetRepo: 'docker-local',
-                    buildNumber: "${packageVersion}",
-                    buildName: "${projectName}"
-                )
-                rtPublishBuildInfo (buildNumber: "${packageVersion}", buildName: "${projectName}", serverId: "${artifactoryServerId}")
+                stash includes: "Infrastructure/*.ps1", name: "PSscripts", useDefaultExcludes: false
+                stash includes: "Infrastructure/*.py", name: "PYscripts", useDefaultExcludes: false
             }
         }
+        
+        stage ("Publish Artifacts") {
+            agent {
+                docker {
+                    image "octopusdeploy/octo"
+                    args '--entrypoint=\'\''
+                }
+		    }
+                steps {
+                unstash "PSscripts"
+                unstash "PYscripts"
+                
+                sh "rm -rf dataART.${projectName}.${version}"
+                fileOperations([ 
+                        fileCopyOperation(
+                                flattenFiles: true,
+                                includes: "Infrastructure/*",
+                                targetLocation: "$WORKSPACE/dataART.${projectName}.${version}/")])
+
+                sh """ octo pack --id="dataART.${projectName}" --version="${packageVersion}" --basepath="$WORKSPACE/dataART.${projectName}.${version}" --outFolder=$WORKSPACE """
+                
+                rtUpload(
+                    spec: '''{ "files": [
+                        {
+                            "pattern": "dataART.${projectName}.${packageVersion}.nupkg",
+                            "target": "octopus-dataarten/",
+                            "props" : "deployed=true"
+                        }
+                    ] }''',
+                    buildNumber: "${packageVersion}", buildName: "dataART.${projectName}",
+                    serverId: "${artifactoryServerId}"
+                )
+                rtPublishBuildInfo(buildNumber: "${packageVersion}", buildName: "dataART.${projectName}", serverId: "${artifactoryServerId}")
+             }
+        }  
         stage ("Octopus sit") {
             agent {
                 docker {
@@ -91,7 +76,7 @@ pipeline {
                 releaseversion = "${version}"
                 OCTOPUS_CLI_SERVER = "https://octopus.azure.dsb.dk"
                 OCTOPUS_CLI_API_KEY = credentials("Octopus-Api")
-                hostargs = "--project ${jobName} --version=${releaseversion} --space=Spaces-3"
+                hostargs = "--project ${jobName} --version=${releaseversion} --space=Spaces-3"                
             }
             steps {
                 addBadge(text: "octopus", icon: "/userContent/octopus_16x16.png", id: "octopus", link: "${octopusURL}/app#/Spaces-3/projects/${jobName}/deployments/releases/${releaseversion}")
@@ -100,9 +85,7 @@ pipeline {
                     octo deploy-release $hostargs --deployto=${deployTo} --waitfordeployment --deploymentTimeout=00:20:00
                 """
             }
-        }
+        }        
+
     }
-} 
- 
- 
-  
+}

@@ -127,11 +127,11 @@ for variable, value in environment_variables.items():
     paths = check_output(f"cd /data/app && grep -rwl -e '{variable}'").strip().split('\n')
     
     for path in paths:
-        with open('../../app/' + path, encoding="utf-8") as file:
+        with open('../../app/' + path) as file:
             content = file.read()
             content = content.replace(variable, value)
 
-        with open('../../app/' + path, 'w', encoding="utf-8") as file:
+        with open('../../app/' + path, 'w') as file:
             file.write(content)
 
 # Web Section Starts

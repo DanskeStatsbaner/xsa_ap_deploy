@@ -129,11 +129,11 @@ for variable, value in environment_variables.items():
     for path in paths:
         printhighlight(path)
 
-        with open('../../' + path) as file:
+        with open('../../app/' + path) as file:
             content = file.read()
             content = content.replace(variable, value)
 
-        with open('../../' + path, 'w') as file:
+        with open('../../app/' + path, 'w') as file:
             file.write(content)
 
 # Web Section Starts

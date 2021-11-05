@@ -118,8 +118,6 @@ with open('../../app/manifest', 'w') as file:
 
 router_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
 humio_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
-printhighlight(router_paths)
-printhighlight(humio_paths)
 
 for router_path in router_paths:
 

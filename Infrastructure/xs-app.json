@@ -1,0 +1,14 @@
+{
+  "welcomeFile": "/web",
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "source": "/web(.*)",
+      "target": "$1",
+      "destination": "web"
+    }
+  ],
+  "websockets": {
+    "enabled": true
+  }
+}

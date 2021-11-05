@@ -123,7 +123,7 @@ environment_variables = {
     'OCTOPUS_RELEASE_NUMBER': release_number
 }
 
-for variable, value in environment_variables.item():
+for variable, value in environment_variables.items():
     paths = check_output(f"cd /data && grep -rwl -e '{variable}'").split('\n')
     
     for path in paths:

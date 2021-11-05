@@ -124,11 +124,10 @@ environment_variables = {
 }
 
 for variable, value in environment_variables.items():
-    paths = check_output(f"cd /data && grep -rwl -e '{variable}'").split('\n')
+    paths = check_output(f"cd /data/app && grep -rwl -e '{variable}'").split('\n')
     
     for path in paths:
-        if '/app' not in path:
-            continue
+        printhighlight(path)
 
         with open('../../' + path) as file:
             content = file.read()

@@ -96,7 +96,7 @@ class Task:
         )
         with open('manifest') as f:
             manifest = f.read()
-            self.url = [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?]))", manifest) if len(url[0]) > 0][0]
+            self.url = [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", manifest) if len(url[0]) > 0][0]
         logger.add(self.log_file, rotation="1 week")
         logger.add(lambda message: self.humio(self.log_file, message))
         #logger.add(lambda message: cf_logger.info(message.record['message']))

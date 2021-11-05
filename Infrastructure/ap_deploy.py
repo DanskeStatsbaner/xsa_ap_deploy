@@ -115,35 +115,27 @@ with open('../../manifest.yml', 'w') as file:
 
 with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
+    
+environment_variables = {
+    'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
+    'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
+    'OCTOPUS_PROJECT_NAME': project_name,
+    'OCTOPUS_RELEASE_NUMBER': release_number
+}
 
-router_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_APP_ROUTER_URL'").split('\n')
-humio_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_HUMIO_INGEST_TOKEN'").split('\n')
-name_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_PROJECT_NAME'").split('\n')
-version_paths = check_output("cd /data && grep -rwl -e 'OCTOPUS_RELEASE_NUMBER'").split('\n')
+for variable, value in environment_variables.item():
+    paths = check_output(f"cd /data && grep -rwl -e '{variable}'").split('\n')
+    
+    for path in paths:
+        if '/app' not in path:
+            continue
 
-for router_path in router_paths:
+        with open('../../' + path) as file:
+            content = file.read()
+            content = content.replace(variable, value)
 
-    if '/app' not in router_path:
-        continue
-
-    with open('../../' + router_path) as api:
-        api_content = api.read()
-        api_content = api_content.replace('OCTOPUS_APP_ROUTER_URL', url(app_router_host))
-
-    with open('../../' + router_path, 'w') as file:
-        file.write(api_content)
-
-for humio_path in humio_paths:
-
-    if '/app' not in humio_path:
-        continue
-
-    with open('../../' + humio_path, encoding="utf-8") as task:
-        task_content = task.read()
-        task_content = task_content.replace('OCTOPUS_HUMIO_INGEST_TOKEN', humio_ingest_token)
-
-    with open('../../' + humio_path, 'w', encoding="utf-8") as file:
-        file.write(task_content)
+        with open('../../' + path, 'w') as file:
+            file.write(content)
 
 # Web Section Starts
 if is_web:

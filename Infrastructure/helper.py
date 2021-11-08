@@ -1,13 +1,9 @@
-import subprocess
-from typing import Optional, List
+import subprocess, json, asyncio, httpx
+from typing import Optional, List, Tuple
 from hdbcli.dbapi import Connection
-import asyncio
 from functools import partial
-import json
-import pandas as pd
 from fastapi import WebSocket
 from pydantic import BaseModel
-import httpx
 from framework.env import uaa_service
 
 def run(file_path: str, action: str, uuid: str, databases: dict = None, params: dict = None) -> str:
@@ -41,37 +37,42 @@ def do_query(query: str, conn: Connection, access_token: Optional[str] = None) -
     return columns, rows
 
 class Message(BaseModel):
+    users: Optional[List[str]]
     content: str
 
 class Notifier:
     def __init__(self):
-        self.connections: List[WebSocket] = []
+        self.connections: List[Tuple[str, WebSocket]] = []
         self.generator = self.get_notification_generator()
 
     async def get_notification_generator(self):
         while True:
-            message = yield
-            await self._notify(message)
+            users, message = yield
+            await self._notify(users, message)
 
-    async def push(self, msg: str):
-        await self.generator.asend(msg)
+    async def push(self, users: List[str], msg: str):
+        await self.generator.asend((users, msg))
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, user: str, websocket: WebSocket):
         await websocket.accept()
-        self.connections.append(websocket)
+        self.connections.append((user, websocket))
 
-    def remove(self, websocket: WebSocket):
-        self.connections.remove(websocket)
+    def remove(self, user: str, websocket: WebSocket):
+        self.connections.remove((user, websocket))
 
-    async def _notify(self, message: str):
-        living_connections = []
-        while len(self.connections) > 0:
-            # Looping like this is necessary in case a disconnection is handled
-            # during await websocket.send_text(message)
-            websocket = self.connections.pop()
-            await websocket.send_text(message)
-            living_connections.append(websocket)
-        self.connections = living_connections
+    async def _notify(self, users: List[str], message: str):
+        # living_connections = []
+        # while len(self.connections) > 0:
+        #     # Looping like this is necessary in case a disconnection is handled
+        #     # during await websocket.send_text(message)
+        #     user, websocket = self.connections.pop()
+        #     await websocket.send_text(message)
+        #     living_connections.append((user, websocket))
+        # self.connections = living_connections
+        
+        for user, websocket in self.connections:
+            if user in users:
+                await websocket.send_text(message)
 
 async def get_resource_token() -> dict:
     async with httpx.AsyncClient() as client:

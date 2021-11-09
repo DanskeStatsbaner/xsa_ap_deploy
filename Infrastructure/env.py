@@ -8,13 +8,15 @@ with open('manifest') as file:
     manifest_yaml = file.read()
     manifest = yaml.safe_load(manifest_yaml)
     application = manifest['applications'][0]
-    app_router = manifest['applications'][1]
     services = set(application['services'])
     containers = {service for service in services if '-uaa' not in service}
     uaa = list(services - containers)[0]
     url = find_url(manifest_yaml)
     host = application['host']
-    secure_url = url.replace(f"{host}.", f"{app_router['host']}.") + f'/{host}'
+    # if it is a web app
+    if len(manifest['applications']) > 1:
+        app_router = manifest['applications'][1]
+        secure_url = url.replace(f"{host}.", f"{app_router['host']}.") + f'/{host}'
     
 env = AppEnv()
 

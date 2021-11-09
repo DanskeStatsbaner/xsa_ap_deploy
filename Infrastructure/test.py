@@ -13,7 +13,7 @@ xsa_pass = sys.argv[1]
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
-is_web = os.path.exists('../../app-router')
+is_web = os.path.exists('../../xs-security.json')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:

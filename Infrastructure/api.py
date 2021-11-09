@@ -1,15 +1,83 @@
-from fastapi import FastAPI, Request, File, UploadFile, Depends
+from fastapi import FastAPI, Request
 from fastapi.responses import Response, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.routing import APIRoute, APIWebSocketRoute
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
-import uvicorn, os, aiofiles
-from framework.env import auth
 from routes import router
+import uvicorn, os
+
+import logging, sys
+from loguru import logger
+from helper import humio
+from humiolib.HumioClient import HumioIngestClient
+
+humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
+class InterceptHandler(logging.Handler):
+    """
+    Default handler from examples in loguru documentaion.
+    See https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging
+    """
+
+    def emit(self, record: logging.LogRecord):
+        # Get corresponding Loguru level if it exists
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message
+        frame, depth = logging.currentframe(), 2
+        while frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+def setup_logging(log_level: int, json: bool):
+    # intercept everything at the root logger
+    logging.root.handlers = [InterceptHandler()]
+    logging.root.setLevel(log_level)
+
+    # remove every other logger's handlers
+    # and propagate to root logger
+    # noinspection PyUnresolvedReferences
+    for name in logging.root.manager.loggerDict.keys():
+        logging.getLogger(name).handlers = []
+        logging.getLogger(name).propagate = True
+
+    # configure loguru
+    logger.configure(handlers=[{"sink": sys.stdout, "serialize": json}])
+
+    logger.add("test.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
+    logger.add(lambda message: humio('FastAPI', message, humio_client), enqueue=True, backtrace=True, diagnose=True)
+
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
+
+LOG_LEVEL = "INFO"
+UVICORN_LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": "%(levelprefix)s %(message)s",
+            "use_colors": None,
+        },
+        "access": {
+            "()": "uvicorn.logging.AccessFormatter",
+            "fmt": '%(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s',
+        },
+    },
+    "loggers": {
+        "uvicorn": {"level": "INFO"},
+        "uvicorn.error": {"level": "INFO"},
+        "uvicorn.access": {"level": "INFO", "propagate": False},
+    },
+}
+
+setup_logging(LOG_LEVEL, json=True)
+
 app.add_middleware(GZipMiddleware)
 
 if os.path.exists('/static'):
@@ -39,43 +107,13 @@ async def add_CORS_header(request: Request, call_next):
 
 app.include_router(router)
 
-@app.post("/upload")
-async def upload(path: str = '', file: UploadFile=File(...), security_context=Depends(auth(scope='uaa.resource'))):
-    async with aiofiles.open(f'{path}{file.filename}', 'wb') as out_file:
-        content = await file.read()
-        await out_file.write(content)
-
-    return {"Result": "OK"}
-
-@app.get("/scope-check")
-async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
-    endpoints = [route for route in request.app.routes if type(route) == APIRoute]
-    websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
-    
-    protected_endpoints = {route.path: security_requirement.security_scheme.scope for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements}
-    
-    unprotected_endpoints = {route.path: None for route in endpoints if route.path not in protected_endpoints.keys()}
-
-    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if len(route.dependant.dependencies) > 0}
-    unprotected_websockets = {route.path: None for route in websockets if len(route.dependant.dependencies) == 0}
-    
-    return {
-        "Protected endpoints": protected_endpoints,
-        "Unprotected endpoints": unprotected_endpoints,
-        "Protected websockets": protected_websockets,
-        "Unprotected websockets": unprotected_websockets
-    }
-
-
-@app.get("/docs", include_in_schema=False)
-async def get_documentation():
-    return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
-
-@app.get("/openapi.json", include_in_schema=False)
-async def openapi():
-    return get_openapi(title="OCTOPUS_PROJECT_NAME", version="OCTOPUS_RELEASE_NUMBER", routes=router.routes)
-
-
-
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", port=int(os.environ.get('PORT', 3000)), reload=True)
+    uvicorn.run(
+        "api:app",
+        log_config=UVICORN_LOGGING_CONFIG,
+        log_level=20,
+        debug=True,
+        host="0.0.0.0",
+        port=int(os.environ.get('PORT', 3000)),
+        reload=True
+    )

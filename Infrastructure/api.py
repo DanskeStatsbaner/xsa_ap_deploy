@@ -8,6 +8,7 @@ import uvicorn, os
 import logging, sys
 from loguru import logger
 from humiolib.HumioClient import HumioIngestClient
+from time import timedelta
 
 def humio(source, message, client):
     record = message.record

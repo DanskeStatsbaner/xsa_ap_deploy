@@ -7,8 +7,38 @@ import uvicorn, os
 
 import logging, sys
 from loguru import logger
-from helper import humio
 from humiolib.HumioClient import HumioIngestClient
+
+def humio(source, message, client):
+    record = message.record
+    client.ingest_json_data([{
+        "tags": {
+            "host": "Linux VM",
+            "source": source
+        },
+        "events": [
+            {
+                "timestamp": record['time'].isoformat(),
+                "attributes": {
+                    "elapsed": record['elapsed'] / timedelta(milliseconds=1),
+                    "exception": repr(record['exception'].value) if hasattr(record['exception'], 'value') else None,
+                    "traceback": repr(record['exception'].traceback) if hasattr(record['exception'], 'traceback') else None,
+                    "file_name": record['file'].name,
+                    "file_path": record['file'].path,
+                    "function": record['function'],
+                    "level": record['level'].name,
+                    "line": record['line'],
+                    "module": record['module'],
+                    "name": record['name'],
+                    "process_id": record['process'].id,
+                    "process_name": record['process'].name,
+                    "thread_id": record['thread'].id,
+                    "thread_name": record['thread'].name
+                },
+                "rawstring": record['message']
+            }
+        ]
+    }])
 
 humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
 class InterceptHandler(logging.Handler):
@@ -49,7 +79,7 @@ def setup_logging(log_level: int, json: bool):
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": json}])
 
     logger.add("test.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
-    logger.add(lambda message: humio('FastAPI', message, humio_client), enqueue=True, backtrace=True, diagnose=True)
+    logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), enqueue=True, backtrace=True, diagnose=True)
 
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)

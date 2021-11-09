@@ -10,7 +10,9 @@ from framework.env import auth
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
 app.add_middleware(GZipMiddleware)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+if os.path.exists('/static'):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 ALLOWED_ORIGINS = 'OCTOPUS_APP_ROUTER_URL'
 ALLOWED_METHODS = 'POST, GET, DELETE, OPTIONS'

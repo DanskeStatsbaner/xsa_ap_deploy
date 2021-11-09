@@ -11,10 +11,10 @@ with open('manifest') as file:
     services = set(application['services'])
     containers = {service for service in services if '-uaa' not in service}
     uaa = list(services - containers)[0]
-    url = find_url(manifest_yaml)
     host = application['host']
     # if it is a web app
     if len(manifest['applications']) > 1:
+        url = find_url(manifest_yaml)
         app_router = manifest['applications'][1]
         secure_url = url.replace(f"{host}.", f"{app_router['host']}.") + f'/{host}'
     

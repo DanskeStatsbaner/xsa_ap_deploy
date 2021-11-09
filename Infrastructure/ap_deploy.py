@@ -126,6 +126,8 @@ environment_variables = {
 for variable, value in environment_variables.items():
     paths = check_output(f"cd /data/app && grep -rwl -e '{variable}'").strip().split('\n')
     
+    printhighlight(str(paths))
+    
     for path in paths:
         with open('../../app/' + path, encoding="utf-8") as file:
             content = file.read()

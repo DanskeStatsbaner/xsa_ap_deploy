@@ -115,7 +115,7 @@ setup_logging(LOG_LEVEL, json=True)
 
 app.add_middleware(GZipMiddleware)
 
-if os.path.exists('/static'):
+if os.path.exists('static'):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 ALLOWED_ORIGINS = 'OCTOPUS_APP_ROUTER_URL'

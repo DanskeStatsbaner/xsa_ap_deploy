@@ -5,7 +5,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute, APIWebSocketRoute
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from routes import router
 import uvicorn, os, aiofiles
 from framework.env import auth
 
@@ -35,8 +34,9 @@ async def add_CORS_header(request: Request, call_next):
     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
     return response
 
-
-app.include_router(router)
+if os.path.exists('routes.py'):
+    from routes import router
+    app.include_router(router)
 
 @app.post("/upload")
 async def upload(path: str = '', file: UploadFile=File(...), security_context=Depends(auth(scope='uaa.resource'))):

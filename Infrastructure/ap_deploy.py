@@ -20,7 +20,7 @@ artifactory_login = get_octopusvariable("artifactory.login")
 artifactory_registry = get_octopusvariable("artifactory.registry")
 artifactory_pass = sys.argv[2]
 
-is_web = os.path.exists('../../app-router')
+is_web = os.path.exists('../../xs-security.json')
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:

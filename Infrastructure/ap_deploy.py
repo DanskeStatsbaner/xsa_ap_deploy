@@ -267,11 +267,13 @@ set_octopusvariable("Workaround", 'Workaround')
 output = json.loads(output)
 
 template = ''
-margin = max([len(endpoint) for title, endpoints in output.items() for endpoint, scope in endpoints.items()]) + 10
 for title, endpoints in output.items():
-    template += f"\n{title}\n{'Endpoint:':{margin}}Scope:\n"
+    template += f"<h3>{title}</h3>"
+    template += f"<table>"
+    template += f"<tr><th>Endpoint</th><th>Scope</th></tr>"
     for endpoint, scope in endpoints.items():
-        template += f"{endpoint:{margin}}{scope}\n"
+        template += f"<tr><td>{endpoint}</td><td>{scope}</td></tr>"
+    template += f"<table>"
 
 template = template.strip()
 set_octopusvariable("Scopes", template)

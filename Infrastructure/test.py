@@ -102,6 +102,9 @@ if is_web:
         
         template = ''
         for user, password in users:
-            template += f"Username: {user}\nPassword: {password}\n\n"
+            template += f"<table>"
+            template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
+            template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
+            template += f"</table>"
        
         set_octopusvariable("Users", template.strip(), True)

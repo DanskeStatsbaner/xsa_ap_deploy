@@ -268,15 +268,13 @@ output = json.loads(output)
 
 template = ''
 for title, endpoints in output.items():
-    template += f"<h3>{title}</h3>"
-    template += f"<table>"
-    template += f"<tr><td><strong>Endpoint</strong></td><td><strong>Scope</strong></td></tr>"
-    for endpoint, scope in endpoints.items():
-        template += f"<tr><td>{endpoint}</td><td>{scope}</td></tr>"
-    template += f"</table>"
+    if len(endpoints) > 0:
+        template += f"<h3>{title}</h3>"
+        template += f"<table>"
+        template += f"<tr><td><strong>Endpoint</strong></td><td><strong>Scope</strong></td></tr>"
+        for endpoint, scope in endpoints.items():
+            template += f"<tr><td>{endpoint}</td><td>{scope}</td></tr>"
+        template += f"</table>"
 
 template = template.strip()
 set_octopusvariable("Scopes", template)
-printhighlight(template)
-
-

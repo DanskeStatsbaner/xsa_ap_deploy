@@ -268,13 +268,22 @@ output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.ds
 set_octopusvariable("Workaround", 'Workaround')
 output = json.loads(output)
 
+predefined_endpoints = [
+    '/{rest_of_path:path}',
+    '/docs',
+    '/openapi.json',
+    '/upload',
+    '/scope-check',
+    '/health'
+]
+
 template = ''
 for title, endpoints in output.items():
-    endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in ['/{rest_of_path:path}', 'docs', 'openapi.json', '/upload', '/scope-check', 'health']}
+    endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
     if len(endpoints) > 0:
         template += f'<h3>{title}</h3>'
         template += f'<table>'
-        template += f'<tr><td style="margin-right: 20px;"><strong>Endpoint</strong></td><td><strong>Scope</strong></td></tr>'
+        template += f'<tr><td style="margin-right: 30px;"><strong>Endpoint</strong></td><td><strong>Scope</strong></td></tr>'
         for endpoint, scope in endpoints.items():
             template += f'<tr><td style="margin-right: 10px;">{endpoint}</td><td>{scope}</td></tr>'
         template += f'</table>'

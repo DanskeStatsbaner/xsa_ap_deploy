@@ -270,7 +270,7 @@ output = json.loads(output)
 
 template = ''
 for title, endpoints in output.items():
-    endpoints = {endpoint: scope for endpoint in endpoints if scope not in ['/{rest_of_path:path}', 'docs', 'openapi.json', '/upload', '/scope-check', 'health']}
+    endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if scope not in ['/{rest_of_path:path}', 'docs', 'openapi.json', '/upload', '/scope-check', 'health']}
     if len(endpoints) > 0:
         template += f'<h3>{title}</h3>'
         template += f'<table>'

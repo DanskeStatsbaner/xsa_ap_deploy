@@ -22,7 +22,7 @@ artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('../../xs-security.json')
 
-set_octopusvariable("Web", is_web)
+set_octopusvariable("Web", str(is_web))
 
 def check_output(cmd, show_output=True, show_cmd=True, docker=True):
     if docker:

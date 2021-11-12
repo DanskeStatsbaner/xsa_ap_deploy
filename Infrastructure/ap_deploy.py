@@ -25,7 +25,7 @@ is_web = os.path.exists('../../xs-security.json')
 
 set_octopusvariable("Web", str(is_web))
 
-#shell = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
+shell = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
 
 ###############################################################################
 # Stop and delete containers

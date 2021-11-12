@@ -16,7 +16,7 @@ def insert_key(project_name, hana_host, xsa_keyuser, xsa_pass):
     
     with open('env.json') as env_json:
         data = json.load(env_json)
-        data = {key: value.replace('\n', '') for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
+        data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
         data = json.dumps(data)
         conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass) 
         conn.cursor().execute(f"""

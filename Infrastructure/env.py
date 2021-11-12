@@ -1,8 +1,6 @@
-import re, yaml
+import yaml
 from cfenv import AppEnv
 from framework.auth import AuthCheck, websocket_jwt
-
-find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
 
 with open('manifest') as file:
     manifest_yaml = file.read()
@@ -12,11 +10,12 @@ with open('manifest') as file:
     containers = {service for service in services if '-uaa' not in service}
     uaa = list(services - containers)[0]
     host = application['host']
+    url = 'OCTOPUS_APP_URL'
+    
     # if it is a web app
     if len(manifest['applications']) > 1:
-        url = find_url(manifest_yaml)
         app_router = manifest['applications'][1]
-        secure_url = url.replace(f"{host}.", f"{app_router['host']}.") + f'/{host}'
+        secure_url = f'OCTOPUS_APP_ROUTER_URL/{host}'
     
 env = AppEnv()
 

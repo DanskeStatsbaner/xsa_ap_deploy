@@ -122,7 +122,8 @@ environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
     'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
     'OCTOPUS_PROJECT_NAME': project_name,
-    'OCTOPUS_RELEASE_NUMBER': release_number
+    'OCTOPUS_RELEASE_NUMBER': release_number,
+    'OCTOPUS_APP_URL': url(host)
 }
 
 for variable, value in environment_variables.items():

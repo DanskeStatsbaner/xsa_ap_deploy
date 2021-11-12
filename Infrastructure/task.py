@@ -3,16 +3,12 @@ os.environ['LOGURU_AUTOINIT'] = 'False'
 
 from daemonocle import Daemon, expose_action
 from loguru import logger
-import logging, re
-from sap import cf_logging
 from time import sleep
 from datetime import timedelta
 from humiolib.HumioClient import HumioIngestClient
 from pathlib import Path
 from hdbcli import dbapi
-
-cf_logging.init()
-cf_logger = logging.getLogger("cli.logger")
+from framework.env import url
 
 class CustomDaemon(Daemon):
     def __init__(self, *args, **kwargs):
@@ -78,7 +74,7 @@ def exception_handler(func):
 
 class Task:
     def __init__(self, detach=True):
-        self.humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token='OCTOPUS_HUMIO_INGEST_TOKEN')
+        self.humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
         self.task_dir = Path.cwd()
         self.log_file = 'process.log'
         self.argument_parser()
@@ -94,12 +90,9 @@ class Task:
             work_dir=self.task_dir,
             detach=detach
         )
-        with open('manifest') as f:
-            manifest = f.read()
-            self.url = [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", manifest) if len(url[0]) > 0][0]
+        self.url = url
         logger.add(self.log_file, rotation="1 week")
         logger.add(lambda message: self.humio(self.log_file, message))
-        #logger.add(lambda message: cf_logger.info(message.record['message']))
 
     def connect_db(self, container):
         container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]

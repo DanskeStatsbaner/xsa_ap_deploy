@@ -1,29 +1,15 @@
-import json, subprocess, traceback, sys
+import json, traceback, sys
+from deploy_helper import check_output
 try:
     from seleniumwire import webdriver
     from seleniumwire.utils import decode
     from selenium.webdriver.common.by import By
     from selenium.webdriver.chrome.options import Options
     import click
-    from click import Abort
 except Exception as ex:
     print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
     sys.exit(1)
 
-
-def check_output(cmd, show_output=True, show_cmd=True):
-    if show_cmd:
-        print('Executing command: ', nl=False)
-        print(cmd)
-    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output = ''
-    while popen.poll() is None:
-        line = popen.stdout.readline()
-        output += line
-        if show_output:
-            print(line, end='')
-    return output
-  
 @click.command()
 @click.option('-u', '--xsa-user', required=True)
 @click.option('-p', '--xsa-pass', required=True)

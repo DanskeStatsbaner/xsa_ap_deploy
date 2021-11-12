@@ -1,4 +1,5 @@
-import subprocess, json, string, random, sys, os
+import json, string, random, sys, os
+from deploy_helper import check_output
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
@@ -15,20 +16,7 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../xs-security.json')
 
-def check_output(cmd, show_output=True, show_cmd=True, docker=True):
-    if docker:
-        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
-    if show_cmd:
-        print('Executing command: ')
-        print(cmd)
-    popen = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output = ''
-    while popen.poll() is None:
-        line = popen.stdout.readline()
-        output += line
-        if show_output:
-            print(line, end='')
-    return output
+check_output = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
 
 def get_random_password():
     random_source = string.ascii_letters + string.digits 

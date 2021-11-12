@@ -1,5 +1,6 @@
-import os, subprocess, json, yaml, sys, traceback
+import os, json, yaml, sys, traceback
 from pathlib import Path
+from deploy_helper import check_output
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 
@@ -24,20 +25,7 @@ is_web = os.path.exists('../../xs-security.json')
 
 set_octopusvariable("Web", str(is_web))
 
-def check_output(cmd, show_output=True, show_cmd=True, docker=True):
-    if docker:
-        cmd = f'docker exec -it {container_name} /bin/sh -c "{cmd}"'
-    if show_cmd:
-        print('Executing command: ')
-        print(cmd)
-    popen = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output = ''
-    while popen.poll() is None:
-        line = popen.stdout.readline()
-        output += line
-        if show_output:
-            print(line, end='')
-    return output
+check_output = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
 
 ###############################################################################
 # Stop and delete containers

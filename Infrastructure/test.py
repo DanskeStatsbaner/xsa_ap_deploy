@@ -16,7 +16,7 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../xs-security.json')
 
-check_output = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
+shell = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
 
 def get_random_password():
     random_source = string.ascii_letters + string.digits 
@@ -39,7 +39,7 @@ def get_random_password():
     password = ''.join(password_list)
     return password
 
-#check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+#shell(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 #Checking User without scope
 if is_web:
@@ -74,16 +74,16 @@ if is_web:
         users += [(user, password)]
         
         if environment == 'dev':
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+            shell(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
         
-        check_output(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
+        shell(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
         if role_collection != project_name:
-            check_output(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
+            shell(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
             printhighlight(f'User {user} has been assiged role collection {role_collection}')
         
         if environment != 'dev':
-            check_output(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+            shell(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
             printhighlight(f'User {user} has been deleted')
     
     if environment == 'dev':

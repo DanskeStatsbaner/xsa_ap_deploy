@@ -248,7 +248,7 @@ with open('env.json') as env_json:
     url = data["url"]
 
 
-credentials = shell(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=True, show_cmd=True, docker=False)
+credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=True, show_cmd=True)
 
 jwt = json.loads(credentials)['access_token']
 

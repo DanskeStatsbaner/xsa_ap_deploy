@@ -12,7 +12,7 @@ xsa_url = get_octopusvariable("dataART.XSAUrl")
 xsa_user = get_octopusvariable("dataART.XSAUser")
 xsa_space = get_octopusvariable("dataART.XSASpace")
 xsa_pass = sys.argv[1]
-½
+
 hana_environment = get_octopusvariable("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 

@@ -59,12 +59,12 @@ check_output('docker container prune -f', docker=False)
 pwd = Path.cwd().parent.parent
 
 #docker_client.login(username=artifactory_login, password=artifactory_pass, registry=artifactory_registry)
-check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, tty=True, docker=False)
+check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, docker=False)
 
 #docker_client.images.pull('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
 check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
-#docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, detach=True)
+#docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, tty=True,  detach=True)
 check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
 
@@ -97,8 +97,8 @@ manifest_dict = {
             'command': 'python api.py',
             'services': services
         }
-        ]
-    }
+    ]
+}
         # IF WEBAPP, appended app_router part to manifest_dicti
 
 app_router_dict =  {

@@ -1,4 +1,4 @@
-import os, subprocess, json, yaml, sys, traceback, docker
+import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
@@ -45,27 +45,27 @@ def check_output(cmd, show_output=True, show_cmd=True, docker=True):
 
 print(container_name)
 
-docker_client = docker.from_env()
+#docker_client = docker.from_env()
 
-# check_output(f'docker container stop {container_name}', docker=False)
-docker_client.containers.get(container_name).stop()
+check_output(f'docker container stop {container_name}', docker=False)
+#docker_client.containers.get(container_name).stop()
 
-# check_output('docker container prune -f', docker=False)
-docker_client.containers.prune()
+check_output('docker container prune -f', docker=False)
+#docker_client.containers.prune()
 
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
 pwd = Path.cwd().parent.parent
 
-docker_client.login(username=artifactory_login, password=artifactory_pass, registry=artifactory_registry)
-#check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, tty=True, docker=False)
+#docker_client.login(username=artifactory_login, password=artifactory_pass, registry=artifactory_registry)
+check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, tty=True, docker=False)
 
-docker_client.images.pull('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
-#check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+#docker_client.images.pull('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
+check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
-docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, detach=True)
-#check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+#docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, detach=True)
+check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
 
 
 with open('../../manifest.yml') as manifest:

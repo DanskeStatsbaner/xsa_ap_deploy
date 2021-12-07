@@ -1,7 +1,7 @@
 import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
-octopus_variables = ["Octopus.Environment.Name", "Octopus.Release.Number", "dataART.HumioIngestToken", "dataART.XSAUrl", "dataART.XSAUser", "dataART.XSASpace", "dataART.XSAKeyUser", "dataART.Host", "dataART.Database", "artifactory.login", "artifactory.registry"]
+octopus_variables = ["Octopus.Project.Name", "Octopus.Environment.Name", "Octopus.Release.Number", "dataART.HumioIngestToken", "dataART.XSAUrl", "dataART.XSAUser", "dataART.XSASpace", "dataART.XSAKeyUser", "dataART.Host", "dataART.Database", "artifactory.login", "artifactory.registry"]
 octopus = {variable: get_octopusvariable(variable) for variable in octopus_variables}
 
 environment = octopus["Octopus.Environment.Name"].lower()

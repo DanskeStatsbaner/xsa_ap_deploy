@@ -32,7 +32,7 @@ set_octopusvariable("Web", str(is_web))
 
 def check_output(cmd, work_dir='/', show_output=True, show_cmd=True, docker=True):
     if docker:
-        cmd = f'docker exec -it {container_name} -w {work_dir} /bin/sh -c "{cmd}"'
+        cmd = f'docker exec -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
     if show_cmd:
         print('Executing command: ')
         print(cmd)

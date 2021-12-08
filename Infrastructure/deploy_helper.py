@@ -1,16 +1,19 @@
 import subprocess, random, string
 
-def run(cmd, show_output=True, show_cmd=True):
+def run(cmd, shell=False, show_output=True, show_cmd=True):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
-    popen = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
         output += line
         if show_output:
             print(line, end='')
+    returncode = popen.returncode
+    if returncode != 0:
+        raise Exception('The command returned an error. Return code {returncode}')
     return output
 
 def docker(cmd, container_name, work_dir='/', show_output=True, show_cmd=True):
@@ -24,8 +27,6 @@ def generate_password():
     password += random.choice(string.ascii_uppercase)
     # select 1 digit
     password += random.choice(string.digits)
-    # select 1 special symbol
-    # password += random.choice(string.punctuation)
 
     # generate other characters
     for i in range(8):

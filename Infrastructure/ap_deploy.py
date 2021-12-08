@@ -242,8 +242,10 @@ if is_web:
     try:
         mappings = json.dumps(mappings).replace('"', '\\"')
         docker(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
+        set("UsersCreated", str(True))
     except Exception as ex:
         fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+        set("UsersCreated", str(False))
 # Web Ends
 
 try:

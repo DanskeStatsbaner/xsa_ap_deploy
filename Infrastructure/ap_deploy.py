@@ -39,10 +39,11 @@ artifactory_registry = get("artifactory.registry")
 artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('../../xs-security.json')
+pwd = Path.cwd().parent.parent
 
 set("Web", str(is_web))
 
-docker = lambda cmd, show_output, show_cmd: docker(cmd=cmd, container_name=container_name, show_output=show_output, show_cmd=show_cmd)
+docker = lambda cmd, work_dir, show_output, show_cmd: docker(cmd=cmd, container_name=container_name, work_dir=work_dir, show_output=show_output, show_cmd=show_cmd)
 
 ###############################################################################
 #                         Stop and delete containers                          #
@@ -55,8 +56,6 @@ run('docker container prune -f')
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
-
-pwd = Path.cwd().parent.parent
 
 run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False)
 

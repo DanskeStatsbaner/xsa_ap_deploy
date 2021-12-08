@@ -1,5 +1,6 @@
 import os, json, yaml, sys, traceback
 from pathlib import Path
+from functools import partial
 from deploy_helper import run, docker
 
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
@@ -43,8 +44,11 @@ pwd = Path.cwd().parent.parent
 
 set("Web", str(is_web))
 
-def docker(cmd, work_dir="/", show_output=True, show_cmd=True):
-    return docker(cmd=cmd, container_name=container_name, work_dir=work_dir, show_output=show_output, show_cmd=show_cmd)
+###############################################################################
+#                 Inject container_name into docker function                  #
+###############################################################################
+
+docker = partial(docker, container_name=container_name)
 
 ###############################################################################
 #                         Stop and delete containers                          #

@@ -1,6 +1,6 @@
 import subprocess, random, string
 
-def run(cmd, shell=False, show_output=True, show_cmd=True):
+def run(cmd, shell=False, show_output=True, show_cmd=True, ignore_errors=False):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
@@ -11,9 +11,10 @@ def run(cmd, shell=False, show_output=True, show_cmd=True):
         output += line
         if show_output:
             print(line, end='')
-    returncode = popen.returncode
-    if returncode != 0:
-        raise Exception('The command returned an error. Return code {returncode}')
+    if not ignore_errors:
+        returncode = popen.returncode
+        if returncode != 0:
+            raise Exception('The command returned an error. Return code {returncode}')
     return output
 
 def docker(cmd, container_name, work_dir='/', show_output=True, show_cmd=True):

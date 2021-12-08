@@ -55,7 +55,7 @@ docker = partial(docker, container_name=container_name)
 #                         Stop and delete containers                          #
 ###############################################################################
 
-run(f'docker container stop {container_name}')
+run(f'docker container stop {container_name}', ignore_errors=True)
 run('docker container prune -f')
 
 ###############################################################################

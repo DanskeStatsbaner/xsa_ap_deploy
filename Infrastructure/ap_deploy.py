@@ -32,9 +32,7 @@ is_web = os.path.exists('../../xs-security.json')
 
 set("Web", str(is_web))
 
-def check_output(cmd, work_dir='/', show_output=True, show_cmd=True, docker=True):
-    if docker:
-        cmd = f'docker exec -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
+def run(cmd, show_output=True, show_cmd=True):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
@@ -47,6 +45,9 @@ def check_output(cmd, work_dir='/', show_output=True, show_cmd=True, docker=True
             print(line, end='')
     return output
 
+def docker(cmd, work_dir='/', show_output=True, show_cmd=True):
+    return run(f'docker exec -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', show_output=show_output, show_cmd=show_cmd)
+
 ###############################################################################
 # Stop and delete containers
 ###############################################################################
@@ -55,10 +56,10 @@ print(container_name)
 
 #docker_client = docker.from_env()
 
-check_output(f'docker container stop {container_name}', docker=False)
+run(f'docker container stop {container_name}')
 #docker_client.containers.get(container_name).stop()
 
-check_output('docker container prune -f', docker=False)
+run('docker container prune -f')
 #docker_client.containers.prune()
 
 ###############################################################################
@@ -67,13 +68,13 @@ check_output('docker container prune -f', docker=False)
 pwd = Path.cwd().parent.parent
 
 #docker_client.login(username=artifactory_login, password=artifactory_pass, registry=artifactory_registry)
-check_output(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False, docker=False)
+run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False)
 
 #docker_client.images.pull('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
-check_output('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+run('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
 
 #docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, tty=True,  detach=True)
-check_output(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', docker=False)
+run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
 
 
 with open('../../manifest.yml') as manifest:
@@ -141,7 +142,7 @@ environment_variables = {
 }
 
 for variable, value in environment_variables.items():
-    paths = check_output(f"grep -rwl -e '{variable}'", work_dir='/data/app').strip().split('\n')
+    paths = docker(f"grep -rwl -e '{variable}'", work_dir='/data/app').strip().split('\n')
     
     paths = [path for path in paths if path != '']
     
@@ -202,32 +203,32 @@ def delete_manifest():
     if os.path.exists('app/manifest'):
         os.remove('app/manifest')
 
-check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
-output = check_output(f'xs service {uaa_service}', show_output=True).lower()
+output = docker(f'xs service {uaa_service}', show_output=True).lower()
 
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
 
 if 'failed' in output:
     fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
-    output = check_output(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data', show_output=True)
+    output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data', show_output=True)
     if 'failed' in output:
         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else: 
         highlight(f'The service "{uaa_service}" was succesfully created')
 else:
-    output = check_output(f'xs update-service {uaa_service} {xs_security}', work_dir='/data', show_output=True)
+    output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data', show_output=True)
 
     if 'failed' in output:
         fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
 # Web Starts
 if is_web:       
-    app_router_output = check_output(f'xs push {app_router}', work_dir='/data')
+    app_router_output = docker(f'xs push {app_router}', work_dir='/data')
 # Web Ends
 
-app_output = check_output(f'xs push {project_name}', work_dir='/data')
+app_output = docker(f'xs push {project_name}', work_dir='/data')
 output = app_router_output if is_web else app_output 
 
 
@@ -240,23 +241,23 @@ if is_running:
 else:
     fail('The application crashed')
 
-check_output(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts', show_output=True, show_cmd=True)
+docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts', show_output=True, show_cmd=True)
 
 # Web Starts
 if is_web:  
     for role_collection in role_collections:
-        check_output(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-        check_output(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-        check_output(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
     try:
         mappings = json.dumps(mappings).replace('"', '\\"')
-        check_output(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
+        docker(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
     except Exception as ex:
         fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
 
 try:
-    check_output(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
+    docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
 except Exception as ex:
     fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
@@ -268,11 +269,11 @@ with open('env.json') as env_json:
     url = data["url"]
 
 
-credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False, docker=False)
+credentials = docker(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False)
 
 jwt = json.loads(credentials)['access_token']
 
-output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
+output = docker(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False)
 set("Workaround", 'Workaround')
 output = json.loads(output)
 

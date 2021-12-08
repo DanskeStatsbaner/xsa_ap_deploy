@@ -1,13 +1,23 @@
-import os, subprocess, json, yaml, sys, traceback
+import os, json, yaml, sys, traceback
 from pathlib import Path
+from deploy_helper import run, docker
+
+docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
+
+###############################################################################
+#            Define functions for easier interaction with Octopus             #
+###############################################################################
 
 get = lambda variable: get_octopusvariable(variable)
 set = lambda variable, value: set_octopusvariable(variable, value)
 highlight = lambda message: printhighlight(message)
 fail = lambda message: failstep(message)
 
-environment = get("Octopus.Environment.Name").lower()
+###############################################################################
+#                           Get Octopus variables                             #
+###############################################################################
 
+environment = get("Octopus.Environment.Name").lower()
 project_name = get("Octopus.Project.Name")
 release_number = get("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
@@ -32,49 +42,27 @@ is_web = os.path.exists('../../xs-security.json')
 
 set("Web", str(is_web))
 
-def run(cmd, show_output=True, show_cmd=True):
-    if show_cmd:
-        print('Executing command: ')
-        print(cmd)
-    popen = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output = ''
-    while popen.poll() is None:
-        line = popen.stdout.readline()
-        output += line
-        if show_output:
-            print(line, end='')
-    return output
-
-def docker(cmd, work_dir='/', show_output=True, show_cmd=True):
-    return run(f'docker exec -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', show_output=show_output, show_cmd=show_cmd)
+docker = lambda cmd, show_output, show_cmd: docker(cmd=cmd, container_name=container_name, show_output=show_output, show_cmd=show_cmd)
 
 ###############################################################################
-# Stop and delete containers
+#                         Stop and delete containers                          #
 ###############################################################################
-
-print(container_name)
-
-#docker_client = docker.from_env()
 
 run(f'docker container stop {container_name}')
-#docker_client.containers.get(container_name).stop()
 
 run('docker container prune -f')
-#docker_client.containers.prune()
 
 ###############################################################################
 # Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
 ###############################################################################
+
 pwd = Path.cwd().parent.parent
 
-#docker_client.login(username=artifactory_login, password=artifactory_pass, registry=artifactory_registry)
 run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False)
 
-#docker_client.images.pull('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
-run('docker pull artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
+run(f'docker pull {docker_image}')
 
-#docker_client.containers.run('artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy', name=container_name, volumes=[f'{pwd}:/data'], auto_remove=True, tty=True,  detach=True)
-run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy')
+run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
 
 with open('../../manifest.yml') as manifest:

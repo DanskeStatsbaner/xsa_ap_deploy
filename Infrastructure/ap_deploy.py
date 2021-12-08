@@ -3,6 +3,9 @@ from pathlib import Path
 from functools import partial
 from deploy_helper import run, docker
 
+pwd = Path.cwd().parent.parent
+os.chdir(pwd)
+
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
 
 ###############################################################################
@@ -27,11 +30,10 @@ humio_ingest_token = get("dataART.HumioIngestToken")
 xsa_url = get("dataART.XSAUrl")
 xsa_user = get("dataART.XSAUser")
 xsa_space = get("dataART.XSASpace")
+xsa_keyuser = get("dataART.XSAKeyUser")
 xsa_pass = sys.argv[1]
 
-xsa_keyuser = get("dataART.XSAKeyUser")
 hana_host = get("dataART.Host").split('.')[0]
-
 hana_environment = get("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
@@ -39,8 +41,7 @@ artifactory_login = get("artifactory.login")
 artifactory_registry = get("artifactory.registry")
 artifactory_pass = sys.argv[2]
 
-is_web = os.path.exists('../../xs-security.json')
-pwd = Path.cwd().parent.parent
+is_web = os.path.exists('xs-security.json')
 
 set("Web", str(is_web))
 
@@ -55,26 +56,23 @@ docker = partial(docker, container_name=container_name)
 ###############################################################################
 
 run(f'docker container stop {container_name}')
-
 run('docker container prune -f')
 
 ###############################################################################
-# Login to artifactory, pull and start XSA__AP_CLI_DEPLOY container
+#             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
 run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False)
-
 run(f'docker pull {docker_image}')
-
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
 
-with open('../../manifest.yml') as manifest:
+with open('manifest.yml') as manifest:
     manifest_yaml = manifest.read()
     
 manifest_dict = yaml.safe_load(manifest_yaml)
 
-project_type = manifest_dict['type']
+project_type = manifest_dict['type'].lower()
 
 if project_type != 'python':
     fail('The pipeline only supports Python XSA applications.')
@@ -119,10 +117,10 @@ if is_web:
 
 manifest_yaml = yaml.dump(manifest_dict)
 
-with open('../../manifest.yml', 'w') as file:
+with open('manifest.yml', 'w') as file:
     file.write(manifest_yaml)
 
-with open('../../app/manifest', 'w') as file:
+with open('app/manifest', 'w') as file:
     file.write(manifest_yaml)
     
 environment_variables = {
@@ -139,34 +137,34 @@ for variable, value in environment_variables.items():
     paths = [path for path in paths if path != '']
     
     for path in paths:
-        with open('../../app/' + path, encoding="utf-8") as file:
+        with open('app/' + path, encoding="utf-8") as file:
             content = file.read()
             content = content.replace(variable, value)
 
-        with open('../../app/' + path, 'w', encoding="utf-8") as file:
+        with open('app/' + path, 'w', encoding="utf-8") as file:
             file.write(content)
 
 # Web Section Starts
 if is_web:
-    with open('../../app-router/xs-app.json') as file:
+    with open('app-router/xs-app.json') as file:
         xs_app = json.loads(file.read())
         xs_app['welcomeFile'] = f"/{host}"
         xs_app['routes'][0]['source'] = f"/{host}(.*)"
         xs_app['routes'][0]['destination'] = project_name
         xs_app = json.dumps(xs_app, indent=2)
 
-    with open('../../app-router/xs-app.json', 'w') as file:
+    with open('app-router/xs-app.json', 'w') as file:
         file.write(xs_app)
 
-    with open('../../app-router/package.json') as file:
+    with open('app-router/package.json') as file:
         package = json.loads(file.read())
         package['name'] = f"{host}-approuter"
         package = json.dumps(package, indent=2)
 
-    with open('../../app-router/package.json', 'w') as file:
+    with open('app-router/package.json', 'w') as file:
         file.write(package)
 
-    with open('../../xs-security.json') as file:
+    with open('xs-security.json') as file:
         xs_security = json.loads(file.read())
         xs_security['xsappname'] = project_name
         
@@ -188,7 +186,7 @@ if is_web:
 
         xs_security = json.dumps(xs_security, indent=2)
 
-    with open('../../xs-security.json', 'w') as file:
+    with open('xs-security.json', 'w') as file:
         file.write(xs_security)
 # Web Ends
 def delete_manifest():
@@ -199,7 +197,7 @@ docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_sp
 
 output = docker(f'xs service {uaa_service}', show_output=True).lower()
 
-xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
+xs_security = '-c xs-security.json' if os.path.exists('xs-security.json') else ''
 
 if 'failed' in output:
     fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')

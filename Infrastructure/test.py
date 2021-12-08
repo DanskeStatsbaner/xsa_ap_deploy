@@ -44,7 +44,7 @@ if is_web:
         roles = [role['name'] for role in xs_security['role-templates']]
 
         xs_security = json.dumps(xs_security, indent=2)
-    
+      
     users = []
     
     # Checking User with different scopes

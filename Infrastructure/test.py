@@ -1,5 +1,6 @@
-import json, string, random, sys, os
-from deploy_helper import check_output
+import json, sys, os
+from deploy_helper import generate_password, docker
+from functools import partial
 
 environment = get_octopusvariable("Octopus.Environment.Name").lower()
 project_name = get_octopusvariable("Octopus.Project.Name")
@@ -16,30 +17,9 @@ hana_environment_upper = hana_environment.upper()
 
 is_web = os.path.exists('../../xs-security.json')
 
-shell = lambda cmd, show_output=True, show_cmd=True, docker=True: check_output(f'docker exec -it {container_name} /bin/sh -c "{cmd}"' if docker else cmd, show_output, show_cmd)
+docker = partial(docker, container_name=container_name)
 
-def get_random_password():
-    random_source = string.ascii_letters + string.digits 
-    # select 1 lowercase
-    password = random.choice(string.ascii_lowercase)
-    # select 1 uppercase
-    password += random.choice(string.ascii_uppercase)
-    # select 1 digit
-    password += random.choice(string.digits)
-    # select 1 special symbol
-    # password += random.choice(string.punctuation)
-
-    # generate other characters
-    for i in range(8):
-        password += random.choice(random_source)
-
-    password_list = list(password)
-    # shuffle all characters
-    random.SystemRandom().shuffle(password_list)
-    password = ''.join(password_list)
-    return password
-
-#shell(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+#docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 #Checking User without scope
 if is_web:
@@ -70,20 +50,20 @@ if is_web:
     # Checking User with different scopes
     for role_collection in [project_name] + role_collections:
         user = role_collection
-        password = get_random_password()
+        password = generate_password()
         users += [(user, password)]
         
         if environment == 'dev':
-            shell(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+            docker(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
         
-        shell(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
+        docker(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
         printhighlight(f'User {user} has been created')
         if role_collection != project_name:
-            shell(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
+            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
             printhighlight(f'User {user} has been assiged role collection {role_collection}')
         
         if environment != 'dev':
-            shell(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+            docker(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
             printhighlight(f'User {user} has been deleted')
     
     if environment == 'dev':

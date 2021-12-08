@@ -1,34 +1,36 @@
 import os, subprocess, json, yaml, sys, traceback
 from pathlib import Path
 
-octopus_variables = ["Octopus.Project.Name", "Octopus.Environment.Name", "Octopus.Release.Number", "dataART.HumioIngestToken", "dataART.XSAUrl", "dataART.XSAUser", "dataART.XSASpace", "dataART.XSAKeyUser", "dataART.Host", "dataART.Database", "artifactory.login", "artifactory.registry"]
-octopus = {variable: get_octopusvariable(variable) for variable in octopus_variables}
+get = lambda variable: get_octopusvariable(variable)
+set = lambda variable, value: set_octopusvariable(variable, value)
+highlight = lambda message: printhighlight(message)
+fail = lambda message: failstep(message)
 
-environment = octopus["Octopus.Environment.Name"].lower()
+environment = get("Octopus.Environment.Name").lower()
 
-project_name = octopus["Octopus.Project.Name"]
-release_number = octopus["Octopus.Release.Number"]
+project_name = get("Octopus.Project.Name")
+release_number = get("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
-humio_ingest_token = octopus["dataART.HumioIngestToken"]
+humio_ingest_token = get("dataART.HumioIngestToken")
 
-xsa_url = octopus["dataART.XSAUrl"]
-xsa_user = octopus["dataART.XSAUser"]
-xsa_space = octopus["dataART.XSASpace"]
+xsa_url = get("dataART.XSAUrl")
+xsa_user = get("dataART.XSAUser")
+xsa_space = get("dataART.XSASpace")
 xsa_pass = sys.argv[1]
 
-xsa_keyuser = octopus["dataART.XSAKeyUser"]
-hana_host = octopus["dataART.Host"].split('.')[0]
+xsa_keyuser = get("dataART.XSAKeyUser")
+hana_host = get("dataART.Host").split('.')[0]
 
-hana_environment = octopus["dataART.Database"].lower()
+hana_environment = get("dataART.Database").lower()
 hana_environment_upper = hana_environment.upper()
 
-artifactory_login = octopus["artifactory.login"]
-artifactory_registry = octopus["artifactory.registry"]
+artifactory_login = get("artifactory.login")
+artifactory_registry = get("artifactory.registry")
 artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('../../xs-security.json')
 
-set_octopusvariable("Web", str(is_web))
+set("Web", str(is_web))
 
 def check_output(cmd, work_dir='/', show_output=True, show_cmd=True, docker=True):
     if docker:
@@ -82,7 +84,7 @@ manifest_dict = yaml.safe_load(manifest_yaml)
 project_type = manifest_dict['type']
 
 if project_type != 'python':
-    failstep('The pipeline only supports Python XSA applications.')
+    fail('The pipeline only supports Python XSA applications.')
 
 services = manifest_dict['services']
 
@@ -203,34 +205,29 @@ def delete_manifest():
 check_output(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 output = check_output(f'xs service {uaa_service}', show_output=True).lower()
-#printhighlight('output 1' + output)
 
 xs_security = '-c xs-security.json' if os.path.exists('../../xs-security.json') else ''
 
 if 'failed' in output:
-    failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
+    fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
     output = check_output(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data', show_output=True)
     if 'failed' in output:
-        failstep(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
-    else:  
-        #printhighlight('output 3' + output) 
-        printhighlight(f'The service "{uaa_service}" was succesfully created')
+        fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+    else: 
+        highlight(f'The service "{uaa_service}" was succesfully created')
 else:
     output = check_output(f'xs update-service {uaa_service} {xs_security}', work_dir='/data', show_output=True)
-    #printhighlight('output 4' + output)
 
     if 'failed' in output:
-        failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
+        fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
 # Web Starts
 if is_web:       
     app_router_output = check_output(f'xs push {app_router}', work_dir='/data')
-    #printhighlight('app_router_output :' + app_router_output)
 # Web Ends
 
 app_output = check_output(f'xs push {project_name}', work_dir='/data')
-#printhighlight('app output: ' +app_output)
 output = app_router_output if is_web else app_output 
 
 
@@ -239,9 +236,9 @@ app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls
 is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
 if is_running:
-    printhighlight(f'The application is running: {app_url}')
+    highlight(f'The application is running: {app_url}')
 else:
-    failstep('The application crashed')
+    fail('The application crashed')
 
 check_output(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts', show_output=True, show_cmd=True)
 
@@ -255,13 +252,13 @@ if is_web:
         mappings = json.dumps(mappings).replace('"', '\\"')
         check_output(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
     except Exception as ex:
-        failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+        fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 # Web Ends
 
 try:
     check_output(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
 except Exception as ex:
-    failstep(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
 
 with open('env.json') as env_json:
     data = json.load(env_json)
@@ -276,7 +273,7 @@ credentials = check_output(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{c
 jwt = json.loads(credentials)['access_token']
 
 output = check_output(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False, docker=False)
-set_octopusvariable("Workaround", 'Workaround')
+set("Workaround", 'Workaround')
 output = json.loads(output)
 
 predefined_endpoints = [
@@ -300,4 +297,4 @@ for title, endpoints in output.items():
         template += f'</table>'
 
 template = template.strip()
-set_octopusvariable("Scopes", template)
+set("Scopes", template)

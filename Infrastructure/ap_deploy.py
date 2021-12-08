@@ -44,12 +44,14 @@ artifactory_pass = sys.argv[2]
 is_web = os.path.exists('xs-security.json')
 
 set("Web", str(is_web))
+set("UsersCreated", str(False))
 
 ###############################################################################
 #                 Inject container_name into docker function                  #
 ###############################################################################
 
-docker = partial(docker, container_name=container_name)
+run = partial(run, exception_handler=fail)
+docker = partial(docker, container_name=container_name, exception_handler=fail)
 
 ###############################################################################
 #                         Stop and delete containers                          #
@@ -66,6 +68,9 @@ run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_reg
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
+###############################################################################
+#                Load and modify manifest.yml from deployment                 #
+###############################################################################
 
 with open('manifest.yml') as manifest:
     manifest_yaml = manifest.read()
@@ -102,19 +107,17 @@ manifest_dict = {
 # If deployment is a web app, then append app_router part to manifest_dict
 if is_web:
     manifest_dict['applications'] += [{
-            'name': app_router,
-            'host': app_router_host,
-            'path': './app-router/',
-            'env': {
-                'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
-            },
-            'services': [
-                uaa_service
-            ]
-        }]
+        'name': app_router,
+        'host': app_router_host,
+        'path': './app-router/',
+        'env': {
+            'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
+        },
+        'services': [
+            uaa_service
+        ]
+    }]
     
-
-
 manifest_yaml = yaml.dump(manifest_dict)
 
 with open('manifest.yml', 'w') as file:
@@ -122,7 +125,11 @@ with open('manifest.yml', 'w') as file:
 
 with open('app/manifest', 'w') as file:
     file.write(manifest_yaml)
-    
+
+###############################################################################
+# HALLO #
+###############################################################################
+
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
     'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
@@ -133,7 +140,6 @@ environment_variables = {
 
 for variable, value in environment_variables.items():
     paths = docker(f"grep -rwl -e '{variable}'", work_dir='/data/app').strip().split('\n')
-    
     paths = [path for path in paths if path != '']
     
     for path in paths:
@@ -144,7 +150,10 @@ for variable, value in environment_variables.items():
         with open('app/' + path, 'w', encoding="utf-8") as file:
             file.write(content)
 
-# Web Section Starts
+###############################################################################
+# HALLO #
+###############################################################################
+
 if is_web:
     with open('app-router/xs-app.json') as file:
         xs_app = json.loads(file.read())
@@ -188,10 +197,10 @@ if is_web:
 
     with open('xs-security.json', 'w') as file:
         file.write(xs_security)
-# Web Ends
-def delete_manifest():
-    if os.path.exists('app/manifest'):
-        os.remove('app/manifest')
+
+###############################################################################
+# HALLO #
+###############################################################################
 
 docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
@@ -213,10 +222,8 @@ else:
     if 'failed' in output:
         fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
-# Web Starts
 if is_web:       
     app_router_output = docker(f'xs push {app_router}', work_dir='/data')
-# Web Ends
 
 app_output = docker(f'xs push {project_name}', work_dir='/data')
 output = app_router_output if is_web else app_output 
@@ -233,25 +240,17 @@ else:
 
 docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts', show_output=True, show_cmd=True)
 
-# Web Starts
 if is_web:  
     for role_collection in role_collections:
         docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
         docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-    try:
-        mappings = json.dumps(mappings).replace('"', '\\"')
-        docker(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
-        set("UsersCreated", str(True))
-    except Exception as ex:
-        fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-        set("UsersCreated", str(False))
-# Web Ends
 
-try:
-    docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
-except Exception as ex:
-    fail(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+    mappings = json.dumps(mappings).replace('"', '\\"')
+    docker(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
+    set("UsersCreated", str(True))
+
+docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
 
 with open('./Deployment/Scripts/env.json') as env_json:
     data = json.load(env_json)

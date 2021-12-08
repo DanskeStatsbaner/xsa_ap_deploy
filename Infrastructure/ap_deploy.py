@@ -43,7 +43,8 @@ pwd = Path.cwd().parent.parent
 
 set("Web", str(is_web))
 
-docker = lambda cmd, work_dir, show_output, show_cmd: docker(cmd=cmd, container_name=container_name, work_dir=work_dir, show_output=show_output, show_cmd=show_cmd)
+def docker(cmd, work_dir="/", show_output=True, show_cmd=True):
+    return docker(cmd=cmd, container_name=container_name, work_dir=work_dir, show_output=show_output, show_cmd=show_cmd)
 
 ###############################################################################
 #                         Stop and delete containers                          #

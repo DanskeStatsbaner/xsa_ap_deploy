@@ -6,19 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import click
 
-@click.command()
-@click.option('-u', '--xsa-user', required=True)
-@click.option('-p', '--xsa-pass', required=True)
-@click.option('-a', '--xsa-url', required=True)
-@click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
-def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
-
-    mappings = json.loads(mappings)
-    
-    cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
-
-    chromeOptions = Options()
-    chromeOptions.headless = True
+def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
     driver.get(cockpit_url + '/cockpit')
 
@@ -36,7 +24,25 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
     except:
         driver.quit()
         print('Request was not found, retrying...')
-        saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings)
+        tester(cockpit_url, xsa_user, xsa_pass, chromeOptions)
+        
+    return driver, request
+
+@click.command()
+@click.option('-u', '--xsa-user', required=True)
+@click.option('-p', '--xsa-pass', required=True)
+@click.option('-a', '--xsa-url', required=True)
+@click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
+def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
+
+    mappings = json.loads(mappings)
+    
+    cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
+
+    chromeOptions = Options()
+    chromeOptions.headless = True
+    
+    request, driver = recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
     session_id = request.headers['X-ClientSession-Id']
     cookie = request.headers['Cookie']

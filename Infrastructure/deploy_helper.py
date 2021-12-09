@@ -1,6 +1,9 @@
 import subprocess, random, string, os, sys
 
-def run(cmd, env={}, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, pipe=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+    if pipe is not None and pipe in env:
+        variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
+        cmd = f'echo {variable}| ' + cmd
     if show_cmd:
         print('Executing command: ')
         print(cmd)

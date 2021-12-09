@@ -64,7 +64,7 @@ run('docker container prune -f')
 #             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
-run(f'echo %artifactory_pass%| docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, show_cmd=False)
+run(f'docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, pipe='artifactory_pass', show_cmd=False)
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
@@ -259,7 +259,7 @@ with open('./Deployment/Scripts/env.json') as env_json:
     url = data["url"]
 
 
-credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=False, show_cmd=False)
+credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=True, show_cmd=False)
 
 jwt = json.loads(credentials)['access_token']
 

@@ -64,7 +64,7 @@ run('docker container prune -f')
 #             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
-run(f'echo %artifactory_pass% | docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, show_cmd=False)
+run(f'echo %artifactory_pass%| docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, show_cmd=False)
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 

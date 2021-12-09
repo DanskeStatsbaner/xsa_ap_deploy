@@ -24,7 +24,7 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     except:
         driver.quit()
         print('Request was not found, retrying...')
-        tester(cockpit_url, xsa_user, xsa_pass, chromeOptions)
+        recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
         
     return driver, request
 

@@ -66,7 +66,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
             -d '{json.dumps(body)}'
         """
 
-        response = run(cmd, shell=True, show_cmd=False, show_output=False)
+        response = run(cmd, show_cmd=False, show_output=False)
         if response != 'null':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
             sys.exit(1)

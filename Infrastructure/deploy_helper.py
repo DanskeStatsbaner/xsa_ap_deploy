@@ -7,13 +7,13 @@ def cmd_to_args(cmd):
         args = shlex.split(cmd)
     return args
 
-def run(cmd, env={}, shell=False, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={},show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd_to_args(cmd), env=existing_env, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd_to_args(cmd), env=existing_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
@@ -23,7 +23,7 @@ def run(cmd, env={}, shell=False, show_output=True, show_cmd=True, ignore_errors
     if not ignore_errors:
         returncode = popen.returncode
         if returncode != 0:
-            message = 'The command returned an error. Return code {returncode}'
+            message = f'The command returned an error. Return code {returncode}'
             if exception_handler is None:
                 raise Exception(message)
             else:

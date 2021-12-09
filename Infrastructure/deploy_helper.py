@@ -6,7 +6,7 @@ def run(cmd, env={}, show_output=True, show_cmd=True, ignore_errors=False, excep
         print(cmd)
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd, env=existing_env, shell=(sys.platform != 'win32'), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
@@ -44,5 +44,3 @@ def generate_password():
     random.SystemRandom().shuffle(password_list)
     password = ''.join(password_list)
     return password
-
-run('echo $sdfdsf', env={'sdfdsf': 'sfgfsdgfdgfd'})

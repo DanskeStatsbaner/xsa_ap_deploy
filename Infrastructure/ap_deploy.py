@@ -74,7 +74,7 @@ run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image
 
 with open('manifest.yml') as manifest:
     manifest_yaml = manifest.read()
-    
+
 manifest_dict = yaml.safe_load(manifest_yaml)
 
 project_type = manifest_dict['type'].lower()
@@ -89,7 +89,6 @@ app_router = f'{project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
-
 services += [uaa_service]
 
 manifest_dict = {
@@ -127,7 +126,7 @@ with open('app/manifest', 'w') as file:
     file.write(manifest_yaml)
 
 ###############################################################################
-# HALLO #
+#                 Define environment variables for deployment                 #
 ###############################################################################
 
 environment_variables = {
@@ -151,7 +150,7 @@ for variable, value in environment_variables.items():
             file.write(content)
 
 ###############################################################################
-# HALLO #
+#                      Create files for XSA application                       #
 ###############################################################################
 
 if is_web:
@@ -199,14 +198,14 @@ if is_web:
         file.write(xs_security)
 
 ###############################################################################
-# HALLO #
+#                     Deploy XSA application using XS CLI                     #
 ###############################################################################
 
 docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
 output = docker(f'xs service {uaa_service}', show_output=True).lower()
 
-xs_security = '-c xs-security.json' if os.path.exists('xs-security.json') else ''
+xs_security = '-c xs-security.json' if is_web else ''
 
 if 'failed' in output:
     fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')

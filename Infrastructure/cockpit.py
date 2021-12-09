@@ -35,7 +35,12 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
     driver.get(f'{cockpit_url}/cockpit#/xsa/trustConfiguration')
 
-    request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=300)
+    try:
+        request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=5)
+    except:
+        driver.quit()
+        print('Request was not found, retrying...')
+        saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings)
 
     session_id = request.headers['X-ClientSession-Id']
     cookie = request.headers['Cookie']

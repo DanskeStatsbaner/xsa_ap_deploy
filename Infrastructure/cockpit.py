@@ -42,7 +42,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
     chromeOptions = Options()
     chromeOptions.headless = True
     
-    request, driver = recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
+    driver, request = recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
     session_id = request.headers['X-ClientSession-Id']
     cookie = request.headers['Cookie']

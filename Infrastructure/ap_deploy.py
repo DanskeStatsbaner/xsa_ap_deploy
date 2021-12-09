@@ -13,7 +13,7 @@ docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
 ###############################################################################
 
 get = lambda variable: get_octopusvariable(variable)
-set = lambda variable, value: set_octopusvariable(variable, value)
+set = lambda variable, value: set_octopusvariable(variable, str(value))
 highlight = lambda message: printhighlight(message)
 fail = lambda message: failstep(message)
 
@@ -43,8 +43,8 @@ artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('xs-security.json')
 
-set("Web", str(is_web))
-set("UsersCreated", str(False))
+set("Web", is_web)
+set("UsersCreated", False)
 
 ###############################################################################
 #                 Inject container_name into docker function                  #

@@ -1,14 +1,10 @@
 import json, traceback, sys
 from deploy_helper import run
-try:
-    from seleniumwire import webdriver
-    from seleniumwire.utils import decode
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.chrome.options import Options
-    import click
-except Exception as ex:
-    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-    sys.exit(1)
+from seleniumwire import webdriver
+from seleniumwire.utils import decode
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import click
 
 @click.command()
 @click.option('-u', '--xsa-user', required=True)

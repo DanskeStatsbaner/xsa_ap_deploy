@@ -1,10 +1,6 @@
 import json, traceback, sys
-try:
-    import click
-    from hdbcli import dbapi
-except Exception as ex:
-    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-    sys.exit(1)
+import click
+from hdbcli import dbapi
 
 @click.command()
 @click.option('-n', '--project-name', required=True)

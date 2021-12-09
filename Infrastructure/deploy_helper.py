@@ -6,7 +6,7 @@ def run(cmd, env={}, shell=False, show_output=True, show_cmd=True, ignore_errors
         print(cmd)
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd, env=env, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()

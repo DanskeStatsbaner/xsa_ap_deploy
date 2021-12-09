@@ -258,8 +258,10 @@ with open('./Deployment/Scripts/env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
+clientid = 'test'
+clientsecret = 'test'
 
-credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', show_output=True, show_cmd=False)
+credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"')
 
 jwt = json.loads(credentials)['access_token']
 

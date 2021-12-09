@@ -1,10 +1,12 @@
-import subprocess, random, string
+import subprocess, random, string, os
 
-def run(cmd, shell=False, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, shell=False, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
-    popen = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    existing_env = os.environ.copy()
+    existing_env.update(env)
+    popen = subprocess.Popen(cmd, env=env, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
@@ -42,20 +44,3 @@ def generate_password():
     random.SystemRandom().shuffle(password_list)
     password = ''.join(password_list)
     return password
-
-
-class Test(object):
-    def __init__(self, retries):
-        ...
-
-    def __enter__(self):
-        try:
-            return resource  # replace this with real code
-        except Exception as e:
-            self.attempts += 1
-            self.errors.append(e)
-
-    # this needs to return True to suppress propagation, as others have said
-    def __exit__(self, exc_type, exc_val, traceback):
-        
-        return True

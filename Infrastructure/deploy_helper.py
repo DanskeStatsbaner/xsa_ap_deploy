@@ -1,19 +1,12 @@
-import subprocess, random, string, os, sys, shlex
+import subprocess, random, string, os, sys
 
-def cmd_to_args(cmd):
-    if sys.platform == 'win32':
-        args = cmd
-    else:
-        args = shlex.split(cmd)
-    return args
-
-def run(cmd, env={},show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if show_cmd:
         print('Executing command: ')
         print(cmd)
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd_to_args(cmd), env=existing_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=(sys.platform != 'win32'), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()
@@ -51,3 +44,5 @@ def generate_password():
     random.SystemRandom().shuffle(password_list)
     password = ''.join(password_list)
     return password
+
+run('echo $sdfdsf', env={'sdfdsf': 'sfgfsdgfdgfd'})

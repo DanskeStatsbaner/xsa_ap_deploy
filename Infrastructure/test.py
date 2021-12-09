@@ -54,17 +54,17 @@ if is_web:
         users += [(user, password)]
         
         if environment == 'dev':
-            docker(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
+            docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
         
-        docker(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change',show_output=True, show_cmd=False)
-        printhighlight(f'User {user} has been created')
+        docker(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change', show_cmd=False)
+        print(f'User {user} has been created')
         if role_collection != project_name:
-            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_output=True, show_cmd=False)
-            printhighlight(f'User {user} has been assiged role collection {role_collection}')
+            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+            print(f'User {user} has been assiged role collection {role_collection}')
         
         if environment != 'dev':
-            docker(f'xs delete-user -p {xsa_pass} {user} -f',show_output=True, show_cmd=False)
-            printhighlight(f'User {user} has been deleted')
+            docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
+            print(f'User {user} has been deleted')
     
     if environment == 'dev':
         

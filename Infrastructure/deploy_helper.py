@@ -26,8 +26,15 @@ def run(cmd, env={}, pipe=None, shell=True, show_output=True, show_cmd=True, ign
                 exception_handler(message)
     return output
 
-def docker(cmd, container_name, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
-    return run(f'docker exec -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
+def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+    if pipe is not None and pipe in env:
+        variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
+        pipe_var = f'-e {pipe}={variable}'
+        cmd = f'echo ${pipe}| ' + cmd
+    else:
+        pipe_var = ''
+        
+    return run(f'docker exec {pipe_var} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():
     random_source = string.ascii_letters + string.digits 

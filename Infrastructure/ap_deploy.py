@@ -258,11 +258,11 @@ with open('./Deployment/Scripts/env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
-credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"')
+credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_command=False)
 
 jwt = json.loads(credentials)['access_token']
 
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False)
+output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', shell=False, show_cmd=False)
 
 output = json.loads(output)
 

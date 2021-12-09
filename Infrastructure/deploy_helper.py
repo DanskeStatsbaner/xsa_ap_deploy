@@ -1,6 +1,6 @@
 import subprocess, random, string, os, sys
 
-def run(cmd, env={}, pipe=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, pipe=None, shell=True, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
         cmd = f'echo {variable}| ' + cmd
@@ -9,7 +9,7 @@ def run(cmd, env={}, pipe=None, show_output=True, show_cmd=True, ignore_errors=F
         print(cmd)
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=shell, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline()

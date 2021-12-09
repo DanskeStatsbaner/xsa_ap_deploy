@@ -64,7 +64,7 @@ run('docker container prune -f')
 #             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
-run(f'docker login -u {artifactory_login} -p {artifactory_pass} {artifactory_registry}', show_cmd=False)
+run(f'echo %artifactory_pass% | docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, show_cmd=False)
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
@@ -288,4 +288,8 @@ for title, endpoints in output.items():
         template += f'</table>'
 
 template = template.strip()
+
+# Necessary, otherwise the "Scopes" variable will not be set (Octopus bug)
+set("Workaround", 'Workaround')
+
 set("Scopes", template)

@@ -203,20 +203,20 @@ if is_web:
 
 docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
 
-output = docker(f'xs service {uaa_service}', show_output=True).lower()
+output = docker(f'xs service {uaa_service}').lower()
 
 xs_security = '-c xs-security.json' if is_web else ''
 
 if 'failed' in output:
     fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 elif not 'succeeded' in output:
-    output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data', show_output=True)
+    output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data')
     if 'failed' in output:
         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else: 
         highlight(f'The service "{uaa_service}" was succesfully created')
 else:
-    output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data', show_output=True)
+    output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
 
     if 'failed' in output:
         fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
@@ -237,7 +237,7 @@ if is_running:
 else:
     fail('The application crashed')
 
-docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts', show_output=True, show_cmd=True)
+docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts')
 
 if is_web:  
     for role_collection in role_collections:
@@ -258,12 +258,10 @@ with open('./Deployment/Scripts/env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
-credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_cmd=False)
-
+credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_cmd=False, show_output=False)
 jwt = json.loads(credentials)['access_token']
 
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', shell=False, show_cmd=False)
-
+output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', shell=False, show_cmd=False, show_output=False)
 output = json.loads(output)
 
 predefined_endpoints = [

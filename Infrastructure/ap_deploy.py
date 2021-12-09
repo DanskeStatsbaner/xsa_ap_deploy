@@ -264,7 +264,7 @@ credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecr
 jwt = json.loads(credentials)['access_token']
 
 output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', show_cmd=False)
-set("Workaround", 'Workaround')
+
 output = json.loads(output)
 
 predefined_endpoints = [

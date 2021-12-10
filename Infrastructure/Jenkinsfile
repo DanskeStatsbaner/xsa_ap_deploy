@@ -24,7 +24,9 @@ pipeline {
     stages {
         stage ("Stash files") {
             steps {
-                stash includes: "**", name: "structure", useDefaultExcludes: false
+                stash includes: "Infrastructure/deployment/app-router/*", name: "appRouter", useDefaultExcludes: false
+                stash includes: "Infrastructure/deployment/app/*", name: "app", useDefaultExcludes: false
+                stash includes: "Infrastructure/deployment/app/framework/*", name: "appFramework", useDefaultExcludes: false
             }
         }
 
@@ -36,7 +38,9 @@ pipeline {
                 }
 		    }
                 steps {
-                unstash "structure"
+                unstash "appRouter"
+                unstash "app"
+                unstash "appFramework"
 
                 sh "rm -rf dataART.${projectName}.${version}"
                 fileOperations([

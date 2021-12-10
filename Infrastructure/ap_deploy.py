@@ -221,7 +221,7 @@ else:
     if 'failed' in output:
         fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
-if is_web:       
+if is_web:
     app_router_output = docker(f'xs push {app_router}', work_dir='/data')
 
 app_output = docker(f'xs push {project_name}', work_dir='/data')

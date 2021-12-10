@@ -27,6 +27,7 @@ pipeline {
                 stash includes: "Infrastructure/deployment/app-router/*", name: "appRouter", useDefaultExcludes: false
                 stash includes: "Infrastructure/deployment/app/*", name: "app", useDefaultExcludes: false
                 stash includes: "Infrastructure/deployment/app/framework/*", name: "appFramework", useDefaultExcludes: false
+                stash includes: "Infrastructure/octopus/*", name: "octopus", useDefaultExcludes: false
             }
         }
 
@@ -41,6 +42,7 @@ pipeline {
                 unstash "appRouter"
                 unstash "app"
                 unstash "appFramework"
+                unstash "octopus"
 
                 sh "rm -rf dataART.${projectName}.${version}"
                 fileOperations([

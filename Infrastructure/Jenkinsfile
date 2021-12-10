@@ -24,7 +24,7 @@ pipeline {
     stages {
         stage ("Stash files") {
             steps {
-                stash includes: "Infrastructure/*.py", name: "PYscripts", useDefaultExcludes: false
+                stash includes: "**", name: "structure", useDefaultExcludes: false
             }
         }
 
@@ -36,7 +36,7 @@ pipeline {
                 }
 		    }
                 steps {
-                unstash "PYscripts"
+                unstash "structure"
 
                 sh "rm -rf dataART.${projectName}.${version}"
                 fileOperations([

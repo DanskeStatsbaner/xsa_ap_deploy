@@ -38,7 +38,7 @@ pipeline {
                     args '--entrypoint=\'\''
                 }
 		    }
-                steps {
+            steps {
                 unstash "appRouter"
                 unstash "app"
                 unstash "appFramework"
@@ -48,7 +48,8 @@ pipeline {
                 fileOperations([
                     folderCopyOperation(
                                 sourceFolderPath: "Infrastructure",
-                                destinationFolderPath: "$WORKSPACE/dataART.${projectName}.${version}/")])
+                                destinationFolderPath: "$WORKSPACE/dataART.${projectName}.${version}/")
+                ])
 
                 sh """ octo pack --id="dataART.${projectName}" --version="${packageVersion}" --basepath="$WORKSPACE/dataART.${projectName}.${version}" --outFolder=$WORKSPACE """
 
@@ -64,7 +65,7 @@ pipeline {
                     serverId: "${artifactoryServerId}"
                 )
                 rtPublishBuildInfo(buildNumber: "${packageVersion}", buildName: "dataART.${projectName}", serverId: "${artifactoryServerId}")
-             }
+            }
         }
         stage ("Octopus sit") {
             agent {

@@ -201,7 +201,7 @@ if is_web:
 #                     Deploy XSA application using XS CLI                     #
 ###############################################################################
 
-docker(f'xs login -u {xsa_user} -p {xsa_pass} -a {xsa_url} -o orgname -s {xsa_space}', show_cmd=False)
+docker(f'xs login -u {xsa_user} -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass}, pipe="xsa_pass", show_cmd=False)
 
 output = docker(f'xs service {uaa_service}').lower()
 

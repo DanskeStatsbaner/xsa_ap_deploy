@@ -1,7 +1,7 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from deploy_helper import run, docker
+from deploy_helper import run, docker, generate_password
 
 pwd = Path.cwd().parent.parent
 os.chdir(pwd)
@@ -13,7 +13,7 @@ docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
 ###############################################################################
 
 get = lambda variable: get_octopusvariable(variable)
-set = lambda variable, value: set_octopusvariable(variable, str(value))
+set = lambda variable, value, sensitive=False: set_octopusvariable(variable, str(value), sensitive)
 highlight = lambda message: printhighlight(message)
 fail = lambda message: failstep(message)
 
@@ -290,3 +290,67 @@ template = template.strip()
 set("Workaround", 'Workaround')
 
 set("Scopes", template)
+
+
+if is_web:
+    with open('../../xs-security.json') as file:
+        xs_security = json.loads(file.read())
+        xs_security['xsappname'] = project_name
+    
+        for index, scope in enumerate(xs_security['scopes']):
+            xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
+        
+        scopes = [scope['name'] for scope in xs_security['scopes']]
+        role_collections = []
+        mappings = []
+
+        for index, role in enumerate(xs_security['role-templates']):
+            role_collection = f'{project_name}_{role["name"]}'
+            role_collections += [role_collection]
+            mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+            xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
+            xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
+            
+        roles = [role['name'] for role in xs_security['role-templates']]
+
+        xs_security = json.dumps(xs_security, indent=2)
+      
+    users = []
+    
+    # Checking User with different scopes
+    for role_collection in [project_name] + role_collections:
+        user = role_collection
+        password = generate_password()
+        users += [(user, password)]
+        
+        if environment == 'dev':
+            docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
+        
+        docker(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change', show_cmd=False)
+        print(f'User {user} has been created')
+        if role_collection != project_name:
+            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+            print(f'User {user} has been assiged role collection {role_collection}')
+        
+        if environment != 'dev':
+            docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
+            print(f'User {user} has been deleted')
+    
+    if environment == 'dev':
+        
+        template = ''
+        for user, password in users:
+            template += f"<table>"
+            template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
+            template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
+            template += f"</table>"
+       
+        set("Users", template.strip(), True)
+        
+        
+###############################################################################
+#                         Stop and delete containers                          #
+###############################################################################
+
+run(f'docker container stop {container_name}', ignore_errors=True)
+run('docker container prune -f')

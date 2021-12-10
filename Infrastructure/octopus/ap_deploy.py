@@ -116,7 +116,7 @@ if is_web:
             uaa_service
         ]
     }]
-    
+
 manifest_yaml = yaml.dump(manifest_dict)
 
 with open('manifest.yml', 'w') as file:
@@ -140,7 +140,7 @@ environment_variables = {
 for variable, value in environment_variables.items():
     paths = docker(f"grep -rwl -e '{variable}'", work_dir='/data/app').strip().split('\n')
     paths = [path for path in paths if path != '']
-    
+
     for path in paths:
         with open('app/' + path, encoding="utf-8") as file:
             content = file.read()
@@ -175,10 +175,10 @@ if is_web:
     with open('xs-security.json') as file:
         xs_security = json.loads(file.read())
         xs_security['xsappname'] = project_name
-        
+
         for index, scope in enumerate(xs_security['scopes']):
             xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
-            
+
         scopes = [scope['name'] for scope in xs_security['scopes']]
         role_collections = []
         mappings = []
@@ -189,7 +189,7 @@ if is_web:
             mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
             xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
             xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
-            
+
         roles = [role['name'] for role in xs_security['role-templates']]
 
         xs_security = json.dumps(xs_security, indent=2)
@@ -213,7 +213,7 @@ elif not 'succeeded' in output:
     output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data')
     if 'failed' in output:
         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
-    else: 
+    else:
         highlight(f'The service "{uaa_service}" was succesfully created')
 else:
     output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
@@ -225,7 +225,7 @@ if is_web:
     app_router_output = docker(f'xs push {app_router}', work_dir='/data')
 
 app_output = docker(f'xs push {project_name}', work_dir='/data')
-output = app_router_output if is_web else app_output 
+output = app_router_output if is_web else app_output
 
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
@@ -239,7 +239,7 @@ else:
 
 docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts')
 
-if is_web:  
+if is_web:
     for role_collection in role_collections:
         docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
         docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
@@ -296,10 +296,10 @@ if is_web:
     with open('../../xs-security.json') as file:
         xs_security = json.loads(file.read())
         xs_security['xsappname'] = project_name
-    
+
         for index, scope in enumerate(xs_security['scopes']):
             xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
-        
+
         scopes = [scope['name'] for scope in xs_security['scopes']]
         role_collections = []
         mappings = []
@@ -310,44 +310,44 @@ if is_web:
             mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
             xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
             xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
-            
+
         roles = [role['name'] for role in xs_security['role-templates']]
 
         xs_security = json.dumps(xs_security, indent=2)
-      
+
     users = []
-    
+
     # Checking User with different scopes
     for role_collection in [project_name] + role_collections:
         user = role_collection
         password = generate_password()
         users += [(user, password)]
-        
+
         if environment == 'dev':
             docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
-        
+
         docker(f'xs create-user  {user} {password} -p {xsa_pass} --no-password-change', show_cmd=False)
         print(f'User {user} has been created')
         if role_collection != project_name:
             docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
             print(f'User {user} has been assiged role collection {role_collection}')
-        
+
         if environment != 'dev':
             docker(f'xs delete-user -p {xsa_pass} {user} -f', show_cmd=False)
             print(f'User {user} has been deleted')
-    
+
     if environment == 'dev':
-        
+
         template = ''
         for user, password in users:
             template += f"<table>"
             template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
             template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
             template += f"</table>"
-       
+
         set("Users", template.strip(), True)
-        
-        
+
+
 ###############################################################################
 #                         Stop and delete containers                          #
 ###############################################################################

@@ -1,4 +1,4 @@
-import os, json, yaml, sys, traceback
+import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
 from deploy_helper import run, docker
@@ -241,15 +241,15 @@ docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployme
 
 if is_web:  
     for role_collection in role_collections:
-        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
-        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p {xsa_pass}', show_cmd=False)
+        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
+        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
+        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
 
     mappings = json.dumps(mappings).replace('"', '\\"')
-    docker(f"python3 cockpit.py -u {xsa_user} -p {xsa_pass} -a {xsa_url} -m '{mappings}'", work_dir='/data/Deployment/Scripts', show_cmd=False)
+    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts', show_cmd=False)
     set("UsersCreated", str(True))
 
-docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p {xsa_pass}", work_dir='/data/Deployment/Scripts', show_cmd=False)
+docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts', show_cmd=False)
 
 with open('./Deployment/Scripts/env.json') as env_json:
     data = json.load(env_json)

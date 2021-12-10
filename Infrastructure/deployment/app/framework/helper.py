@@ -69,7 +69,7 @@ class Notifier:
         #     await websocket.send_text(message)
         #     living_connections.append((user, websocket))
         # self.connections = living_connections
-        
+
         for user, websocket in self.connections:
             if user in users:
                 await websocket.send_text(message)

@@ -50,7 +50,7 @@ shell(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d artifactory
 
 with open('../../manifest.yml') as manifest:
     manifest_yaml = manifest.read()
-    
+
 manifest_dict = yaml.safe_load(manifest_yaml)
 
 project_type = manifest_dict['type']
@@ -94,8 +94,8 @@ app_router_dict =  {
         }
 
 if is_web:
-    manifest_dict['applications'] += [app_router_dict]     
-    
+    manifest_dict['applications'] += [app_router_dict]
+
 
 
 manifest_yaml = yaml.dump(manifest_dict)
@@ -105,7 +105,7 @@ with open('../../manifest.yml', 'w') as file:
 
 with open('../../app/manifest', 'w') as file:
     file.write(manifest_yaml)
-    
+
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
     'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
@@ -115,9 +115,9 @@ environment_variables = {
 
 for variable, value in environment_variables.items():
     paths = shell(f"cd /data/app && grep -rwl -e '{variable}'").strip().split('\n')
-    
+
     paths = [path for path in paths if path != '']
-    
+
     for path in paths:
         with open('../../app/' + path, encoding="utf-8") as file:
             content = file.read()
@@ -149,10 +149,10 @@ if is_web:
     with open('../../xs-security.json') as file:
         xs_security = json.loads(file.read())
         xs_security['xsappname'] = project_name
-        
+
         for index, scope in enumerate(xs_security['scopes']):
             xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
-            
+
         scopes = [scope['name'] for scope in xs_security['scopes']]
         role_collections = []
         mappings = []
@@ -163,7 +163,7 @@ if is_web:
             mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
             xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
             xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
-            
+
         roles = [role['name'] for role in xs_security['role-templates']]
 
         xs_security = json.dumps(xs_security, indent=2)
@@ -188,8 +188,8 @@ elif not 'succeeded' in output:
     output = shell(f'cd /data && xs create-service xsuaa default {uaa_service} {xs_security}', show_output=True)
     if 'failed' in output:
         failstep(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
-    else:  
-        #printhighlight('output 3' + output) 
+    else:
+        #printhighlight('output 3' + output)
         printhighlight(f'The service "{uaa_service}" was succesfully created')
 else:
     output = shell(f'cd /data && xs update-service {uaa_service} {xs_security}', show_output=True)
@@ -199,14 +199,14 @@ else:
         failstep(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
 
 # Web Starts
-if is_web:       
+if is_web:
     app_router_output = shell(f'cd /data && xs push {app_router}')
     #printhighlight('app_router_output :' + app_router_output)
 # Web Ends
 
 app_output = shell(f'cd /data && xs push {project_name}')
 #printhighlight('app output: ' +app_output)
-output = app_router_output if is_web else app_output 
+output = app_router_output if is_web else app_output
 
 
 app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host

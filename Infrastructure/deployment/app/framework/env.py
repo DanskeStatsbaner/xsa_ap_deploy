@@ -11,12 +11,12 @@ with open('manifest') as file:
     uaa = list(services - containers)[0]
     host = application['host']
     url = 'OCTOPUS_APP_URL'
-    
+
     # if it is a web app
     if len(manifest['applications']) > 1:
         app_router = manifest['applications'][1]
         secure_url = f'OCTOPUS_APP_ROUTER_URL/{host}'
-    
+
 env = AppEnv()
 
 databases = {}

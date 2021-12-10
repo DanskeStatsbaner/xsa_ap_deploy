@@ -29,12 +29,12 @@ def run(cmd, env={}, pipe=None, shell=True, show_output=True, show_cmd=True, ign
 def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         cmd = f'echo ${pipe}| ' + cmd
-    
+
     docker_variables = []
     for variable in env.keys():
         platform_variable = f'%{variable}%' if sys.platform == 'win32' else f'${variable}'
         docker_variables += [f'-e {variable}={platform_variable}']
-        
+
     return run(f'docker exec {"".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():

@@ -35,12 +35,12 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
 def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
 
     mappings = json.loads(mappings)
-    
+
     cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
 
     chromeOptions = Options()
     chromeOptions.headless = True
-    
+
     driver, request = recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
     session_id = request.headers['X-ClientSession-Id']
@@ -50,7 +50,7 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
     saml_id = body[0]['id']
 
     driver.quit()
-    
+
     for role_collection, attribute_value in mappings:
 
         body = {

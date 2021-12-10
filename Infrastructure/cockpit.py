@@ -21,12 +21,11 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
 
     try:
         request = driver.wait_for_request('/ajax/listSamlIDPs', timeout=5)
+        return driver, request
     except:
         driver.quit()
         print('Request was not found, retrying...')
-        recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
-        
-    return driver, request
+        return recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
 @click.command()
 @click.option('-u', '--xsa-user', required=True)

@@ -64,7 +64,7 @@ run('docker container prune -f')
 #             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
-run(f'docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, pipe='artifactory_pass', show_cmd=False)
+run(f'docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, pipe='artifactory_pass')
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
@@ -241,15 +241,15 @@ docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployme
 
 if is_web:  
     for role_collection in role_collections:
-        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
-        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
-        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, show_cmd=False)
+        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
     mappings = json.dumps(mappings).replace('"', '\\"')
-    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts', show_cmd=False)
+    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts')
     set("UsersCreated", str(True))
 
-docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts', show_cmd=False)
+docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts')
 
 with open('./Deployment/Scripts/env.json') as env_json:
     data = json.load(env_json)
@@ -258,10 +258,10 @@ with open('./Deployment/Scripts/env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
-credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_cmd=False, show_output=False)
-jwt = json.loads(credentials)['access_token']
+credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_output=False)
+access_token = json.loads(credentials)['access_token']
 
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {jwt}"', shell=False, show_cmd=False, show_output=False)
+output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {access_token}"', shell=False, show_output=False)
 output = json.loads(output)
 
 predefined_endpoints = [

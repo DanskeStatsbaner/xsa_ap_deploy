@@ -47,8 +47,8 @@ pipeline {
                 sh "rm -rf dataART.${projectName}.${version}"
                 fileOperations([
                     folderCopyOperation(
-                                sourceFolderPath: "Infrastructure",
-                                destinationFolderPath: "$WORKSPACE/dataART.${projectName}.${version}/")
+                        sourceFolderPath: "Infrastructure",
+                        destinationFolderPath: "$WORKSPACE/dataART.${projectName}.${version}/")
                 ])
 
                 sh """ octo pack --id="dataART.${projectName}" --version="${packageVersion}" --basepath="$WORKSPACE/dataART.${projectName}.${version}" --outFolder=$WORKSPACE """

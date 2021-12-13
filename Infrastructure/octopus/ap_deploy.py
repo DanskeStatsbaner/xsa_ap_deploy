@@ -91,6 +91,7 @@ app_router = f'{project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
+app_url = url(host)
 services += [uaa_service]
 
 manifest_dict = {
@@ -112,7 +113,7 @@ if is_web:
         'host': app_router_host,
         'path': './app-router/',
         'env': {
-            'destinations': json.dumps([{"name": project_name, "url": url(host), "forwardAuthToken": True}])
+            'destinations': json.dumps([{"name": project_name, "url": app_url, "forwardAuthToken": True}])
         },
         'services': [
             uaa_service
@@ -136,7 +137,7 @@ environment_variables = {
     'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
     'OCTOPUS_PROJECT_NAME': project_name,
     'OCTOPUS_RELEASE_NUMBER': release_number,
-    'OCTOPUS_APP_URL': url(host)
+    'OCTOPUS_APP_URL': app_url
 }
 
 for variable, value in environment_variables.items():
@@ -253,22 +254,8 @@ if is_web:
 
 docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
 
-with open('./octopus/env.json') as env_json:
-    data = json.load(env_json)
-    data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
-    clientid = data["clientid"]
-    clientsecret = data["clientsecret"]
-    url = data["url"]
-
-credentials = run(f'curl -s -X POST %url%/oauth/token -u "%clientid%:%clientsecret%" -d "grant_type=client_credentials&token_format=jwt"', env={"url": url, "clientid": clientid, "clientsecret": clientsecret}, shell=True, show_output=True)
-access_token = json.loads(credentials)['access_token']
-
-output = run(f'echo "%access_token%"', env={"access_token": "tester"}, shell=True, show_output=True)
-
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer %access_token%"', env={"access_token": access_token}, shell=True, show_output=True)
-output = json.loads(output)
-
-print(output)
+endpoint_collection = docker(f"python3 endpoints.py -a {app_url}", work_dir='/data/octopus')
+endpoint_collection = json.loads(endpoint_collection)
 
 predefined_endpoints = [
     '/{rest_of_path:path}',
@@ -280,7 +267,7 @@ predefined_endpoints = [
 ]
 
 template = ''
-for title, endpoints in output.items():
+for title, endpoints in endpoint_collection.items():
     endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
     if len(endpoints) > 0:
         template += f'<h3>{title}</h3>'

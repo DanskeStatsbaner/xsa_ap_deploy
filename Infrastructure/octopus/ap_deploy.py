@@ -266,6 +266,8 @@ access_token = json.loads(credentials)['access_token']
 output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer %access_token%"', env={"access_token": access_token}, shell=False, show_output=False)
 output = json.loads(output)
 
+print(output)
+
 predefined_endpoints = [
     '/{rest_of_path:path}',
     '/docs',

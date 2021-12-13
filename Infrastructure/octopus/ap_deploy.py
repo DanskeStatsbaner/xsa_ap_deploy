@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import partial
 from deploy_helper import run, docker, generate_password
 
-pwd = Path.cwd().parent / 'deployment'
+pwd = Path.cwd().parent
 os.chdir(pwd)
 
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'

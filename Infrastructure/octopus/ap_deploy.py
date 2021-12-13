@@ -6,6 +6,8 @@ from deploy_helper import run, docker, generate_password
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
+print(pwd)
+
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
 
 ###############################################################################

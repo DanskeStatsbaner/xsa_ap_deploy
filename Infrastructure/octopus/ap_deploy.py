@@ -263,7 +263,7 @@ with open('./octopus/env.json') as env_json:
 credentials = run(f'curl -s -X POST {url}/oauth/token -u "{clientid}:{clientsecret}" -d "grant_type=client_credentials&token_format=jwt"', shell=False, show_output=False)
 access_token = json.loads(credentials)['access_token']
 
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer {access_token}"', shell=False, show_output=False)
+output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer %access_token%"', env={"access_token": access_token}, shell=False, show_output=False)
 output = json.loads(output)
 
 predefined_endpoints = [

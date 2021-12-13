@@ -260,12 +260,12 @@ with open('./octopus/env.json') as env_json:
     clientsecret = data["clientsecret"]
     url = data["url"]
 
-credentials = run(f'curl -s -X POST %url%/oauth/token -u "%clientid%:%clientsecret%" -d "grant_type=client_credentials&token_format=jwt"', env={"url": url, "clientid": clientid, "clientsecret": clientsecret}, shell=True, show_output=False)
+credentials = run(f'curl -s -X POST %url%/oauth/token -u "%clientid%:%clientsecret%" -d "grant_type=client_credentials&token_format=jwt"', env={"url": url, "clientid": clientid, "clientsecret": clientsecret}, shell=True, show_output=True)
 access_token = json.loads(credentials)['access_token']
 
 output = run(f'echo "%access_token%"', env={"access_token": "tester"}, shell=True, show_output=True)
 
-output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer %access_token%"', env={"access_token": access_token}, shell=True, show_output=False)
+output = run(f'curl -s -X GET https://{host}.xsabi{hana_environment}.dsb.dk:30033/scope-check -H "accept: application/json" -H "Authorization: Bearer %access_token%"', env={"access_token": access_token}, shell=True, show_output=True)
 output = json.loads(output)
 
 print(output)

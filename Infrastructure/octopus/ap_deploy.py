@@ -295,7 +295,7 @@ set("Scopes", template)
 
 
 if is_web:
-    with open('../../xs-security.json') as file:
+    with open('xs-security.json') as file:
         xs_security = json.loads(file.read())
         xs_security['xsappname'] = project_name
 

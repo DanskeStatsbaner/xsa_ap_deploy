@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import partial
 from deploy_helper import run, docker, generate_password
 
-pwd = Path.cwd().parent.parent
+pwd = Path.cwd().parent / 'deployment'
 os.chdir(pwd)
 
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
@@ -237,7 +237,7 @@ if is_running:
 else:
     fail('The application crashed')
 
-docker(f'xs env {project_name} --export-json env.json', work_dir='/data/Deployment/Scripts')
+docker(f'xs env {project_name} --export-json env.json', work_dir='/data/octopus')
 
 if is_web:
     for role_collection in role_collections:
@@ -246,12 +246,12 @@ if is_web:
         docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
     mappings = json.dumps(mappings).replace('"', '\\"')
-    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts')
+    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
     set("UsersCreated", str(True))
 
-docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/Deployment/Scripts')
+docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
 
-with open('./Deployment/Scripts/env.json') as env_json:
+with open('./octopus/env.json') as env_json:
     data = json.load(env_json)
     data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
     clientid = data["clientid"]

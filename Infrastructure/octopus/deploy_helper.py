@@ -35,7 +35,7 @@ def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=Tru
         platform_variable = f'%{variable}%' if sys.platform == 'win32' else f'${variable}'
         docker_variables += [f'-e {variable}={platform_variable}']
 
-    return run(f'docker exec {"".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
+    return run(f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():
     random_source = string.ascii_letters + string.digits

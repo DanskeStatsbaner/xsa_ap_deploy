@@ -284,7 +284,6 @@ set("Workaround", 'Workaround')
 
 set("Scopes", template)
 
-
 if is_web:
     users = []
 
@@ -315,7 +314,7 @@ if is_web:
             template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
             template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
             template += f"</table>"
-        set("Workaround", 'Workaround')
+
         set("Users", template.strip(), True)
 
 

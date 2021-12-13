@@ -91,7 +91,7 @@ app_router = f'{project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
-app_url = url(host)
+unprotected_url = url(host)
 services += [uaa_service]
 
 manifest_dict = {
@@ -113,7 +113,7 @@ if is_web:
         'host': app_router_host,
         'path': './app-router/',
         'env': {
-            'destinations': json.dumps([{"name": project_name, "url": app_url, "forwardAuthToken": True}])
+            'destinations': json.dumps([{"name": project_name, "url": unprotected_url, "forwardAuthToken": True}])
         },
         'services': [
             uaa_service
@@ -254,7 +254,7 @@ if is_web:
 
 docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
 
-endpoint_collection = docker(f"python3 endpoints.py -a {app_url}", work_dir='/data/octopus')
+endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url}", work_dir='/data/octopus')
 endpoint_collection = json.loads(endpoint_collection)
 
 predefined_endpoints = [

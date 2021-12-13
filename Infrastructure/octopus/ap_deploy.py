@@ -137,7 +137,7 @@ environment_variables = {
     'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
     'OCTOPUS_PROJECT_NAME': project_name,
     'OCTOPUS_RELEASE_NUMBER': release_number,
-    'OCTOPUS_APP_URL': app_url
+    'OCTOPUS_APP_URL': unprotected_url
 }
 
 for variable, value in environment_variables.items():

@@ -319,7 +319,7 @@ if is_web:
         if environment == 'dev':
             docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
 
-        docker(f'xs create-user {user} {password} -p $xsa_pass --no-password-change', env={'xsa_pass': xsa_pass}, ignore_errors=True)
+        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass}, ignore_errors=True)
         print(f'User {user} has been created')
         if role_collection != project_name:
             docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, ignore_errors=True)
@@ -337,7 +337,7 @@ if is_web:
             template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
             template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
             template += f"</table>"
-
+        set("Workaround", 'Workaround')
         set("Users", template.strip(), True)
 
 

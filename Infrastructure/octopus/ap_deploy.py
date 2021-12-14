@@ -19,11 +19,9 @@ set = lambda variable, value, sensitive=False: set_octopusvariable(variable, str
 highlight = lambda message: printhighlight(message)
 fail = lambda message: failstep(message)
 
-
-print(get("Octopus.Web.BaseUrl"))
 print(get("Octopus.Web.ServerUri"))
-print(get("Octopus.Project.Id"))
 print(get("Octopus.Space.Id"))
+print(get("Octopus.Web.DeploymentLink"))
 
 ###############################################################################
 #                           Get Octopus variables                             #

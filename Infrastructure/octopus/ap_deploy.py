@@ -218,7 +218,7 @@ elif not 'succeeded' in output:
         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:
         highlight(f'The service "{uaa_service}" was succesfully created')
-else:
+elif is_web:
     output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
 
     if 'failed' in output:

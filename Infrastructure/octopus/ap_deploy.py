@@ -315,7 +315,7 @@ if is_web:
             template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
             template += f"</table>"
 
-        template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 10px 20px;border-radius: 5px;font-size: 16px;display: inline-block;ck;x 10px;">Go to app</a>'
+        template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-top: 1rem;">Go to app</a>'
 
         set("Users", template.strip(), True)
 

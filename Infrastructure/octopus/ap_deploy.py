@@ -19,10 +19,6 @@ set = lambda variable, value, sensitive=False: set_octopusvariable(variable, str
 highlight = lambda message: printhighlight(message)
 fail = lambda message: failstep(message)
 
-print(get("Octopus.Web.ServerUri"))
-print(get("Octopus.Space.Id"))
-print(get("Octopus.Web.DeploymentLink"))
-
 ###############################################################################
 #                           Get Octopus variables                             #
 ###############################################################################
@@ -318,6 +314,8 @@ if is_web:
             template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
             template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
             template += f"</table>"
+
+        template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 10px 20px;border-radius: 5px;font-size: 16px;display: inline-block;ck;x 10px;">Go to app</a>'
 
         set("Users", template.strip(), True)
 

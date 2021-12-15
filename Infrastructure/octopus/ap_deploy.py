@@ -265,15 +265,17 @@ predefined_endpoints = [
     '/health'
 ]
 
+table_space = '&nbsp;' * 10
+
 template = ''
 for title, endpoints in endpoint_collection.items():
     endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
     if len(endpoints) > 0:
         template += f'<h3>{title}</h3>'
         template += f'<table>'
-        template += f'<tr><td style="margin-right: 30px;"><strong>Endpoint</strong></td><td><strong>Scope</strong></td></tr>'
+        template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td></tr>'
         for endpoint, scope in endpoints.items():
-            template += f'<tr><td style="margin-right: 10px;">{endpoint}</td><td>{scope}</td></tr>'
+            template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td></tr>'
         template += f'</table>'
 
 template = template.strip()
@@ -294,6 +296,7 @@ if is_web:
         password = generate_password()
         users += [(user, password)]
 
+        # Delete existing users, to ensure that scopes are updated correctly
         if environment != 'prd':
             docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
 
@@ -311,13 +314,13 @@ if is_web:
 
         for user, password in users:
             template += f'<table style="margin-bottom: 1rem;">'
-            template += f'<tr><td style="margin-right: 30px;"><strong>Username</strong></td><td>{user}<td></tr>'
-            template += f'<tr><td style="margin-right: 30px;"><strong>Password</strong></td><td>{password}<td></tr>'
+            template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
+            template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'
             template += f'</table>'
 
-template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Application</a>'
+template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Application</a>'
 
-template += f'<a href="{app_docs}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Application docs</a>'
+template += f'<a href="{app_docs}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Documentation</a>'
 
 set("Email", template.strip(), True)
 

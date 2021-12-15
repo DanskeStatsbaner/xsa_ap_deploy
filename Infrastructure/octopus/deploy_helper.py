@@ -5,7 +5,7 @@ def banner(title, width=70, padding=2):
     for line in title.split('\n'):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
-    seperator = ['#' * (width)]
+    seperator = '#' * (width)
     print(seperator)
     print('\n'.join(centered_lines))
     print(seperator)

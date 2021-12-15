@@ -10,13 +10,15 @@ def banner(title, width=70, padding=2):
     print('\n'.join(centered_lines))
     print(seperator)
 
-def run(cmd, env={}, pipe=None, shell=True, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
         cmd = f'echo {variable}| ' + cmd
     if show_cmd:
-        print('Executing command: ')
-        print(cmd)
+        if worker is not None:
+            print(f'{worker} $ {cmd}')
+        else:
+            print(f'$ {cmd}')
     existing_env = os.environ.copy()
     existing_env.update(env)
     popen = subprocess.Popen(cmd, env=existing_env, shell=shell, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -45,7 +47,10 @@ def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=Tru
         platform_variable = f'%{variable}%' if sys.platform == 'win32' else f'${variable}'
         docker_variables += [f'-e {variable}={platform_variable}']
 
-    return run(f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=show_output, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
+    if show_cmd:
+        print(f'{container_name} {work_dir} $ {cmd}')
+
+    return run(f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"', env=env, show_output=False, show_cmd=show_cmd, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():
     random_source = string.ascii_letters + string.digits

@@ -26,6 +26,7 @@ project_name = get("Octopus.Project.Name")
 release_number = get("Octopus.Release.Number")
 container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 humio_ingest_token = get("dataART.HumioIngestToken")
+worker = get("Octopus.WorkerPool.Name")
 
 xsa_url = get("dataART.XSAUrl")
 xsa_user = get("dataART.XSAUser")
@@ -50,7 +51,7 @@ set("UsersCreated", False)
 #                 Inject container_name into docker function                  #
 ###############################################################################
 
-run = partial(run, exception_handler=fail)
+run = partial(run, worker=worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
 
 ###############################################################################

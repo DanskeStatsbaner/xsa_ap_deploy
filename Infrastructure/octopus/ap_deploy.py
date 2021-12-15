@@ -294,26 +294,26 @@ if is_web:
         password = generate_password()
         users += [(user, password)]
 
-        if environment == 'dev':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
+        if environment != 'prd':
+            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
 
-        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass}, ignore_errors=True)
+        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
         print(f'User {user} has been created')
         if role_collection != project_name:
-            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, ignore_errors=True)
+            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
             print(f'User {user} has been assiged role collection {role_collection}')
 
         if environment == 'prd':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
+            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
             print(f'User {user} has been deleted')
 
-        if environment != 'prd':
+    if environment != 'prd':
 
-            for user, password in users:
-                template += f'<table>'
-                template += f'<tr><td style="margin-right: 30px;"><strong>Username</strong></td><td>{user}<td></tr>'
-                template += f'<tr><td style="margin-right: 30px;"><strong>Password</strong></td><td>{password}<td></tr>'
-                template += f'</table>'
+        for user, password in users:
+            template += f'<table>'
+            template += f'<tr><td style="margin-right: 30px;"><strong>Username</strong></td><td>{user}<td></tr>'
+            template += f'<tr><td style="margin-right: 30px;"><strong>Password</strong></td><td>{password}<td></tr>'
+            template += f'</table>'
 
 template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-top: 1rem;">Application</a>'
 

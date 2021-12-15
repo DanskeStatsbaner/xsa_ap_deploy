@@ -92,6 +92,7 @@ app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
 unprotected_url = url(host)
+app_docs = unprotected_url + '/docs'
 services += [uaa_service]
 
 manifest_dict = {
@@ -211,18 +212,18 @@ output = docker(f'xs service {uaa_service}').lower()
 xs_security = '-c xs-security.json' if is_web else ''
 
 if 'failed' in output:
-    fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
+    fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 elif not 'succeeded' in output:
     output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data')
     if 'failed' in output:
         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
     else:
-        highlight(f'The service "{uaa_service}" was succesfully created')
+        print(f'The service "{uaa_service}" was succesfully created')
 elif is_web:
     output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
 
     if 'failed' in output:
-        fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and rerun xs_push.py.')
+        fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 
 if is_web:
     app_router_output = docker(f'xs push {app_router}', work_dir='/data')
@@ -231,13 +232,11 @@ app_output = docker(f'xs push {project_name}', work_dir='/data')
 output = app_router_output if is_web else app_output
 
 
-app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + '/' + host
+app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + (f'/{host}' if is_web else '')
 
 is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
-if is_running:
-    highlight(f'The application is running: {app_url}')
-else:
+if not is_running:
     fail('The application crashed')
 
 docker(f'xs env {project_name} --export-json env.json', work_dir='/data/octopus')
@@ -284,6 +283,8 @@ set("Workaround", 'Workaround')
 
 set("Scopes", template)
 
+template = ''
+
 if is_web:
     users = []
 
@@ -302,22 +303,23 @@ if is_web:
             docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass}, ignore_errors=True)
             print(f'User {user} has been assiged role collection {role_collection}')
 
-        if environment != 'dev':
+        if environment == 'prd':
             docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
             print(f'User {user} has been deleted')
 
-    if environment == 'dev':
+        if environment != 'prd':
 
-        template = ''
-        for user, password in users:
-            template += f"<table>"
-            template += f"<tr><td><strong>Username</strong></td><td>{user}<td></tr>"
-            template += f"<tr><td><strong>Password</strong></td><td>{password}<td></tr>"
-            template += f"</table>"
+            for user, password in users:
+                template += f'<table>'
+                template += f'<tr><td style="margin-right: 30px;"><strong>Username</strong></td><td>{user}<td></tr>'
+                template += f'<tr><td style="margin-right: 30px;"><strong>Password</strong></td><td>{password}<td></tr>'
+                template += f'</table>'
 
-        template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-top: 1rem;">Go to app</a>'
+template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-top: 1rem;">Application</a>'
 
-        set("Users", template.strip(), True)
+template += f'<a href="{app_docs}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255);text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 5px;font-size: 18px;display: inline-block; margin-top: 1rem;">Application docs</a>'
+
+set("Email", template.strip(), True)
 
 
 ###############################################################################

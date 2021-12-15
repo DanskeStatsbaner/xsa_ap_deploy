@@ -320,7 +320,7 @@ if is_web:
 
 template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Application</a>'
 
-template += f'<a href="{app_docs}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Documentation</a>'
+template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Documentation</a>'
 
 set("Email", template.strip(), True)
 

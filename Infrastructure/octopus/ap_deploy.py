@@ -28,6 +28,8 @@ container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 humio_ingest_token = get("dataART.HumioIngestToken")
 worker = get("Octopus.WorkerPool.Name")
 
+print(worker)
+
 xsa_url = get("dataART.XSAUrl")
 xsa_user = get("dataART.XSAUser")
 xsa_space = get("dataART.XSASpace")

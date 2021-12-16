@@ -53,7 +53,8 @@ def banner(title, width=70, padding=2):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
     seperator = ['#' * (width)]
-    print('\n'.join(seperator + centered_lines + seperator))
+    for line in seperator + centered_lines + seperator:
+        print(line)
 
 def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:

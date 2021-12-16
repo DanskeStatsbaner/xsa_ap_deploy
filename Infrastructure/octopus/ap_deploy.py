@@ -1,7 +1,7 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from deploy_helper import run, docker, generate_password, banner
+from deploy_helper import run, docker, generate_password
 
 pwd = Path.cwd().parent
 os.chdir(pwd)

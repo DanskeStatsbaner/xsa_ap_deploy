@@ -28,8 +28,6 @@ container_name = f"dataArt.{project_name}.{release_number}.{environment}"
 humio_ingest_token = get("dataART.HumioIngestToken")
 worker = get("Octopus.WorkerPool.Name")
 
-print(worker)
-
 xsa_url = get("dataART.XSAUrl")
 xsa_user = get("dataART.XSAUser")
 xsa_space = get("dataART.XSASpace")
@@ -55,6 +53,7 @@ set("UsersCreated", False)
 
 run = partial(run, worker=worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
+banner = partial(banner, print_function=print)
 
 ###############################################################################
 #                         Stop and delete containers                          #

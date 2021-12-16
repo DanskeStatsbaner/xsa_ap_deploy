@@ -1,7 +1,4 @@
-import subprocess, random, string, os, sys
-import logging
-import logging.config
-import sys
+import subprocess, random, string, os, sys, logging, logging.config
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):
@@ -18,7 +15,7 @@ config = {
     'formatters': {
         # Modify log message format here or replace with your custom formatter class
         'my_formatter': {
-            'format': '%(levelname)-8s: %(message)s'
+            'format': '%(message)s'
         }
     },
     'handlers': {
@@ -49,6 +46,14 @@ config = {
 logging.config.dictConfig(config)
 
 print = logging.info
+
+def banner(title, width=70, padding=2):
+    lines = []
+    for line in title.split('\n'):
+        lines += textwrap.wrap(line, width=width - padding)
+    centered_lines = [f'{line:^{width}}' for line in lines]
+    seperator = ['#' * (width)]
+    print('\n'.join(seperator + centered_lines + seperator))
 
 def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:

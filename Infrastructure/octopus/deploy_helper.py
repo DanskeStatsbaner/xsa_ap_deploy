@@ -67,7 +67,8 @@ def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ig
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line)
+            if len(line.strip()) > 0:
+                print(line)
     if not ignore_errors:
         returncode = popen.returncode
         if returncode != 0:

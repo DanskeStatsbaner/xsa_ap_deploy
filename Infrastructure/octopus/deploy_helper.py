@@ -42,7 +42,7 @@ config = {
         # In general, this should be kept at 'NOTSET'.
         # Otherwise it would interfere with the log levels set for each handler.
         'level': 'NOTSET',
-        'handlers': ['console_stderr', 'console_stdout', 'file']
+        'handlers': ['console_stderr', 'console_stdout']
     },
 }
 

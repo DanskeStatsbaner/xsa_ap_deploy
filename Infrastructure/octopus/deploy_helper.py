@@ -18,7 +18,7 @@ config = {
     'formatters': {
         # Modify log message format here or replace with your custom formatter class
         'my_formatter': {
-            'format': '%(asctime)s: %(levelname)-8s: %(message)s'
+            'format': '%(levelname)-8s: %(message)s'
         }
     },
     'handlers': {
@@ -36,14 +36,6 @@ config = {
             'formatter': 'my_formatter',
             'filters': ['exclude_errors'],
             'stream': sys.stdout
-        },
-        'file': {
-            # Sends all log messages to a file
-            'class': 'logging.FileHandler',
-            'level': 'DEBUG',
-            'formatter': 'my_formatter',
-            'filename': 'my.log',
-            'encoding': 'utf8'
         }
     },
     'root': {

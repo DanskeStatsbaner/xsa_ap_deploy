@@ -1,4 +1,62 @@
 import subprocess, random, string, os, sys
+import logging
+import logging.config
+import sys
+
+class _ExcludeErrorsFilter(logging.Filter):
+    def filter(self, record):
+        """Only returns log messages with log level below ERROR (numeric value: 40)."""
+        return record.levelno < 40
+
+config = {
+    'version': 1,
+    'filters': {
+        'exclude_errors': {
+            '()': _ExcludeErrorsFilter
+        }
+    },
+    'formatters': {
+        # Modify log message format here or replace with your custom formatter class
+        'my_formatter': {
+            'format': '%(asctime)s: %(levelname)-8s: %(message)s'
+        }
+    },
+    'handlers': {
+        'console_stderr': {
+            # Sends log messages with log level ERROR or higher to stderr
+            'class': 'logging.StreamHandler',
+            'level': 'ERROR',
+            'formatter': 'my_formatter',
+            'stream': sys.stderr
+        },
+        'console_stdout': {
+            # Sends log messages with log level lower than ERROR to stdout
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'my_formatter',
+            'filters': ['exclude_errors'],
+            'stream': sys.stdout
+        },
+        'file': {
+            # Sends all log messages to a file
+            'class': 'logging.FileHandler',
+            'level': 'DEBUG',
+            'formatter': 'my_formatter',
+            'filename': 'my.log',
+            'encoding': 'utf8'
+        }
+    },
+    'root': {
+        # In general, this should be kept at 'NOTSET'.
+        # Otherwise it would interfere with the log levels set for each handler.
+        'level': 'NOTSET',
+        'handlers': ['console_stderr', 'console_stdout', 'file']
+    },
+}
+
+logging.config.dictConfig(config)
+
+print = logging.info
 
 def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
@@ -17,7 +75,7 @@ def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ig
         line = popen.stdout.readline()
         output += line
         if show_output:
-            print(line, end='')
+            print(line)
     if not ignore_errors:
         returncode = popen.returncode
         if returncode != 0:

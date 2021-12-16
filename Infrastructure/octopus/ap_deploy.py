@@ -58,7 +58,11 @@ docker = partial(docker, container_name=container_name, exception_handler=fail)
 #                         Stop and delete containers                          #
 ###############################################################################
 
-highlight("Stop and delete containers")
+highlight("""
+-------------------------------------------------------------------------------
+Stop and delete containers
+-------------------------------------------------------------------------------
+""")
 
 run(f'docker container stop {container_name}', ignore_errors=True)
 run('docker container prune -f')

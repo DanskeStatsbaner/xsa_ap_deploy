@@ -53,7 +53,7 @@ set("UsersCreated", False)
 
 run = partial(run, worker=worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
-banner = partial(banner, print_function=print)
+banner = partial(banner, print_function=highlight)
 
 ###############################################################################
 #                         Stop and delete containers                          #

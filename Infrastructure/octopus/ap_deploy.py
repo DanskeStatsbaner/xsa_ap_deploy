@@ -58,7 +58,7 @@ docker = partial(docker, container_name=container_name, exception_handler=fail)
 #                         Stop and delete containers                          #
 ###############################################################################
 
-print(banner("Stop and delete containers"))
+highlight(banner("Stop and delete containers"))
 
 run(f'docker container stop {container_name}', ignore_errors=True)
 run('docker container prune -f')
@@ -67,7 +67,7 @@ run('docker container prune -f')
 #             Log in to artifactory, pull and start docker_image              #
 ###############################################################################
 
-print(banner("Log in to artifactory, pull and start docker_image"))
+highlight(banner("Log in to artifactory, pull and start docker_image"))
 
 run(f'docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, pipe='artifactory_pass')
 run(f'docker pull {docker_image}')
@@ -77,7 +77,7 @@ run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image
 #                Load and modify manifest.yml from deployment                 #
 ###############################################################################
 
-print(banner("Load and modify manifest.yml from deployment"))
+highlight(banner("Load and modify manifest.yml from deployment"))
 
 with open('manifest.yml') as manifest:
     manifest_yaml = manifest.read()
@@ -138,7 +138,7 @@ with open('app/manifest', 'w') as file:
 #                 Define environment variables for deployment                 #
 ###############################################################################
 
-print(banner("Define environment variables for deployment"))
+highlight(banner("Define environment variables for deployment"))
 
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
@@ -164,7 +164,7 @@ for variable, value in environment_variables.items():
 #                      Create files for XSA application                       #
 ###############################################################################
 
-print(banner("Create files for XSA application"))
+highlight(banner("Create files for XSA application"))
 
 if is_web:
     with open('app-router/xs-app.json') as file:
@@ -214,7 +214,7 @@ if is_web:
 #                     Deploy XSA application using XS CLI                     #
 ###############################################################################
 
-print(banner("Deploy XSA application using XS CLI"))
+highlight(banner("Deploy XSA application using XS CLI"))
 
 docker(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
 
@@ -340,7 +340,7 @@ set("Email", template.strip(), True)
 #                         Stop and delete containers                          #
 ###############################################################################
 
-print(banner("Stop and delete containers"))
+highlight(banner("Stop and delete containers"))
 
 run(f'docker container stop {container_name}', ignore_errors=True)
 run('docker container prune -f')

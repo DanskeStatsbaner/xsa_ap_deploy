@@ -53,7 +53,16 @@ set("UsersCreated", False)
 
 run = partial(run, worker=worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
-banner = partial(banner, print_function=highlight)
+
+import textwrap
+
+def banner(title, width=70, padding=2):
+    lines = []
+    for line in title.split('\n'):
+        lines += textwrap.wrap(line, width=width - padding)
+    centered_lines = [f'{line:^{width}}' for line in lines]
+    seperator = ['#' * (width)]
+    highlight('\n'.join(seperator + centered_lines + seperator))
 
 ###############################################################################
 #                         Stop and delete containers                          #

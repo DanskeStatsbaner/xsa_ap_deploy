@@ -279,7 +279,7 @@ if is_web:
             print(f'User {user} has been deleted')
 
 
-endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url}", work_dir='/data/octopus')
+endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url} -u $users", env={'users': json.dumps(users)}, work_dir='/data/octopus')
 endpoint_collection = json.loads(endpoint_collection)
 
 predefined_endpoints = [

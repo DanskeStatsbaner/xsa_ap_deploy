@@ -1,18 +1,16 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from deploy_helper import run, docker, generate_password, print
+from deploy_helper import run, docker, generate_password, print, banner
 
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
 docker_image = 'artifactory.azure.dsb.dk/docker/xsa_ap_cli_deploy'
 
-print("""
 ###############################################################################
-             Define functions for easier interaction with Octopus
+banner("Define functions for easier interaction with Octopus")
 ###############################################################################
-""")
 
 get = lambda variable: get_octopusvariable(variable)
 set = lambda variable, value, sensitive=False: set_octopusvariable(variable, str(value), sensitive)
@@ -200,12 +198,14 @@ if is_web:
 
         scopes = [scope['name'] for scope in xs_security['scopes']]
         role_collections = []
-        mappings = []
+        ad_mappings = []
+        scope_mappings = {}
 
         for index, role in enumerate(xs_security['role-templates']):
             role_collection = f'{project_name}_{role["name"]}'
             role_collections += [role_collection]
-            mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+            ad_mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+            scope_mappings[role_collection] = role['scope-references']
             xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
             xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
 
@@ -264,8 +264,8 @@ if is_web:
         docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
         docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
-    mappings = json.dumps(mappings).replace('"', '\\"')
-    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
+    ad_mappings = json.dumps(ad_mappings).replace('"', '\\"')
+    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{ad_mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
     set("UsersCreated", str(True))
 
 docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
@@ -311,7 +311,8 @@ if is_web:
     for role_collection in [project_name] + role_collections:
         user = role_collection
         password = generate_password()
-        users += [(user, password)]
+        scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
+        users += [(user, password, scopes)]
 
         # Delete existing users, to ensure that scopes are updated correctly
         if environment != 'prd':
@@ -329,15 +330,17 @@ if is_web:
 
     if environment != 'prd':
 
-        for user, password in users:
+        for user, password, scopes in users:
             template += f'<table style="margin-bottom: 1rem;">'
             template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
             template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'
+            template += f'<tr><td><strong>Scopes</strong></td><td>{table_space}</td><td>{", ".join(scopes)}<td></tr>'
             template += f'</table>'
 
-template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Application</a>'
+button_style = 'color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;'
 
-template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;">Documentation</a>'
+template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); {button_style}">Application</a>'
+template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
 
 set("Email", template.strip(), True)
 

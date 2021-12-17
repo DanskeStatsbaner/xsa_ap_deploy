@@ -4,7 +4,7 @@ from functools import partial
 
 run = partial(run, show_output=False, show_cmd=False)
 
-def get_endpoints(app_url, users):
+def get_endpoints(app_url):
 
     with open('env.json') as env_json:
         data = json.load(env_json)

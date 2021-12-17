@@ -151,7 +151,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 print(f'User {user} has been deleted')
 
 
-    endpoint_collection = get_endpoints(unprotected_url, users)
+    endpoint_collection = get_endpoints(unprotected_url)
 
     predefined_endpoints = [
         '/{rest_of_path:path}',

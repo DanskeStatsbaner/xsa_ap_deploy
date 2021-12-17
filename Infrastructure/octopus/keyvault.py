@@ -1,13 +1,7 @@
-import json, traceback, sys
-import click
+import json
 from hdbcli import dbapi
 
-@click.command()
-@click.option('-n', '--project-name', required=True)
-@click.option('-h', '--hana-host', required=True)
-@click.option('-u', '--xsa-keyuser', required=True)
-@click.option('-p', '--xsa-pass', required=True)
-def insert_key(project_name, hana_host, xsa_keyuser, xsa_pass):
+def keyvault(project_name, hana_host, xsa_keyuser, xsa_pass):
     hana_port = 30015
 
     with open('env.json') as env_json:
@@ -18,10 +12,3 @@ def insert_key(project_name, hana_host, xsa_keyuser, xsa_pass):
         conn.cursor().execute(f"""
             UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{data}') WHERE APPNAME = '{project_name}'
         """)
-
-try:
-    insert_key()
-except Exception as ex:
-    print('Something went wrong')
-    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-    sys.exit(1)

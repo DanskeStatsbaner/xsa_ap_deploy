@@ -1,10 +1,9 @@
-import json, traceback, sys
+import json, sys
 from deploy_helper import run
 from seleniumwire import webdriver
 from seleniumwire.utils import decode
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import click
 
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
@@ -27,12 +26,7 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
         print('Request was not found, retrying...')
         return recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
-@click.command()
-@click.option('-u', '--xsa-user', required=True)
-@click.option('-p', '--xsa-pass', required=True)
-@click.option('-a', '--xsa-url', required=True)
-@click.option('-m', '--mappings', required=True, help=f'Mappings as JSON i.e. {json.dumps([["AP_PYTHON_WEB_ADMIN", "SHIP.NU0.DEVELOPER"], ["AP_PYTHON_WEB_USER", "SHIP.NU0.DEVELOPER"]])}')
-def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
+def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
 
     mappings = json.loads(mappings)
 
@@ -73,10 +67,3 @@ def saml_role_collection(xsa_user, xsa_pass, xsa_url, mappings):
             sys.exit(1)
         else:
             print(f'Mapping {role_collection} -> {attribute_value} created')
-
-try:
-    saml_role_collection()
-except Exception as ex:
-    print(f'Something went wrong')
-    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-    sys.exit(1)

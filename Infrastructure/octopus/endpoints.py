@@ -1,13 +1,9 @@
-import json, traceback, sys
-import click
+import json
 from deploy_helper import run
 from functools import partial
 
 run = partial(run, show_output=False, show_cmd=False)
 
-@click.command()
-@click.option('-a', '--app-url', required=True)
-@click.option('-u', '--users', required=True)
 def endpoints(app_url, users):
     users = json.loads(users)
     with open('env.json') as env_json:
@@ -22,11 +18,4 @@ def endpoints(app_url, users):
 
     endpoint_collection = run(f'curl -s -X GET {app_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token})
 
-    print(endpoint_collection)
-
-try:
-    endpoints()
-except Exception as ex:
-    print('Something went wrong')
-    print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-    sys.exit(1)
+    return endpoint_collection

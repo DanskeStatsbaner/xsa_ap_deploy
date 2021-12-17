@@ -18,7 +18,6 @@ fail = print
 @click.option('--xsa-space')
 @click.option('--xsa-pass')
 @click.option('--uaa-service')
-@click.option('--is-web')
 @click.option('--project-name')
 @click.option('--hana-host')
 @click.option('--xsa-keyuser')
@@ -28,14 +27,14 @@ fail = print
 @click.option('--environment')
 @click.option('--unprotected-url')
 @click.option('--encryption-key')
-def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
+def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
 
     encryption_key = ast.literal_eval(encryption_key)
 
     pwd = Path.cwd().parent
     os.chdir(pwd)
 
-    is_web = bool(is_web)
+    is_web = os.path.exists('xs-security.json')
 
     if is_web:
         with open('app-router/xs-app.json') as file:

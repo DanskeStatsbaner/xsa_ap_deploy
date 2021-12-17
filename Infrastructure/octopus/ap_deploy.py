@@ -162,7 +162,6 @@ xs_output = docker(f"python3 xs.py", env=env({
     'xsa_space': xsa_space,
     'xsa_pass': xsa_pass,
     'uaa_service': uaa_service,
-    'is_web': is_web,
     'project_name': project_name,
     'hana_host': hana_host,
     'xsa_keyuser': xsa_keyuser,
@@ -180,14 +179,12 @@ with open('xs_output.bin', 'rb') as file:
 
 cipher = AES.new(encryption_key, AES.MODE_CFB, iv=iv)
 xs_output = cipher.decrypt(ciphered_data)
-
 xs_output = json.loads(xs_output)
 
 # Necessary, otherwise the "Scopes" variable will not be set (Octopus bug)
 set("Workaround", 'Workaround')
 
 set("Scopes", xs_output['scope'])
-
 set("Email", xs_output['login'], True)
 
 ###############################################################################

@@ -17,5 +17,6 @@ def get_endpoints(app_url, users):
     access_token = json.loads(credentials)['access_token']
 
     endpoint_collection = run(f'curl -s -X GET {app_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token})
+    endpoint_collection = json.loads(endpoint_collection)
 
     return endpoint_collection

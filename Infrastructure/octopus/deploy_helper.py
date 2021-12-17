@@ -1,4 +1,4 @@
-import subprocess, random, string, os, sys, textwrap, logging, logging.config, inspect
+import subprocess, random, string, os, sys, textwrap, logging, logging.config
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):
@@ -53,7 +53,7 @@ def banner(title, width=70, padding=2):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
     seperator = '#' * (width)
-    print(inspect.cleandoc(f"""
+    print(textwrap.dedent(f"""
         {seperator}
         {os.linesep.join(centered_lines)}
         {seperator}

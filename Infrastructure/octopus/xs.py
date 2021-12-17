@@ -27,6 +27,7 @@ fail = print
 @click.option('--hana-environment-upper')
 @click.option('--environment')
 @click.option('--unprotected-url')
+@click.option('--encryption-key')
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
 
     encryption_key = ast.literal_eval(encryption_key)

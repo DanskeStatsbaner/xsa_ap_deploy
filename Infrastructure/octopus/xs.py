@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 from deploy_helper import run, generate_password
 from functools import partial
-from endpoints import endpoints
+from endpoints import get_endpoints
 from keyvault import keyvault
 from cockpit import cockpit
 
@@ -148,7 +148,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
                 print(f'User {user} has been deleted')
 
 
-    endpoint_collection = endpoints(unprotected_url, users)
+    endpoint_collection = get_endpoints(unprotected_url, users)
 
     predefined_endpoints = [
         '/{rest_of_path:path}',

@@ -152,7 +152,7 @@ for variable, value in environment_variables.items():
         with open('app/' + path, 'w', encoding="utf-8") as file:
             file.write(content)
 
-env = lambda d: {'deploy_' + k: str(v) for k, v in d.items()}
+env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 
 docker(f"python3 xs.py", env=env({
     'xsa_user': xsa_user,

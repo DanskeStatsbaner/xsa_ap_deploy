@@ -149,7 +149,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
     endpoint_collection = json.loads(endpoint_collection)
 
 try:
-    xs(auto_envvar_prefix='deploy')
+    xs(auto_envvar_prefix='DEPLOY')
 except Exception as ex:
     print('Something went wrong')
     print(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))

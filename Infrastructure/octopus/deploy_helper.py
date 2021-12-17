@@ -1,4 +1,5 @@
 import subprocess, random, string, os, sys, textwrap, logging, logging.config
+from Crypto.Random import get_random_bytes
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):

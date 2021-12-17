@@ -6,6 +6,7 @@ from functools import partial
 from endpoints import get_endpoints
 from keyvault import keyvault
 from cockpit import cockpit
+from Crypto.Cipher import AES
 
 run = partial(run, show_output=True, show_cmd=True)
 
@@ -26,7 +27,7 @@ fail = print
 @click.option('--hana-environment-upper')
 @click.option('--environment')
 @click.option('--unprotected-url')
-def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url):
+def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
 
     pwd = Path.cwd().parent
     os.chdir(pwd)
@@ -193,7 +194,14 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
     login_template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
     login_template = login_template.strip()
 
-    return {"scope": scope_template, "login": login_template}
+    data = json.dumps({"scope": scope_template, "login": login_template}).encode('utf-8')
+
+    cipher = AES.new(encryption_key, AES.MODE_CFB)
+    ciphered_data = cipher.encrypt(data)
+
+    with open('xs_output.bin', "wb") as file:
+        file.write(cipher.iv)
+        file.write(ciphered_data)
 
 try:
     xs(auto_envvar_prefix='DEPLOY')

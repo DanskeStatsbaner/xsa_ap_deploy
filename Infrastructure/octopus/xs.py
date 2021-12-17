@@ -24,6 +24,8 @@ fail = print
 @click.option('unprotected-url')
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url):
 
+    is_web = bool(is_web)
+
     if is_web:
         with open('app-router/xs-app.json') as file:
             xs_app = json.loads(file.read())

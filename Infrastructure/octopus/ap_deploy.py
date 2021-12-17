@@ -91,7 +91,6 @@ app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{project_name}-uaa'
 url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
 unprotected_url = url(host)
-app_docs = unprotected_url + '/docs'
 services += [uaa_service]
 
 manifest_dict = {
@@ -154,7 +153,7 @@ for variable, value in environment_variables.items():
 
 env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 
-docker(f"python3 xs.py", env=env({
+xs_output = docker(f"python3 xs.py", env=env({
     'xsa_user': xsa_user,
     'xsa_url': xsa_url,
     'xsa_space': xsa_space,
@@ -170,6 +169,8 @@ docker(f"python3 xs.py", env=env({
     'environment': environment,
     'unprotected_url': unprotected_url
 }), work_dir='/data/octopus')
+
+xs_output = json.loads(xs_output)
 
 # ###############################################################################
 # banner("Create files for XSA application")
@@ -301,54 +302,54 @@ docker(f"python3 xs.py", env=env({
 # endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url} -u $users", env={'users': json.dumps(users).replace('"', '\\"')}, work_dir='/data/octopus')
 # endpoint_collection = json.loads(endpoint_collection)
 
-predefined_endpoints = [
-    '/{rest_of_path:path}',
-    '/docs',
-    '/openapi.json',
-    '/upload',
-    '/scope-check',
-    '/health'
-]
+# predefined_endpoints = [
+#     '/{rest_of_path:path}',
+#     '/docs',
+#     '/openapi.json',
+#     '/upload',
+#     '/scope-check',
+#     '/health'
+# ]
 
-table_space = '&nbsp;' * 10
+# table_space = '&nbsp;' * 10
 
-template = ''
-for title, endpoints in endpoint_collection.items():
-    endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
-    if len(endpoints) > 0:
-        template += f'<h3>{title}</h3>'
-        template += f'<table>'
-        template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td></tr>'
-        for endpoint, scope in endpoints.items():
-            template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td></tr>'
-        template += f'</table>'
+# template = ''
+# for title, endpoints in endpoint_collection.items():
+#     endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
+#     if len(endpoints) > 0:
+#         template += f'<h3>{title}</h3>'
+#         template += f'<table>'
+#         template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td></tr>'
+#         for endpoint, scope in endpoints.items():
+#             template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td></tr>'
+#         template += f'</table>'
 
-template = template.strip()
+# template = template.strip()
 
 # Necessary, otherwise the "Scopes" variable will not be set (Octopus bug)
 set("Workaround", 'Workaround')
 
-set("Scopes", template)
+set("Scopes", xs_output['scope'])
 
-template = ''
+# template = ''
 
-if is_web:
+# if is_web:
 
-    if environment != 'prd':
+#     if environment != 'prd':
 
-        for user, password, scopes in users:
-            template += f'<table style="margin-bottom: 1rem;">'
-            template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
-            template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'
-            template += f'<tr><td><strong>Scopes</strong></td><td>{table_space}</td><td>{", ".join(scopes)}<td></tr>'
-            template += f'</table>'
+#         for user, password, scopes in users:
+#             template += f'<table style="margin-bottom: 1rem;">'
+#             template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
+#             template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'
+#             template += f'<tr><td><strong>Scopes</strong></td><td>{table_space}</td><td>{", ".join(scopes)}<td></tr>'
+#             template += f'</table>'
 
-button_style = 'color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;'
+# button_style = 'color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;'
 
-template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); {button_style}">Application</a>'
-template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
+# template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); {button_style}">Application</a>'
+# template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
 
-set("Email", template.strip(), True)
+set("Email", xs_output['login'], True)
 
 ###############################################################################
 banner("Stop and delete containers")

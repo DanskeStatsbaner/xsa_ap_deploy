@@ -152,6 +152,51 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
 
     endpoint_collection = endpoints(unprotected_url, users)
 
+    predefined_endpoints = [
+        '/{rest_of_path:path}',
+        '/docs',
+        '/openapi.json',
+        '/upload',
+        '/scope-check',
+        '/health'
+    ]
+
+    table_space = '&nbsp;' * 10
+
+    scope_template = ''
+    for title, endpoints in endpoint_collection.items():
+        endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
+        if len(endpoints) > 0:
+            scope_template += f'<h3>{title}</h3>'
+            scope_template += f'<table>'
+            scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td></tr>'
+            for endpoint, scope in endpoints.items():
+                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td></tr>'
+            scope_template += f'</table>'
+
+    scope_template = scope_template.strip()
+
+    login_template = ''
+
+    if is_web:
+        if environment != 'prd':
+            for user, password, scopes in users:
+                login_template += f'<table style="margin-bottom: 1rem;">'
+                login_template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
+                login_template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'
+                login_template += f'<tr><td><strong>Scopes</strong></td><td>{table_space}</td><td>{", ".join(scopes)}<td></tr>'
+                login_template += f'</table>'
+
+    button_style = 'color:rgb(255,255,255); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 5px; font-size: 18px; display: inline-block; margin-bottom: 1rem; margin-right: 1rem;'
+
+    app_docs = unprotected_url + '/docs'
+
+    login_template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); {button_style}">Application</a>'
+    login_template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
+    login_template = login_template.strip()
+
+    return {"scope": scope_template, "login": login_template}
+
 try:
     xs(auto_envvar_prefix='DEPLOY')
 except Exception as ex:

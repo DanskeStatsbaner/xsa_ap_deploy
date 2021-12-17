@@ -254,6 +254,31 @@ if is_web:
 
 docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
 
+if is_web:
+    users = []
+
+    # Checking User with different scopes
+    for role_collection in [project_name] + role_collections:
+        user = role_collection
+        password = generate_password()
+        scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
+        users += [(user, password, scopes)]
+
+        # Delete existing users, to ensure that scopes are updated correctly
+        if environment != 'prd':
+            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
+
+        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
+        print(f'User {user} has been created')
+        if role_collection != project_name:
+            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+            print(f'User {user} has been assiged role collection {role_collection}')
+
+        if environment == 'prd':
+            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
+            print(f'User {user} has been deleted')
+
+
 endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url}", work_dir='/data/octopus')
 endpoint_collection = json.loads(endpoint_collection)
 
@@ -289,28 +314,6 @@ set("Scopes", template)
 template = ''
 
 if is_web:
-    users = []
-
-    # Checking User with different scopes
-    for role_collection in [project_name] + role_collections:
-        user = role_collection
-        password = generate_password()
-        scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
-        users += [(user, password, scopes)]
-
-        # Delete existing users, to ensure that scopes are updated correctly
-        if environment != 'prd':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
-
-        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
-        print(f'User {user} has been created')
-        if role_collection != project_name:
-            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-            print(f'User {user} has been assiged role collection {role_collection}')
-
-        if environment == 'prd':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
-            print(f'User {user} has been deleted')
 
     if environment != 'prd':
 

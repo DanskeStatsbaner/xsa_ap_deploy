@@ -1,5 +1,4 @@
 import subprocess, random, string, os, sys, textwrap, logging, logging.config
-from functools import partial
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):
@@ -46,7 +45,7 @@ config = {
 
 logging.config.dictConfig(config)
 
-print = lambda message: partial(logging.info, ' ' + str(message))
+print = lambda message: logging.info(' ' + str(message))
 
 def banner(title, width=70, padding=2):
     lines = []

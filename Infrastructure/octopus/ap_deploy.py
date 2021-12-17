@@ -44,9 +44,6 @@ artifactory_pass = sys.argv[2]
 
 is_web = os.path.exists('xs-security.json')
 
-set("Web", is_web)
-set("UsersCreated", False)
-
 ###############################################################################
 banner("Inject container_name into docker function")
 ###############################################################################
@@ -270,7 +267,6 @@ xs_output = json.loads(xs_output)
 
 #     ad_mappings = json.dumps(ad_mappings).replace('"', '\\"')
 #     docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{ad_mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
-#     set("UsersCreated", str(True))
 
 # docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
 

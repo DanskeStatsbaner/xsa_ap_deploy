@@ -7,7 +7,7 @@ from endpoints import endpoints
 from keyvault import keyvault
 from cockpit import cockpit
 
-run = partial(run, show_output=False, show_cmd=False)
+run = partial(run, show_output=True, show_cmd=True)
 
 fail = print
 
@@ -119,7 +119,6 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
             run(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
             run(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
-        ad_mappings = json.dumps(ad_mappings).replace('"', '\\"')
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
         set("UsersCreated", str(True))
 

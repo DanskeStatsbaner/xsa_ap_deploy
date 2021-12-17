@@ -152,135 +152,154 @@ for variable, value in environment_variables.items():
         with open('app/' + path, 'w', encoding="utf-8") as file:
             file.write(content)
 
-###############################################################################
-banner("Create files for XSA application")
-###############################################################################
+env = lambda d: {'deploy_' + k: v for k, v in d.items()}
 
-if is_web:
-    with open('app-router/xs-app.json') as file:
-        xs_app = json.loads(file.read())
-        xs_app['welcomeFile'] = f"/{host}"
-        xs_app['routes'][0]['source'] = f"/{host}(.*)"
-        xs_app['routes'][0]['destination'] = project_name
-        xs_app = json.dumps(xs_app, indent=2)
+docker(f"python3 xs.py", env=env({
+    'xsa_user': xsa_user,
+    'xsa_url': xsa_url,
+    'xsa_space': xsa_space,
+    'xsa_pass': xsa_pass,
+    'uaa_service': uaa_service,
+    'is_web': is_web,
+    'project_name': project_name,
+    'hana_host': hana_host,
+    'xsa_keyuser': xsa_keyuser,
+    'app_router': app_router,
+    'host': host,
+    'hana_environment_upper': hana_environment_upper,
+    'environment': environment,
+    'unprotected_url': unprotected_url
+}), work_dir='/data/octopus')
 
-    with open('app-router/xs-app.json', 'w') as file:
-        file.write(xs_app)
+# ###############################################################################
+# banner("Create files for XSA application")
+# ###############################################################################
 
-    with open('app-router/package.json') as file:
-        package = json.loads(file.read())
-        package['name'] = f"{host}-approuter"
-        package = json.dumps(package, indent=2)
+# if is_web:
+#     with open('app-router/xs-app.json') as file:
+#         xs_app = json.loads(file.read())
+#         xs_app['welcomeFile'] = f"/{host}"
+#         xs_app['routes'][0]['source'] = f"/{host}(.*)"
+#         xs_app['routes'][0]['destination'] = project_name
+#         xs_app = json.dumps(xs_app, indent=2)
 
-    with open('app-router/package.json', 'w') as file:
-        file.write(package)
+#     with open('app-router/xs-app.json', 'w') as file:
+#         file.write(xs_app)
 
-    with open('xs-security.json') as file:
-        xs_security = json.loads(file.read())
-        xs_security['xsappname'] = project_name
+#     with open('app-router/package.json') as file:
+#         package = json.loads(file.read())
+#         package['name'] = f"{host}-approuter"
+#         package = json.dumps(package, indent=2)
 
-        for index, scope in enumerate(xs_security['scopes']):
-            xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
+#     with open('app-router/package.json', 'w') as file:
+#         file.write(package)
 
-        scopes = [scope['name'] for scope in xs_security['scopes']]
-        role_collections = []
-        ad_mappings = []
-        scope_mappings = {}
+#     with open('xs-security.json') as file:
+#         xs_security = json.loads(file.read())
+#         xs_security['xsappname'] = project_name
 
-        for index, role in enumerate(xs_security['role-templates']):
-            role_collection = f'{project_name}_{role["name"]}'
-            role_collections += [role_collection]
-            ad_mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
-            scope_mappings[role_collection] = role['scope-references']
-            xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
-            xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
+#         for index, scope in enumerate(xs_security['scopes']):
+#             xs_security['scopes'][index]['name'] = f'$XSAPPNAME.{scope["name"]}'
 
-        roles = [role['name'] for role in xs_security['role-templates']]
+#         scopes = [scope['name'] for scope in xs_security['scopes']]
+#         role_collections = []
+#         ad_mappings = []
+#         scope_mappings = {}
 
-        xs_security = json.dumps(xs_security, indent=2)
+#         for index, role in enumerate(xs_security['role-templates']):
+#             role_collection = f'{project_name}_{role["name"]}'
+#             role_collections += [role_collection]
+#             ad_mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+#             scope_mappings[role_collection] = role['scope-references']
+#             xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
+#             xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]
 
-    with open('xs-security.json', 'w') as file:
-        file.write(xs_security)
+#         roles = [role['name'] for role in xs_security['role-templates']]
 
-###############################################################################
-banner("Deploy XSA application using XS CLI")
-###############################################################################
+#         xs_security = json.dumps(xs_security, indent=2)
 
-docker(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
+#     with open('xs-security.json', 'w') as file:
+#         file.write(xs_security)
 
-output = docker(f'xs service {uaa_service}').lower()
+# ###############################################################################
+# banner("Deploy XSA application using XS CLI")
+# ###############################################################################
 
-xs_security = '-c xs-security.json' if is_web else ''
+# docker(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
 
-if 'failed' in output:
-    fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
-elif not 'succeeded' in output:
-    output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data')
-    if 'failed' in output:
-        fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
-    else:
-        print(f'The service "{uaa_service}" was succesfully created')
-elif is_web:
-    output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
+# output = docker(f'xs service {uaa_service}').lower()
 
-    if 'failed' in output:
-        fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
+# xs_security = '-c xs-security.json' if is_web else ''
 
-if is_web:
-    app_router_output = docker(f'xs push {app_router}', work_dir='/data')
+# if 'failed' in output:
+#     fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
+# elif not 'succeeded' in output:
+#     output = docker(f'xs create-service xsuaa default {uaa_service} {xs_security}', work_dir='/data')
+#     if 'failed' in output:
+#         fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+#     else:
+#         print(f'The service "{uaa_service}" was succesfully created')
+# elif is_web:
+#     output = docker(f'xs update-service {uaa_service} {xs_security}', work_dir='/data')
 
-app_output = docker(f'xs push {project_name}', work_dir='/data')
-output = app_router_output if is_web else app_output
+#     if 'failed' in output:
+#         fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 
+# if is_web:
+#     app_router_output = docker(f'xs push {app_router}', work_dir='/data')
 
-app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + (f'/{host}' if is_web else '')
-
-is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
-
-if not is_running:
-    fail('The application crashed')
-
-docker(f'xs env {project_name} --export-json env.json', work_dir='/data/octopus')
-
-if is_web:
-    for role_collection in role_collections:
-        docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-        docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-        docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-
-    ad_mappings = json.dumps(ad_mappings).replace('"', '\\"')
-    docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{ad_mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
-    set("UsersCreated", str(True))
-
-docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
-
-if is_web:
-    users = []
-
-    # Checking User with different scopes
-    for role_collection in [project_name] + role_collections:
-        user = role_collection
-        password = generate_password()
-        scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
-        users += [(user, password, scopes)]
-
-        # Delete existing users, to ensure that scopes are updated correctly
-        if environment != 'prd':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
-
-        docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
-        print(f'User {user} has been created')
-        if role_collection != project_name:
-            docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-            print(f'User {user} has been assiged role collection {role_collection}')
-
-        if environment == 'prd':
-            docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
-            print(f'User {user} has been deleted')
+# app_output = docker(f'xs push {project_name}', work_dir='/data')
+# output = app_router_output if is_web else app_output
 
 
-endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url} -u $users", env={'users': json.dumps(users).replace('"', '\\"')}, work_dir='/data/octopus')
-endpoint_collection = json.loads(endpoint_collection)
+# app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + (f'/{host}' if is_web else '')
+
+# is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
+
+# if not is_running:
+#     fail('The application crashed')
+
+# docker(f'xs env {project_name} --export-json env.json', work_dir='/data/octopus')
+
+# if is_web:
+#     for role_collection in role_collections:
+#         docker(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+#         docker(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+#         docker(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+
+#     ad_mappings = json.dumps(ad_mappings).replace('"', '\\"')
+#     docker(f"python3 cockpit.py -u {xsa_user} -p $xsa_pass -a {xsa_url} -m '{ad_mappings}'", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
+#     set("UsersCreated", str(True))
+
+# docker(f"python3 keyvault.py -n {project_name} -h {hana_host} -u {xsa_keyuser} -p $xsa_pass", env={'xsa_pass': xsa_pass}, work_dir='/data/octopus')
+
+# if is_web:
+#     users = []
+
+#     # Checking User with different scopes
+#     for role_collection in [project_name] + role_collections:
+#         user = role_collection
+#         password = generate_password()
+#         scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
+#         users += [(user, password, scopes)]
+
+#         # Delete existing users, to ensure that scopes are updated correctly
+#         if environment != 'prd':
+#             docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
+
+#         docker(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
+#         print(f'User {user} has been created')
+#         if role_collection != project_name:
+#             docker(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+#             print(f'User {user} has been assiged role collection {role_collection}')
+
+#         if environment == 'prd':
+#             docker(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
+#             print(f'User {user} has been deleted')
+
+
+# endpoint_collection = docker(f"python3 endpoints.py -a {unprotected_url} -u $users", env={'users': json.dumps(users).replace('"', '\\"')}, work_dir='/data/octopus')
+# endpoint_collection = json.loads(endpoint_collection)
 
 predefined_endpoints = [
     '/{rest_of_path:path}',

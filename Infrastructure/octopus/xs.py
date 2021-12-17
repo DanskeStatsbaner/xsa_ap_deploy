@@ -67,8 +67,8 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
 
             xs_security = json.dumps(xs_security, indent=2)
 
-    with open('xs-security.json', 'w') as file:
-        file.write(xs_security)
+        with open('xs-security.json', 'w') as file:
+            file.write(xs_security)
 
     run(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
 

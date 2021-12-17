@@ -1,7 +1,7 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from deploy_helper import run, docker, generate_password, print, banner, get_random_bytes
+from deploy_helper import run, docker, generate_password, print, banner, get_random_bytes, AES
 
 encryption_key = get_random_bytes(32)
 
@@ -150,7 +150,11 @@ for variable, value in environment_variables.items():
         with open('app/' + path, 'w', encoding="utf-8") as file:
             file.write(content)
 
-env = lambda d: {f'deploy_{k}'.upper(): v for k, v in d.items()}
+env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
+
+###############################################################################
+banner("Deploy XSA application using XS CLI")
+###############################################################################
 
 xs_output = docker(f"python3 xs.py", env=env({
     'xsa_user': xsa_user,
@@ -158,7 +162,7 @@ xs_output = docker(f"python3 xs.py", env=env({
     'xsa_space': xsa_space,
     'xsa_pass': xsa_pass,
     'uaa_service': uaa_service,
-    'is_web': str(is_web),
+    'is_web': is_web,
     'project_name': project_name,
     'hana_host': hana_host,
     'xsa_keyuser': xsa_keyuser,
@@ -170,9 +174,12 @@ xs_output = docker(f"python3 xs.py", env=env({
     'encryption_key': encryption_key
 }), work_dir='/data/octopus')
 
-###############################################################################
-banner("Deploy XSA application using XS CLI")
-###############################################################################
+with open('xs_output.bin', 'rb') as file:
+    iv = file.read(16)
+    ciphered_data = file.read()
+
+cipher = AES.new(encryption_key, AES.MODE_CFB, iv=iv)
+xs_output = cipher.decrypt(ciphered_data)
 
 xs_output = json.loads(xs_output)
 

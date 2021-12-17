@@ -1,4 +1,4 @@
-import json, traceback, sys, os
+import json, traceback, sys, os, ast
 from pathlib import Path
 import click
 from deploy_helper import run, generate_password
@@ -28,6 +28,8 @@ fail = print
 @click.option('--environment')
 @click.option('--unprotected-url')
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
+
+    encryption_key = ast.literal_eval(encryption_key)
 
     pwd = Path.cwd().parent
     os.chdir(pwd)

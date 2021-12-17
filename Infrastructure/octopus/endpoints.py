@@ -5,7 +5,7 @@ from functools import partial
 run = partial(run, show_output=False, show_cmd=False)
 
 def get_endpoints(app_url, users):
-    users = json.loads(users)
+
     with open('env.json') as env_json:
         data = json.load(env_json)
         data = {key: value for key, value in data['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}

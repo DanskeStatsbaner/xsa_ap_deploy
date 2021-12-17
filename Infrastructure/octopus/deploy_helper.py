@@ -1,4 +1,5 @@
 import subprocess, random, string, os, sys, textwrap, logging, logging.config
+from functools import partial
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):
@@ -45,7 +46,7 @@ config = {
 
 logging.config.dictConfig(config)
 
-print = logging.info
+print = lambda message: partial(logging.info, ' ' + str(message))
 
 def banner(title, width=70, padding=2):
     lines = []
@@ -53,9 +54,9 @@ def banner(title, width=70, padding=2):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
     seperator = '#' * (width)
-    print(' ' + seperator + os.linesep)
-    print(' ' + os.linesep.join(centered_lines) + os.linesep)
-    print(' ' + seperator + os.linesep)
+    print(seperator)
+    print(os.linesep.join(centered_lines))
+    print(seperator)
 
 def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:

@@ -95,7 +95,7 @@ def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=Tru
     docker_variables = []
     for variable in env.keys():
         platform_variable = f'%{variable}%' if sys.platform == 'win32' else f'${variable}'
-        docker_variables += [f'-e {variable}={platform_variable}']
+        docker_variables += [f'-e {variable}="{platform_variable}"']
 
     if show_cmd:
         print(f'docker {work_dir} $ {cmd}')

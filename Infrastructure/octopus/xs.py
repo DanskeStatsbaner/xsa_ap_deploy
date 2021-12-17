@@ -120,7 +120,6 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, is_web, project_name
             run(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
-        set("UsersCreated", str(True))
 
     keyvault(project_name, hana_host, xsa_keyuser, xsa_pass)
 

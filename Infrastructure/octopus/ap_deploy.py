@@ -1,6 +1,7 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
+from dataclasses import dataclass, asdict
 from deploy_helper import run, docker, generate_password, print, banner, get_random_bytes, AES
 
 encryption_key = get_random_bytes(32)
@@ -23,26 +24,28 @@ fail = lambda message: failstep(message)
 banner("Get Octopus variables")
 ###############################################################################
 
-environment = get("Octopus.Environment.Name").lower()
-project_name = get("Octopus.Project.Name")
-release_number = get("Octopus.Release.Number")
-container_name = f"dataArt.{project_name}.{release_number}.{environment}"
-humio_ingest_token = get("dataART.HumioIngestToken")
-worker = get("Octopus.WorkerPool.Name")
+@dataclass
+class OctopusVariables:
+    environment = get("Octopus.Environment.Name").lower()
+    project_name = get("Octopus.Project.Name")
+    release_number = get("Octopus.Release.Number")
+    humio_ingest_token = get("dataART.HumioIngestToken")
+    worker = get("Octopus.WorkerPool.Name")
+    xsa_url = get("dataART.XSAUrl")
+    xsa_user = get("dataART.XSAUser")
+    xsa_space = get("dataART.XSASpace")
+    xsa_keyuser = get("dataART.XSAKeyUser")
+    xsa_pass = sys.argv[1]
+    hana_host = get("dataART.Host").split('.')[0]
+    hana_environment = get("dataART.Database").lower()
+    hana_environment_upper = hana_environment.upper()
+    artifactory_login = get("artifactory.login")
+    artifactory_registry = get("artifactory.registry")
+    artifactory_pass = sys.argv[2]
 
-xsa_url = get("dataART.XSAUrl")
-xsa_user = get("dataART.XSAUser")
-xsa_space = get("dataART.XSASpace")
-xsa_keyuser = get("dataART.XSAKeyUser")
-xsa_pass = sys.argv[1]
+octopus = OctopusVariables()
 
-hana_host = get("dataART.Host").split('.')[0]
-hana_environment = get("dataART.Database").lower()
-hana_environment_upper = hana_environment.upper()
-
-artifactory_login = get("artifactory.login")
-artifactory_registry = get("artifactory.registry")
-artifactory_pass = sys.argv[2]
+container_name = f"dataArt.{octopus.project_name}.{octopus.release_number}.{octopus.environment}"
 
 is_web = os.path.exists('xs-security.json')
 
@@ -50,7 +53,7 @@ is_web = os.path.exists('xs-security.json')
 banner("Inject container_name into docker function")
 ###############################################################################
 
-run = partial(run, worker=worker, exception_handler=fail)
+run = partial(run, worker=octopus.worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
 
 ###############################################################################
@@ -64,7 +67,7 @@ run('docker container prune -f')
 banner("Log in to artifactory, pull and start docker_image")
 ###############################################################################
 
-run(f'docker login -u {artifactory_login} {artifactory_registry} --password-stdin', env={'artifactory_pass': artifactory_pass}, pipe='artifactory_pass')
+run(f'docker login -u {octopus.artifactory_login} {octopus.artifactory_registry} --password-stdin', env={'artifactory_pass': octopus.artifactory_pass}, pipe='artifactory_pass')
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
@@ -84,18 +87,18 @@ if project_type != 'python':
 
 services = manifest_dict['services']
 
-host = project_name.lower().replace('_', '-')
-app_router = f'{project_name}-sso'
+host = octopus.project_name.lower().replace('_', '-')
+app_router = f'{octopus.project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
-uaa_service = f'{project_name}-uaa'
-url = lambda subdomain: f"https://{subdomain}.xsabi{hana_environment}.dsb.dk:30033"
+uaa_service = f'{octopus.project_name}-uaa'
+url = lambda subdomain: f"https://{subdomain}.xsabi{octopus.hana_environment}.dsb.dk:30033"
 unprotected_url = url(host)
 services += [uaa_service]
 
 manifest_dict = {
     'applications': [
         {
-            'name': project_name,
+            'name': octopus.project_name,
             'host': host,
             'path': './app/',
             'command': 'python api.py',
@@ -111,7 +114,7 @@ if is_web:
         'host': app_router_host,
         'path': './app-router/',
         'env': {
-            'destinations': json.dumps([{"name": project_name, "url": unprotected_url, "forwardAuthToken": True}])
+            'destinations': json.dumps([{"name": octopus.project_name, "url": unprotected_url, "forwardAuthToken": True}])
         },
         'services': [
             uaa_service
@@ -132,9 +135,9 @@ banner("Define environment variables for deployment")
 
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
-    'OCTOPUS_HUMIO_INGEST_TOKEN': humio_ingest_token,
-    'OCTOPUS_PROJECT_NAME': project_name,
-    'OCTOPUS_RELEASE_NUMBER': release_number,
+    'OCTOPUS_HUMIO_INGEST_TOKEN': octopus.humio_ingest_token,
+    'OCTOPUS_PROJECT_NAME': octopus.project_name,
+    'OCTOPUS_RELEASE_NUMBER': octopus.release_number,
     'OCTOPUS_APP_URL': unprotected_url
 }
 
@@ -156,22 +159,7 @@ env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 banner("Deploy XSA application using XS CLI")
 ###############################################################################
 
-xs_output = docker(f"python3 xs.py", env=env({
-    'xsa_user': xsa_user,
-    'xsa_url': xsa_url,
-    'xsa_space': xsa_space,
-    'xsa_pass': xsa_pass,
-    'uaa_service': uaa_service,
-    'project_name': project_name,
-    'hana_host': hana_host,
-    'xsa_keyuser': xsa_keyuser,
-    'app_router': app_router,
-    'host': host,
-    'hana_environment_upper': hana_environment_upper,
-    'environment': environment,
-    'unprotected_url': unprotected_url,
-    'encryption_key': encryption_key
-}), work_dir='/data/octopus')
+xs_output = docker(f"python3 xs.py", env=env(asdict(octopus)), work_dir='/data/octopus')
 
 with open('xs_output.bin', 'rb') as file:
     iv = file.read(16)

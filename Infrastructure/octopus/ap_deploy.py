@@ -158,6 +158,11 @@ env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 banner("Deploy XSA application using XS CLI")
 ###############################################################################
 
+variables.xsa_pass = ''
+variables.artifactory_pass = ''
+
+print(env(asdict(variables)))
+
 xs_output = docker(f"python3 xs.py", env=env(asdict(variables)), work_dir='/data/octopus')
 
 with open('xs_output.bin', 'rb') as file:

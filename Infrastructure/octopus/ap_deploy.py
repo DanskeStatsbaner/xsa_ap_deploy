@@ -35,6 +35,7 @@ class Variables:
     xsa_keyuser: str = get("dataART.XSAKeyUser")
     xsa_pass: str = sys.argv[1]
     hana_host: str = get("dataART.Host").split('.')[0]
+    uaa_service: str = None
     hana_environment: str = get("dataART.Database").lower()
     hana_environment_upper: str = hana_environment.upper()
     artifactory_login: str = get("artifactory.login")
@@ -90,6 +91,7 @@ host = variables.project_name.lower().replace('_', '-')
 app_router = f'{variables.project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
 uaa_service = f'{variables.project_name}-uaa'
+variables.uaa_service = uaa_service
 url = lambda subdomain: f"https://{subdomain}.xsabi{variables.hana_environment}.dsb.dk:30033"
 unprotected_url = url(host)
 services += [uaa_service]

@@ -4,8 +4,6 @@ from functools import partial
 from dataclasses import dataclass, asdict
 from deploy_helper import run, docker, generate_password, print, banner, get_random_bytes, AES
 
-encryption_key = get_random_bytes(32)
-
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
@@ -25,7 +23,7 @@ banner("Get Octopus variables")
 ###############################################################################
 
 @dataclass
-class OctopusVariables:
+class Variables:
     environment = get("Octopus.Environment.Name").lower()
     project_name = get("Octopus.Project.Name")
     release_number = get("Octopus.Release.Number")
@@ -42,10 +40,11 @@ class OctopusVariables:
     artifactory_login = get("artifactory.login")
     artifactory_registry = get("artifactory.registry")
     artifactory_pass = sys.argv[2]
+    encryption_key = get_random_bytes(32)
 
-octopus = OctopusVariables()
+variables = Variables()
 
-container_name = f"dataArt.{octopus.project_name}.{octopus.release_number}.{octopus.environment}"
+container_name = f"dataArt.{variables.project_name}.{variables.release_number}.{variables.environment}"
 
 is_web = os.path.exists('xs-security.json')
 
@@ -53,7 +52,7 @@ is_web = os.path.exists('xs-security.json')
 banner("Inject container_name into docker function")
 ###############################################################################
 
-run = partial(run, worker=octopus.worker, exception_handler=fail)
+run = partial(run, worker=variables.worker, exception_handler=fail)
 docker = partial(docker, container_name=container_name, exception_handler=fail)
 
 ###############################################################################
@@ -67,7 +66,7 @@ run('docker container prune -f')
 banner("Log in to artifactory, pull and start docker_image")
 ###############################################################################
 
-run(f'docker login -u {octopus.artifactory_login} {octopus.artifactory_registry} --password-stdin', env={'artifactory_pass': octopus.artifactory_pass}, pipe='artifactory_pass')
+run(f'docker login -u {variables.artifactory_login} {variables.artifactory_registry} --password-stdin', env={'artifactory_pass': variables.artifactory_pass}, pipe='artifactory_pass')
 run(f'docker pull {docker_image}')
 run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image}')
 
@@ -87,18 +86,18 @@ if project_type != 'python':
 
 services = manifest_dict['services']
 
-host = octopus.project_name.lower().replace('_', '-')
-app_router = f'{octopus.project_name}-sso'
+host = variables.project_name.lower().replace('_', '-')
+app_router = f'{variables.project_name}-sso'
 app_router_host = app_router.lower().replace('_', '-')
-uaa_service = f'{octopus.project_name}-uaa'
-url = lambda subdomain: f"https://{subdomain}.xsabi{octopus.hana_environment}.dsb.dk:30033"
+uaa_service = f'{variables.project_name}-uaa'
+url = lambda subdomain: f"https://{subdomain}.xsabi{variables.hana_environment}.dsb.dk:30033"
 unprotected_url = url(host)
 services += [uaa_service]
 
 manifest_dict = {
     'applications': [
         {
-            'name': octopus.project_name,
+            'name': variables.project_name,
             'host': host,
             'path': './app/',
             'command': 'python api.py',
@@ -114,7 +113,7 @@ if is_web:
         'host': app_router_host,
         'path': './app-router/',
         'env': {
-            'destinations': json.dumps([{"name": octopus.project_name, "url": unprotected_url, "forwardAuthToken": True}])
+            'destinations': json.dumps([{"name": variables.project_name, "url": unprotected_url, "forwardAuthToken": True}])
         },
         'services': [
             uaa_service
@@ -135,9 +134,9 @@ banner("Define environment variables for deployment")
 
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
-    'OCTOPUS_HUMIO_INGEST_TOKEN': octopus.humio_ingest_token,
-    'OCTOPUS_PROJECT_NAME': octopus.project_name,
-    'OCTOPUS_RELEASE_NUMBER': octopus.release_number,
+    'OCTOPUS_HUMIO_INGEST_TOKEN': variables.humio_ingest_token,
+    'OCTOPUS_PROJECT_NAME': variables.project_name,
+    'OCTOPUS_RELEASE_NUMBER': variables.release_number,
     'OCTOPUS_APP_URL': unprotected_url
 }
 
@@ -159,13 +158,13 @@ env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 banner("Deploy XSA application using XS CLI")
 ###############################################################################
 
-xs_output = docker(f"python3 xs.py", env=env(asdict(octopus)), work_dir='/data/octopus')
+xs_output = docker(f"python3 xs.py", env=env(asdict(variables)), work_dir='/data/octopus')
 
 with open('xs_output.bin', 'rb') as file:
     iv = file.read(16)
     ciphered_data = file.read()
 
-cipher = AES.new(encryption_key, AES.MODE_CFB, iv=iv)
+cipher = AES.new(variables.encryption_key, AES.MODE_CFB, iv=iv)
 xs_output = cipher.decrypt(ciphered_data)
 xs_output = json.loads(xs_output)
 

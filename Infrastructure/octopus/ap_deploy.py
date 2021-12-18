@@ -24,23 +24,23 @@ banner("Get Octopus variables")
 
 @dataclass
 class Variables:
-    environment = get("Octopus.Environment.Name").lower()
-    project_name = get("Octopus.Project.Name")
-    release_number = get("Octopus.Release.Number")
-    humio_ingest_token = get("dataART.HumioIngestToken")
-    worker = get("Octopus.WorkerPool.Name")
-    xsa_url = get("dataART.XSAUrl")
-    xsa_user = get("dataART.XSAUser")
-    xsa_space = get("dataART.XSASpace")
-    xsa_keyuser = get("dataART.XSAKeyUser")
-    xsa_pass = sys.argv[1]
-    hana_host = get("dataART.Host").split('.')[0]
-    hana_environment = get("dataART.Database").lower()
-    hana_environment_upper = hana_environment.upper()
-    artifactory_login = get("artifactory.login")
-    artifactory_registry = get("artifactory.registry")
-    artifactory_pass = sys.argv[2]
-    encryption_key = get_random_bytes(32)
+    environment: str = get("Octopus.Environment.Name").lower()
+    project_name: str = get("Octopus.Project.Name")
+    release_number: str = get("Octopus.Release.Number")
+    humio_ingest_token: str = get("dataART.HumioIngestToken")
+    worker: str = get("Octopus.WorkerPool.Name")
+    xsa_url: str = get("dataART.XSAUrl")
+    xsa_user: str = get("dataART.XSAUser")
+    xsa_space: str = get("dataART.XSASpace")
+    xsa_keyuser: str = get("dataART.XSAKeyUser")
+    xsa_pass: str = sys.argv[1]
+    hana_host: str = get("dataART.Host").split('.')[0]
+    hana_environment: str = get("dataART.Database").lower()
+    hana_environment_upper: str = hana_environment.upper()
+    artifactory_login: str = get("artifactory.login")
+    artifactory_registry: str = get("artifactory.registry")
+    artifactory_pass: str = sys.argv[2]
+    encryption_key: bytes = get_random_bytes(32)
 
 variables = Variables()
 

@@ -1,13 +1,8 @@
-import json, sys
-from deploy_helper import run, logging
+import json, sys, requests
 from seleniumwire import webdriver
 from seleniumwire.utils import decode
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
-from urllib3.connectionpool import log as urllibLogger
-seleniumLogger.setLevel(logging.WARNING)
-urllibLogger.setLevel(logging.WARNING)
 
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
@@ -57,14 +52,15 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
             "operation": "equals"
         }
 
-        cmd = f"""
-            curl -s '{cockpit_url}/ajax/samlGroupsCall/{saml_id}' \
-            -H 'X-ClientSession-Id: {session_id}' \
-            -H 'Cookie: {cookie}' \
-            -d '{json.dumps(body)}'
-        """
+        headers = {
+            'X-ClientSession-Id': session_id,
+        }
 
-        response = run(cmd, show_cmd=False, show_output=False)
+        data = json.dumps(body)
+
+        response = requests.post(f'{cockpit_url}/ajax/samlGroupsCall/{saml_id}', headers=headers, cookies=json.loads(cookie), data=data)
+
+        response = response.text
         if response != 'null':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
             sys.exit(1)

@@ -32,6 +32,7 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
 
     chromeOptions = Options()
     chromeOptions.headless = True
+    chromeOptions.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     driver, request = recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 

@@ -1,9 +1,10 @@
 import json, sys
-from deploy_helper import run
+from helper import run
 from seleniumwire import webdriver
 from seleniumwire.utils import decode
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from logger import print
 
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)

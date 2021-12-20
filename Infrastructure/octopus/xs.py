@@ -1,6 +1,6 @@
 import json, traceback, sys, os, ast, click
 from pathlib import Path
-from deploy_helper import run, generate_password
+from helper import run, generate_password
 from functools import partial
 from cockpit import cockpit
 from Crypto.Cipher import AES

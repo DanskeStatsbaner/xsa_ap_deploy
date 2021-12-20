@@ -113,6 +113,12 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     run(f'xs env {project_name} --export-json env.json')
 
+    with open('env.json') as env_json:
+        credentials = json.load(env_json)
+        credentials = {key: value for key, value in credentials['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
+
+    os.remove('env.json')
+
     if is_web:
         for role_collection in role_collections:
             run(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
@@ -121,7 +127,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
 
-    keyvault(project_name, hana_host, xsa_keyuser, xsa_pass)
+    keyvault(project_name, credentials, hana_host, xsa_keyuser, xsa_pass)
 
     if is_web:
         users = []
@@ -148,7 +154,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 print(f'User {user} has been deleted')
 
 
-    endpoint_collection = get_endpoints(unprotected_url)
+    endpoint_collection = get_endpoints(unprotected_url, credentials)
 
     predefined_endpoints = [
         '/{rest_of_path:path}',

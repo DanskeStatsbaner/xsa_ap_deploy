@@ -55,7 +55,7 @@ def docker(cmd, container_name, env={}, print_func=print, pipe=None, work_dir='/
 
     docker_cmd = f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
 
-    return run(docker_cmd, env=env, print_func=print, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
+    return run(docker_cmd, env=env, print_func=print_func, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():
     random_source = string.ascii_letters + string.digits

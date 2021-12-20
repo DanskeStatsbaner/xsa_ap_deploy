@@ -1,12 +1,66 @@
-import json, traceback, sys, os, ast
+import json, traceback, sys, os, ast, string, random, subprocess
 from pathlib import Path
 import click
-from deploy_helper import run, generate_password
+#from deploy_helper import run, generate_password
 from functools import partial
 from endpoints import get_endpoints
 from keyvault import keyvault
 from cockpit import cockpit
 from Crypto.Cipher import AES
+
+# import logging
+# from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
+# from urllib3.connectionpool import log as urllibLogger
+# seleniumLogger.setLevel(logging.WARNING)
+# urllibLogger.setLevel(logging.WARNING)
+
+def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+    if pipe is not None and pipe in env:
+        variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
+        cmd = f'echo {variable}| ' + cmd
+    if show_cmd:
+        if worker is not None:
+            print(f'{worker} $ {cmd}')
+        else:
+            print(f'$ {cmd}')
+    existing_env = os.environ.copy()
+    existing_env.update(env)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    output = ''
+    while popen.poll() is None:
+        line = popen.stdout.readline()
+        output += line
+        if show_output:
+            if len(line.strip()) > 0:
+                print(line)
+    if not ignore_errors:
+        returncode = popen.returncode
+        if returncode != 0:
+            message = f'The command returned an error. Return code {returncode}'
+            if exception_handler is None:
+                raise Exception(message)
+            else:
+                exception_handler(message)
+    return output
+
+def generate_password():
+    random_source = string.ascii_letters + string.digits
+    # select 1 lowercase
+    password = random.choice(string.ascii_lowercase)
+    # select 1 uppercase
+    password += random.choice(string.ascii_uppercase)
+    # select 1 digit
+    password += random.choice(string.digits)
+
+    # generate other characters
+    for i in range(8):
+        password += random.choice(random_source)
+
+    password_list = list(password)
+    # shuffle all characters
+    random.SystemRandom().shuffle(password_list)
+    password = ''.join(password_list)
+    return password
 
 run = partial(run, show_output=True, show_cmd=True)
 

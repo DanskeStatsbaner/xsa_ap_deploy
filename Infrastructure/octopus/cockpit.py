@@ -58,7 +58,7 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
 
         data = json.dumps(body)
 
-        response = requests.post(f'{cockpit_url}/ajax/samlGroupsCall/{saml_id}', headers=headers, cookies=json.loads(cookie), data=data)
+        response = requests.post(f'{cockpit_url}/ajax/samlGroupsCall/{saml_id}', headers=headers, data=data)
 
         response = response.text
         if response != 'null':

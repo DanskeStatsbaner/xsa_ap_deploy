@@ -27,8 +27,6 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
         return recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
 def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
-    return
-
     cockpit_url = xsa_url.replace('api', 'xsa-cockpit') + '/cockpit'
 
     chromeOptions = Options()

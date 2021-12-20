@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
-    driver.get(cockpit_url + '/cockpit')
+    driver.get(cockpit_url)
 
     username = driver.find_element(By.NAME, 'username')
     username.send_keys(xsa_user)
@@ -27,8 +27,7 @@ def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
         return recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions)
 
 def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
-
-    cockpit_url = xsa_url.replace('api', 'xsa-cockpit')
+    cockpit_url = xsa_url.replace('api', 'xsa-cockpit') + '/cockpit'
 
     chromeOptions = Options()
     chromeOptions.headless = True

@@ -2,10 +2,9 @@ import json, traceback, sys, os, ast, click
 from pathlib import Path
 from deploy_helper import run, generate_password
 from functools import partial
-from endpoints import get_endpoints
-from keyvault import keyvault
 from cockpit import cockpit
 from Crypto.Cipher import AES
+from hdbcli import dbapi
 
 run = partial(run, show_output=True, show_cmd=True)
 
@@ -25,6 +24,8 @@ run = partial(run, show_output=True, show_cmd=True)
 @click.option('--unprotected-url')
 @click.option('--encryption-key')
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
+
+    hana_port = 30015
 
     encryption_key = ast.literal_eval(encryption_key)
 
@@ -127,7 +128,11 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
 
-    keyvault(project_name, credentials, hana_host, xsa_keyuser, xsa_pass)
+    credentials = json.dumps(credentials)
+    conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass)
+    conn.cursor().execute(f"""
+        UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{credentials}') WHERE APPNAME = '{project_name}'
+    """)
 
     if is_web:
         users = []
@@ -154,7 +159,8 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 print(f'User {user} has been deleted')
 
 
-    endpoint_collection = get_endpoints(unprotected_url, credentials)
+    access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}))['access_token']
+    endpoint_collection = json.loads(run(f'curl -s -X GET {app_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}))
 
     predefined_endpoints = [
         '/{rest_of_path:path}',

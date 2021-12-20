@@ -3,6 +3,7 @@ from pathlib import Path
 from functools import partial
 from dataclasses import dataclass
 from deploy_helper import run, banner
+from logger import print
 
 ###############################################################################
 banner("Define functions for easier interaction with Octopus")

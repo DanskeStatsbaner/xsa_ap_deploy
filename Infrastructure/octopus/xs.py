@@ -128,10 +128,9 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
 
-    credentials = json.dumps(credentials)
     conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass)
     conn.cursor().execute(f"""
-        UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{credentials}') WHERE APPNAME = '{project_name}'
+        UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{json.dumps(credentials)}') WHERE APPNAME = '{project_name}'
     """)
 
     if is_web:
@@ -159,7 +158,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 print(f'User {user} has been deleted')
 
 
-    access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}))['access_token']
+    access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}, show_output=False))['access_token']
     endpoint_collection = json.loads(run(f'curl -s -X GET {app_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}))
 
     predefined_endpoints = [

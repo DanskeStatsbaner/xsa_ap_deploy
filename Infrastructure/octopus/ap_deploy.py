@@ -49,6 +49,9 @@ config = {
 
 logging.config.dictConfig(config)
 
+print = lambda message: logging.info(' ' + str(message))
+banner = partial(banner, print_func=print)
+
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
@@ -101,7 +104,6 @@ is_web = os.path.exists('xs-security.json')
 banner("Inject container_name into docker function")
 ###############################################################################
 
-print = lambda message: logging.info(' ' + str(message))
 run = partial(run, print_func=print, worker=variables.worker, exception_handler=fail)
 docker = partial(docker, print_func=print, container_name=container_name, exception_handler=fail)
 

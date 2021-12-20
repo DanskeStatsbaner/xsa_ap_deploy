@@ -2,15 +2,15 @@ import subprocess, random, string, os, sys, textwrap
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES
 
-def banner(title, width=70, padding=2):
+def banner(title, print_func=print, width=70, padding=2):
     lines = []
     for line in title.split(os.linesep):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
     seperator = '#' * (width)
-    print(seperator)
-    print(os.linesep.join(centered_lines))
-    print(seperator)
+    print_func(seperator)
+    print_func(os.linesep.join(centered_lines))
+    print_func(seperator)
 
 def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:

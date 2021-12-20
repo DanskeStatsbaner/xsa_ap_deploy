@@ -1,6 +1,5 @@
-import json, traceback, sys, os, ast
+import json, traceback, sys, os, ast, click
 from pathlib import Path
-import click
 from deploy_helper import run, generate_password
 from functools import partial
 from endpoints import get_endpoints
@@ -8,15 +7,7 @@ from keyvault import keyvault
 from cockpit import cockpit
 from Crypto.Cipher import AES
 
-# import logging
-# from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
-# from urllib3.connectionpool import log as urllibLogger
-# seleniumLogger.setLevel(logging.WARNING)
-# urllibLogger.setLevel(logging.WARNING)
-
 run = partial(run, show_output=True, show_cmd=True)
-
-fail = print
 
 @click.command()
 @click.option('--xsa-user')
@@ -93,18 +84,18 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     xs_security = '-c xs-security.json' if is_web else ''
 
     if 'failed' in output:
-        fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
+        raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
     elif not 'succeeded' in output:
         output = run(f'xs create-service xsuaa default {uaa_service} {xs_security}')
         if 'failed' in output:
-            fail(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+            raise Exception(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
         else:
             print(f'The service "{uaa_service}" was succesfully created')
     elif is_web:
         output = run(f'xs update-service {uaa_service} {xs_security}')
 
         if 'failed' in output:
-            fail(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
+            raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 
     if is_web:
         app_router_output = run(f'xs push {app_router}')
@@ -118,7 +109,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
     if not is_running:
-        fail('The application crashed')
+        raise Exception('The application crashed')
 
     run(f'xs env {project_name} --export-json env.json')
 

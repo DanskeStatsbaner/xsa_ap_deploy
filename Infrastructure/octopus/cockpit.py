@@ -4,7 +4,6 @@ from seleniumwire import webdriver
 from seleniumwire.utils import decode
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from logger import print
 
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
@@ -60,9 +59,9 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
         """
 
         response = run(cmd, show_cmd=False, show_output=True)
+        print(response)
         if response != 'null':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
-            print(response)
             sys.exit(1)
         else:
             print(f'Mapping {role_collection} -> {attribute_value} created')

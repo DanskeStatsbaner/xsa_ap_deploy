@@ -151,17 +151,18 @@ async def upload(path: str = '', file: UploadFile=File(...), security_context=De
 
     return {"Result": "OK"}
 
-@app.get("/scope-check")
-async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
+@router.get("/scope-check")
+async def scope_check(request: Request, security_context=Depends(auth(scope='THE_FORM'))):
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
 
-    protected_endpoints = {route.path: security_requirement.security_scheme.scope for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements}
+    to_dict = lambda methods, scope: {'methods': methods, 'scope': scope}
 
-    unprotected_endpoints = {route.path: None for route in endpoints if route.path not in protected_endpoints.keys()}
+    protected_endpoints = {route.path: to_dict(route.methods, security_requirement.security_scheme.scope) for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements}
+    unprotected_endpoints = {route.path: to_dict(route.methods, None) for route in endpoints if route.path not in protected_endpoints.keys()}
 
-    protected_websockets = {route.path: route.dependant.dependencies[0].call.keywords['scope'] for route in websockets if len(route.dependant.dependencies) > 0}
-    unprotected_websockets = {route.path: None for route in websockets if len(route.dependant.dependencies) == 0}
+    protected_websockets = {route.path: to_dict(['-'], route.dependant.dependencies[0].call.keywords['scope']) for route in websockets if len(route.dependant.dependencies) > 0}
+    unprotected_websockets = {route.path: to_dict(['-'], None) for route in websockets if len(route.dependant.dependencies) == 0}
 
     return {
         "Protected endpoints": protected_endpoints,

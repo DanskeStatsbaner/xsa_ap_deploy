@@ -174,13 +174,13 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     scope_template = ''
     for title, endpoints in endpoint_collection.items():
-        endpoints = {endpoint: scope for endpoint, scope in endpoints.items() if endpoint not in predefined_endpoints}
+        endpoints = {endpoint: data for endpoint, data in endpoints.items() if endpoint not in predefined_endpoints}
         if len(endpoints) > 0:
             scope_template += f'<h3>{title}</h3>'
             scope_template += f'<table>'
-            scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td></tr>'
-            for endpoint, scope in endpoints.items():
-                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td></tr>'
+            scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
+            for endpoint, data in endpoints.items():
+                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{data["scope"]}</td><td>{table_space}</td><td>{", ".join(data["methods"])}</td></tr>'
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()

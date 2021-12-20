@@ -158,8 +158,8 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 print(f'User {user} has been deleted')
 
 
-    access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}))['access_token']
-    endpoint_collection = json.loads(run(f'curl -s -X GET {app_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}))
+    access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}, show_output=False))['access_token']
+    endpoint_collection = json.loads(run(f'curl -s -X GET {unprotected_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}))
 
     predefined_endpoints = [
         '/{rest_of_path:path}',

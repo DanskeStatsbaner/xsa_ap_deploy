@@ -1,6 +1,4 @@
 import subprocess, random, string, os, sys, textwrap
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import AES
 
 def banner(title, print_func=print, width=70, padding=2):
     lines = []

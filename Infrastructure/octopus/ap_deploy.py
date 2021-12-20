@@ -1,4 +1,4 @@
-import os, json, yaml, sys, logging
+import os, json, yaml, sys, logging, logging.config
 from pathlib import Path
 from functools import partial
 from dataclasses import dataclass, asdict

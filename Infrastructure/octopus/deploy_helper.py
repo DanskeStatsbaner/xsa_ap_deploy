@@ -102,6 +102,8 @@ def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=Tru
 
     docker_cmd = f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
 
+    print(docker_cmd)
+
     return run(docker_cmd, env=env, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():

@@ -49,8 +49,6 @@ config = {
 
 logging.config.dictConfig(config)
 
-print = lambda message: logging.info(' ' + str(message))
-
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
@@ -103,8 +101,9 @@ is_web = os.path.exists('xs-security.json')
 banner("Inject container_name into docker function")
 ###############################################################################
 
-run = partial(run, worker=variables.worker, exception_handler=fail)
-docker = partial(docker, container_name=container_name, exception_handler=fail)
+print = lambda message: logging.info(' ' + str(message))
+run = partial(run, print_func=print, worker=variables.worker, exception_handler=fail)
+docker = partial(docker, print_func=print, container_name=container_name, exception_handler=fail)
 
 ###############################################################################
 banner("Stop and delete containers")

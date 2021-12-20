@@ -12,15 +12,15 @@ def banner(title, width=70, padding=2):
     print(os.linesep.join(centered_lines))
     print(seperator)
 
-def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
         cmd = f'echo {variable}| ' + cmd
     if show_cmd:
         if worker is not None:
-            print(f'{worker} $ {cmd}')
+            print_func(f'{worker} $ {cmd}')
         else:
-            print(f'$ {cmd}')
+            print_func(f'$ {cmd}')
     existing_env = os.environ.copy()
     existing_env.update(env)
     popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -30,7 +30,7 @@ def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ig
         output += line
         if show_output:
             if len(line.strip()) > 0:
-                print(line)
+                print_func(line)
     if not ignore_errors:
         returncode = popen.returncode
         if returncode != 0:
@@ -41,7 +41,7 @@ def run(cmd, env={}, pipe=None, worker=None, show_output=True, show_cmd=True, ig
                 exception_handler(message)
     return output
 
-def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
+def docker(cmd, container_name, env={}, print_func=print, pipe=None, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         cmd = f'echo ${pipe}| ' + cmd
 
@@ -51,13 +51,11 @@ def docker(cmd, container_name, env={}, pipe=None, work_dir='/', show_output=Tru
         docker_variables += [f'-e {variable}="{platform_variable}"']
 
     if show_cmd:
-        print(f'docker {work_dir} $ {cmd}')
+        print_func(f'docker {work_dir} $ {cmd}')
 
     docker_cmd = f'docker exec {" ".join(docker_variables)} -it {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
 
-    print(docker_cmd)
-
-    return run(docker_cmd, env=env, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
+    return run(docker_cmd, env=env, print_func=print, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
 def generate_password():
     random_source = string.ascii_letters + string.digits

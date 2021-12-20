@@ -58,7 +58,7 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
             -d '{json.dumps(body)}'
         """
 
-        response = run(cmd, show_cmd=False, show_output=False)
+        response = run(cmd, show_cmd=False, show_output=True)
         if response != 'null':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
             print(response)

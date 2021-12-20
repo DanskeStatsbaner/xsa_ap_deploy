@@ -2,8 +2,7 @@ import os, json, yaml, sys, logging
 from pathlib import Path
 from functools import partial
 from dataclasses import dataclass, asdict
-from deploy_helper import run, docker, generate_password, print, banner, get_random_bytes, AES
-
+from deploy_helper import run, docker, generate_password, banner, get_random_bytes, AES
 
 class _ExcludeErrorsFilter(logging.Filter):
     def filter(self, record):

@@ -62,6 +62,6 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
         print(response)
         if response != 'null':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
-            sys.exit(1)
+            #sys.exit(1)
         else:
             print(f'Mapping {role_collection} -> {attribute_value} created')

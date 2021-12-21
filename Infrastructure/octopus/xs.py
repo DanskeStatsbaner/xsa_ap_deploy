@@ -27,6 +27,15 @@ def check_scopes(token, scopes, project_name):
     app_scopes = [scope.replace(f'{project_name}.', '') for scope in token_scopes if scope.startswith(project_name)]
     return set(scopes) == set(app_scopes)
 
+def check_endpoint(url, token):
+    response = requests.get(
+        url,
+        headers = {
+            'Authorization': f'Bearer {token}'
+        }
+    )
+    return response.status_code != 403
+
 @click.command()
 @click.option('--xsa-user')
 @click.option('--xsa-url')
@@ -159,7 +168,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         for role_collection in [project_name] + role_collections:
             username = role_collection
             password = generate_password()
-            scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
+            scopes = scope_mappings[role_collection] if role_collection in role_collections else []
 
             # Delete existing users, to ensure that scopes are updated correctly
             if environment != 'prd':
@@ -206,6 +215,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
             for endpoint, data in endpoints.items():
                 scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{data["scope"]}</td><td>{table_space}</td><td>{", ".join(data["methods"])}</td></tr>'
+                for username, _, scopes, token in users:
+                    print(username)
+                    print(scopes)
+                    print(check_endpoint(unprotected_url + endpoint, token))
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()
@@ -214,7 +227,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     if is_web:
         if environment != 'prd':
-            for user, password, scopes, token in users:
+            for user, password, scopes, _ in users:
                 login_template += f'<table style="margin-bottom: 1rem;">'
                 login_template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
                 login_template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'

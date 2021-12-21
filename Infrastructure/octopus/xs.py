@@ -219,6 +219,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                     print(unprotected_url + endpoint)
                     print(username, scopes, data["scope"] in scopes)
                     print(check_endpoint(unprotected_url + endpoint, token))
+                    print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, token))
                     print('------------------------------------------')
             scope_template += f'</table>'
 

@@ -9,9 +9,8 @@ from hdbcli import dbapi
 run = partial(run, show_output=True, show_cmd=True)
 
 def get_token(username, password, credentials):
-    print(credentials['url'])
     response = requests.post(
-        credentials['url'],
+        credentials['url'] + '/oauth/token',
         data={
             "username": username,
             "password": password,
@@ -215,7 +214,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     if is_web:
         if environment != 'prd':
-            for user, password, scopes in users:
+            for user, password, scopes, token in users:
                 login_template += f'<table style="margin-bottom: 1rem;">'
                 login_template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'
                 login_template += f'<tr><td><strong>Password</strong></td><td>{table_space}</td><td>{password}<td></tr>'

@@ -9,6 +9,7 @@ from hdbcli import dbapi
 run = partial(run, show_output=True, show_cmd=True)
 
 def get_token(username, password, credentials):
+    print(credentials['url'])
     response = requests.post(
         credentials['url'],
         data={

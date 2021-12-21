@@ -1,4 +1,4 @@
-import json, traceback, sys, os, ast, click
+import json, traceback, sys, os, ast, click, requests, jwt
 from pathlib import Path
 from helper import run, generate_password
 from functools import partial
@@ -7,6 +7,25 @@ from Crypto.Cipher import AES
 from hdbcli import dbapi
 
 run = partial(run, show_output=True, show_cmd=True)
+
+def get_token(username, password, credentials):
+    response = requests.post(
+        credentials['url'],
+        data={
+            "username": username,
+            "password": password,
+            "grant_type": "password",
+            "response_type": "code",
+        },
+        auth=(credentials['clientid'], credentials['clientsecret'])
+    )
+    token = response.json()['access_token']
+    return token
+
+def check_scopes(token, scopes, project_name):
+    token_scopes = jwt.decode(token, options={"verify_signature": False, "verify_aud": False})['scope']
+    app_scopes = [scope.replace(f'{project_name}.', '') for scope in token_scopes if scope.startswith(project_name)]
+    return set(scopes) == set(app_scopes)
 
 @click.command()
 @click.option('--xsa-user')
@@ -138,24 +157,30 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
         # Checking User with different scopes
         for role_collection in [project_name] + role_collections:
-            user = role_collection
+            username = role_collection
             password = generate_password()
             scopes = scope_mappings[role_collection] if role_collection in role_collections else ['-']
-            users += [(user, password, scopes)]
 
             # Delete existing users, to ensure that scopes are updated correctly
             if environment != 'prd':
-                run(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
+                run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
 
-            run(f'xs create-user {user} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
-            print(f'User {user} has been created')
+            run(f'xs create-user {username} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
+            print(f'User {username} has been created')
             if role_collection != project_name:
-                run(f'xs assign-role-collection {role_collection} {user} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
-                print(f'User {user} has been assiged role collection {role_collection}')
+                run(f'xs assign-role-collection {role_collection} {username} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
+                print(f'User {username} has been assiged role collection {role_collection}')
+
+            token = get_token(username, password, credentials)
+
+            users += [(username, password, scopes, token)]
+
+            print(username)
+            print(check_scopes(token, scopes, project_name))
 
             if environment == 'prd':
-                run(f'xs delete-user -p $xsa_pass {user} -f', env={'xsa_pass': xsa_pass})
-                print(f'User {user} has been deleted')
+                run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
+                print(f'User {username} has been deleted')
 
 
     access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}, show_output=False))['access_token']

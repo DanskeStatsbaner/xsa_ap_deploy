@@ -1,9 +1,9 @@
-import os
-from pathlib import Path
 from functools import partial
 from dataclasses import dataclass
 from helper import run, banner
 from logger import print
+
+banner = partial(banner, print_func=print)
 
 ###############################################################################
 banner("Define functions for easier interaction with Octopus")
@@ -31,7 +31,7 @@ container_name = f"dataArt.{variables.project_name}.{variables.release_number}.{
 banner("Inject container_name into docker function")
 ###############################################################################
 
-run = partial(run, worker=variables.worker, exception_handler=fail)
+run = partial(run, print_func=print, worker=variables.worker, exception_handler=fail)
 
 ###############################################################################
 banner("Stop and delete containers")

@@ -27,8 +27,9 @@ def check_scopes(token, scopes, project_name):
     app_scopes = [scope.replace(f'{project_name}.', '') for scope in token_scopes if scope.startswith(project_name)]
     return set(scopes) == set(app_scopes)
 
-def check_endpoint(url, token):
-    response = requests.get(
+def check_endpoint(url, method, token):
+    func = requests.get if method == 'GET' else requests.post
+    response = func(
         url,
         headers = {
             'Authorization': f'Bearer {token}'
@@ -215,12 +216,14 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
             for endpoint, data in endpoints.items():
                 scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{data["scope"]}</td><td>{table_space}</td><td>{", ".join(data["methods"])}</td></tr>'
-                for username, _, scopes, token in users:
-                    print(unprotected_url + endpoint)
-                    print(username, scopes, data["scope"] in scopes)
-                    print(check_endpoint(unprotected_url + endpoint, token))
-                    print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, token))
-                    print('------------------------------------------')
+                if 'websocket' not in title:
+                    for username, _, scopes, token in users:
+                        for method in data["methods"]:
+                            print(unprotected_url + endpoint)
+                            print(username, scopes, data["scope"] in scopes)
+                            print(check_endpoint(unprotected_url + endpoint, method, token))
+                            print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, method, token))
+                            print('------------------------------------------')
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()

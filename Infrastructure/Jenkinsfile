@@ -67,29 +67,29 @@ pipeline {
                 rtPublishBuildInfo(buildNumber: "${packageVersion}", buildName: "dataART.${projectName}", serverId: "${artifactoryServerId}")
             }
         }
-        stage ("Octopus sit") {
-            agent {
-                docker {
-                    image "octopusdeploy/octo"
-                    args '--entrypoint=\'\''
-                }
-		    }
-            options { skipDefaultCheckout true }
-            environment {
-                deployTo = "sit"
-                releaseversion = "${version}"
-                OCTOPUS_CLI_SERVER = "https://octopus.azure.dsb.dk"
-                OCTOPUS_CLI_API_KEY = credentials("Octopus-Api")
-                hostargs = "--project ${jobName} --version=${releaseversion} --space=Spaces-3"
-            }
-            steps {
-                addBadge(text: "octopus", icon: "/userContent/octopus_16x16.png", id: "octopus", link: "${octopusURL}/app#/Spaces-3/projects/${jobName}/deployments/releases/${releaseversion}")
-                sh """
-                    octo create-release  $hostargs --defaultpackageversion=${packageVersion}
-                    octo deploy-release $hostargs --deployto=${deployTo} --waitfordeployment --deploymentTimeout=00:20:00
-                """
-            }
-        }
+        // stage ("Octopus sit") {
+        //     agent {
+        //         docker {
+        //             image "octopusdeploy/octo"
+        //             args '--entrypoint=\'\''
+        //         }
+		//     }
+        //     options { skipDefaultCheckout true }
+        //     environment {
+        //         deployTo = "sit"
+        //         releaseversion = "${version}"
+        //         OCTOPUS_CLI_SERVER = "https://octopus.azure.dsb.dk"
+        //         OCTOPUS_CLI_API_KEY = credentials("Octopus-Api")
+        //         hostargs = "--project ${jobName} --version=${releaseversion} --space=Spaces-3"
+        //     }
+        //     steps {
+        //         addBadge(text: "octopus", icon: "/userContent/octopus_16x16.png", id: "octopus", link: "${octopusURL}/app#/Spaces-3/projects/${jobName}/deployments/releases/${releaseversion}")
+        //         sh """
+        //             octo create-release  $hostargs --defaultpackageversion=${packageVersion}
+        //             octo deploy-release $hostargs --deployto=${deployTo} --waitfordeployment --deploymentTimeout=00:20:00
+        //         """
+        //     }
+        // }
 
     }
 }

@@ -181,7 +181,7 @@ async def openapi():
     return get_openapi(title="OCTOPUS_PROJECT_NAME", version="OCTOPUS_RELEASE_NUMBER", routes=router.routes)
 
 @router.get("/health", include_in_schema=False)
-def get_status() -> dict:
+def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
 
 if __name__ == "__main__":

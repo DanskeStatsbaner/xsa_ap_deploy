@@ -1,14 +1,16 @@
 import subprocess, random, string, os, sys, textwrap
 
-def banner(title, print_func=print, width=70, padding=2):
+def banner(title, print_func=print, width=80, padding=2):
     lines = []
     for line in title.split(os.linesep):
         lines += textwrap.wrap(line, width=width - padding)
     centered_lines = [f'{line:^{width}}' for line in lines]
     seperator = '#' * (width)
+    print_func('&nbsp;\n')
     print_func(seperator)
     print_func(os.linesep.join(centered_lines))
     print_func(seperator)
+    print_func('\n&nbsp;')
 
 def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:

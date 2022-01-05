@@ -7,8 +7,12 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES
 from logger import print
 
+# Inject the print method from the logger module into the banner method
 banner = partial(banner, print_func=print)
 
+# As the script are executed within the /octopus directory, we need to
+# change the current directory to it's parent directory. This will
+# simplify file operations later on.
 pwd = Path.cwd().parent
 os.chdir(pwd)
 
@@ -40,21 +44,23 @@ class Variables:
     xsa_keyuser: str = get("dataART.XSAKeyUser")
     xsa_pass: str = sys.argv[1]
     hana_host: str = get("dataART.Host").split('.')[0]
-    uaa_service: str = None
-    app_router: str = None
-    host: str = None
-    unprotected_url: str = None
     hana_environment: str = get("dataART.Database").lower()
-    hana_environment_upper: str = hana_environment.upper()
     artifactory_login: str = get("artifactory.login")
     artifactory_registry: str = get("artifactory.registry")
     artifactory_pass: str = sys.argv[2]
     encryption_key: bytes = get_random_bytes(32)
 
+    # The following variables will be set later
+    uaa_service: str = None
+    app_router: str = None
+    host: str = None
+    unprotected_url: str = None
+
 variables = Variables()
 
 container_name = f"dataArt.{variables.project_name}.{variables.release_number}.{variables.environment}"
 
+# The application is an web application if it includes an xs-security.json file
 is_web = os.path.exists('xs-security.json')
 
 ###############################################################################
@@ -82,6 +88,10 @@ run(f'docker run -v {pwd}:/data --name {container_name} --rm -t -d {docker_image
 ###############################################################################
 banner("Load and modify manifest.yml from deployment")
 ###############################################################################
+
+# It's necessary to modify the manifest.yml before we can push the application
+# to HANA. Examples of manifest.yml files can be found here:
+# https://github.com/saphanaacademy/XSUAA/
 
 with open('manifest.yml') as manifest:
     manifest_yaml = manifest.read()
@@ -146,6 +156,10 @@ with open('app/manifest', 'w') as file:
 banner("Define environment variables for deployment")
 ###############################################################################
 
+# Define "environment variables" for the deployment. Each variable will be
+# injected into the source code of the deployment.
+# TO DO: Use xs set-env instead of modifying the source code.
+
 environment_variables = {
     'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
     'OCTOPUS_HUMIO_INGEST_TOKEN': variables.humio_ingest_token,
@@ -172,8 +186,12 @@ env = lambda d: {f'deploy_{k}'.upper(): str(v) for k, v in d.items()}
 banner("Deploy XSA application using XS CLI")
 ###############################################################################
 
+# Execute xs.py on the docker container, this allows us to use external python
+# modules instead of relying on standard modules. In addition, it simplifies
+# exception handling.
 xs_output = docker(f"python3 xs.py", env=env(asdict(variables)), work_dir='/data/octopus')
 
+# Decrypt the encrypted files created by xs.py
 with open('xs_output.bin', 'rb') as file:
     iv = file.read(16)
     ciphered_data = file.read()
@@ -182,8 +200,9 @@ cipher = AES.new(variables.encryption_key, AES.MODE_CFB, iv=iv)
 xs_output = cipher.decrypt(ciphered_data)
 xs_output = json.loads(xs_output)
 
-# Necessary, otherwise the "Scopes" variable will not be set (Octopus bug)
+# Necessary, otherwise the "Scopes" variable will not be set (Octopus bug).
 set("Workaround", 'Workaround')
 
+# Set Octopus variables which is used in the mails send to the developer.
 set("Scopes", xs_output['scope'])
 set("Email", xs_output['login'], True)

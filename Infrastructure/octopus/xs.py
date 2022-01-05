@@ -48,11 +48,11 @@ def check_endpoint(url, method, token):
 @click.option('--xsa-keyuser')
 @click.option('--app-router')
 @click.option('--host')
-@click.option('--hana-environment-upper')
+@click.option('--hana-environment')
 @click.option('--environment')
 @click.option('--unprotected-url')
 @click.option('--encryption-key')
-def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment_upper, environment, unprotected_url, encryption_key):
+def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment, environment, unprotected_url, encryption_key):
 
     hana_port = 30015
 
@@ -97,7 +97,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             for index, role in enumerate(xs_security['role-templates']):
                 role_collection = f'{project_name}_{role["name"]}'
                 role_collections += [role_collection]
-                ad_mappings += [[role_collection, f'SHIP.{hana_environment_upper}.{scope}'] for scope in role['scope-references']]
+                ad_mappings += [[role_collection, f'SHIP.{hana_environment.upper()}.{scope}'] for scope in role['scope-references']]
                 scope_mappings[role_collection] = role['scope-references']
                 xs_security['role-templates'][index]['name'] = f'{project_name}_{role["name"]}'
                 xs_security['role-templates'][index]['scope-references'] = [f'$XSAPPNAME.{scope}' for scope in role['scope-references']]

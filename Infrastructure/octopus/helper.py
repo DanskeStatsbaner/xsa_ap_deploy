@@ -29,7 +29,7 @@ def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True,
         line = popen.stdout.readline()
         output += line
         if show_output:
-            if len(line.strip()) > 0:
+            if len(line.strip()) > 0 or line == '\n':
                 print_func(line)
     if not ignore_errors:
         returncode = popen.returncode

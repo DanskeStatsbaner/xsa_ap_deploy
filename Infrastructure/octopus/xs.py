@@ -1,13 +1,15 @@
 import json, traceback, sys, os, ast, click, requests, jwt
 from pathlib import Path
-from helper import run, generate_password
+from helper import run, generate_password, banner
 from functools import partial
 from cockpit import cockpit
 from Crypto.Cipher import AES
 from hdbcli import dbapi
 
+# Show command and output when using the run method.
 run = partial(run, show_output=True, show_cmd=True)
 
+# Method for obtaining JWT.
 def get_token(username, password, credentials):
     response = requests.post(
         credentials['url'] + '/oauth/token',
@@ -22,11 +24,13 @@ def get_token(username, password, credentials):
     token = response.json()['access_token']
     return token
 
+# Method for checking whether scopes are included in the JWT.
 def check_scopes(token, scopes, project_name):
     token_scopes = jwt.decode(token, options={"verify_signature": False, "verify_aud": False})['scope']
     app_scopes = [scope.replace(f'{project_name}.', '') for scope in token_scopes if scope.startswith(project_name)]
     return set(scopes) == set(app_scopes)
 
+# Method for checking whether an endpoint is accesible with a given JWT.
 def check_endpoint(url, method, token):
     func = requests.get if method == 'GET' else requests.post
     response = func(
@@ -37,6 +41,9 @@ def check_endpoint(url, method, token):
     )
     return response.status_code != 403
 
+# The Python package `click` allows us to transform xs.py to a CLI.
+# We are using auto_envvar_prefix to obtain the envirenment variables
+# injected from deploy.py.
 @click.command()
 @click.option('--xsa-user')
 @click.option('--xsa-url')
@@ -56,13 +63,21 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     hana_port = 30015
 
+    # Convert encryption_key from string to bytes
     encryption_key = ast.literal_eval(encryption_key)
 
+    # As the script are executed within the /octopus directory, we need to
+    # change the current directory to it's parent directory. This will
+    # simplify file operations later on.
     pwd = Path.cwd().parent
     os.chdir(pwd)
 
+    # The application is an web application if it includes an xs-security.json file
     is_web = os.path.exists('xs-security.json')
 
+    # If deployment is a web app, then create the necessary files for the app-router
+    # Additionally, modify the xs-security.json such that it follows the specification:
+    # https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/517895a9612241259d6941dbf9ad81cb.html
     if is_web:
         with open('app-router/xs-app.json') as file:
             xs_app = json.loads(file.read())
@@ -107,24 +122,28 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         with open('xs-security.json', 'w') as file:
             file.write(xs_security)
 
+    # Log in to SAP HANA using the XS CLI
     run(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
 
-    output = run(f'xs service {uaa_service}').lower()
+    ###############################################################################
+    banner("Create or update UAA service")
+    ###############################################################################
 
-    xs_security = '-c xs-security.json' if is_web else ''
+    uaa_service_output = run(f'xs service {uaa_service}').lower()
 
-    if 'failed' in output:
+    xs_security_flag = '-c xs-security.json' if is_web else ''
+
+    if 'failed' in uaa_service_output:
         raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
-    elif not 'succeeded' in output:
-        output = run(f'xs create-service xsuaa default {uaa_service} {xs_security}')
-        if 'failed' in output:
-            raise Exception(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in output.split('\n') if 'FAILED' in line]))
+    elif not 'succeeded' in uaa_service_output:
+        uaa_service_output = run(f'xs create-service xsuaa default {uaa_service} {xs_security_flag}')
+        if 'failed' in uaa_service_output:
+            raise Exception(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in uaa_service_output.split('\n') if 'FAILED' in line]))
         else:
             print(f'The service "{uaa_service}" was succesfully created')
     elif is_web:
-        output = run(f'xs update-service {uaa_service} {xs_security}')
-
-        if 'failed' in output:
+        uaa_service_output = run(f'xs update-service {uaa_service} {xs_security_flag}')
+        if 'failed' in uaa_service_output:
             raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 
     if is_web:
@@ -133,7 +152,6 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     app_output = run(f'xs push {project_name}')
     output = app_router_output if is_web else app_output
 
-
     app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + (f'/{host}' if is_web else '')
 
     is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
@@ -141,6 +159,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     if not is_running:
         raise Exception('The application crashed')
 
+    # Get OAuth 2.0 credentials for the app
     run(f'xs env {project_name} --export-json env.json')
 
     with open('env.json') as env_json:

@@ -30,8 +30,8 @@ def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True,
         output += line
         if show_output:
             if len(line.strip()) > 0:
-                if line == 'BLANK_LINE':
-                    line = '\n'
+                if line.startswith('BLANK_LINE'):
+                    line = line.replace('BLANK_LINE', '\n')
                 print_func(line)
     if not ignore_errors:
         returncode = popen.returncode

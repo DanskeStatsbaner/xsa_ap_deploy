@@ -149,7 +149,15 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
 
     if is_web:
+        ###############################################################################
+        banner(f"Push app_router: {app_router}")
+        ###############################################################################
+
         app_router_output = run(f'xs push {app_router}')
+
+    ###############################################################################
+    banner(f"Push app: {project_name}")
+    ###############################################################################
 
     app_output = run(f'xs push {project_name}')
     output = app_router_output if is_web else app_output
@@ -161,7 +169,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     if not is_running:
         raise Exception('The application crashed')
 
-    # Get OAuth 2.0 credentials for the app
+    ###############################################################################
+    banner(f"Get OAuth 2.0 credentials for the app")
+    ###############################################################################
+
     run(f'xs env {project_name} --export-json env.json')
 
     with open('env.json') as env_json:
@@ -171,12 +182,24 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     os.remove('env.json')
 
     if is_web:
+        ###############################################################################
+        banner(f"Create role collections and add roles")
+        ###############################################################################
+
         for role_collection in role_collections:
             run(f'xs delete-role-collection {role_collection} -f -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
             run(f'xs create-role-collection {role_collection} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
             run(f'xs update-role-collection {role_collection} --add-role {role_collection} -s {xsa_space} -u {xsa_user} -p $xsa_pass', env={'xsa_pass': xsa_pass})
 
+        ###############################################################################
+        banner(f"Assign AD groups to role collections")
+        ###############################################################################
+
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
+
+    ###############################################################################
+    banner(f"Insert OAuth 2.0 credentials into XSA_KEY_VAULT")
+    ###############################################################################
 
     conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass)
     conn.cursor().execute(f"""
@@ -184,6 +207,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     """)
 
     if is_web:
+        ###############################################################################
+        banner(f"Create XSA users for development and testing purposes")
+        ###############################################################################
+
         users = []
 
         # Checking User with different scopes
@@ -213,9 +240,17 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
                 print(f'User {username} has been deleted')
 
+    ###############################################################################
+    banner(f"Get a JWT with the uaa.resource scope")
+    ###############################################################################
 
     access_token = json.loads(run(f'curl -s -X POST $url/oauth/token -u "$clientid:$clientsecret" -d "grant_type=client_credentials&token_format=jwt"', env={"url": credentials["url"], "clientid": credentials["clientid"], "clientsecret": credentials["clientsecret"]}, show_output=False))['access_token']
-    endpoint_collection = json.loads(run(f'curl -s -X GET {unprotected_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}))
+
+    ###############################################################################
+    banner(f"Get {project_name}'s endpoints using the JWT")
+    ###############################################################################
+
+    endpoint_collection = json.loads(run(f'curl -s -X GET {unprotected_url}/scope-check -H "accept: application/json" -H "Authorization: Bearer $access_token"', env={"access_token": access_token}, show_output=False))
 
     predefined_endpoints = [
         '/{rest_of_path:path}',
@@ -267,6 +302,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     login_template += f'<a href="{app_url}" style="background-color:rgb(68, 151, 68); {button_style}">Application</a>'
     login_template += f'<a href="{app_docs}" style="background-color:rgb(220, 149, 58); {button_style}">Documentation</a>'
     login_template = login_template.strip()
+
+    ###############################################################################
+    banner(f"Encrypt scope_template and login_template")
+    ###############################################################################
 
     data = json.dumps({"scope": scope_template, "login": login_template}).encode('utf-8')
 

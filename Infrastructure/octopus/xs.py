@@ -9,6 +9,8 @@ from hdbcli import dbapi
 # Show command and output when using the run method.
 run = partial(run, show_output=True, show_cmd=True)
 
+banner = partial(banner, blank_line='BLANK_LINE')
+
 # Method for obtaining JWT.
 def get_token(username, password, credentials):
     response = requests.post(

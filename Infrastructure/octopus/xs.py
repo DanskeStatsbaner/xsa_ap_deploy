@@ -277,9 +277,13 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                     for username, _, scopes, token in users:
                         for method in data["methods"]:
                             print(unprotected_url + endpoint)
-                            print(username, scopes, data["scope"], data["scope"] in scopes)
-                            print(check_endpoint(unprotected_url + endpoint, method, token))
-                            print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, method, token))
+                            print(username, scopes, data["scope"])
+                            # print(check_endpoint(unprotected_url + endpoint, method, token))
+                            # print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, method, token))
+                            if data["scope"] in scopes:
+                                print(check_endpoint(unprotected_url + endpoint, method, token) == True)
+                            else:
+                                print(check_endpoint(unprotected_url + endpoint, method, token) == False)
                             print('------------------------------------------')
             scope_template += f'</table>'
 

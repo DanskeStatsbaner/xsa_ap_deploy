@@ -191,7 +191,10 @@ banner("Deploy XSA application using XS CLI")
 # exception handling.
 xs_output = docker(f"python3 xs.py", env=env(asdict(variables)), work_dir='/data/octopus')
 
-# Decrypt the encrypted files created by xs.py
+###############################################################################
+banner("Decrypt the encrypted files created by xs.py")
+###############################################################################
+
 with open('xs_output.bin', 'rb') as file:
     iv = file.read(16)
     ciphered_data = file.read()

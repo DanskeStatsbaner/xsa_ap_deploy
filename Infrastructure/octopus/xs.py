@@ -131,7 +131,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner("Create or update UAA service")
     ###############################################################################
 
-    uaa_service_output = run(f'xs service {uaa_service}').lower()
+    uaa_service_output = run(f'xs service {uaa_service}', ignore_errors=True).lower()
 
     xs_security_flag = '-c xs-security.json' if is_web else ''
 

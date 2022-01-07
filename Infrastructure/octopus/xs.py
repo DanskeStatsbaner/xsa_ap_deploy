@@ -276,15 +276,13 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                 if 'websocket' not in title and is_web:
                     for username, _, scopes, token in users:
                         for method in data["methods"]:
-                            print(unprotected_url + endpoint)
-                            print(username, scopes, data["scope"])
-                            # print(check_endpoint(unprotected_url + endpoint, method, token))
-                            # print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, method, token))
+                            print(f'Checking {unprotected_url + endpoint}')
                             if data["scope"] in scopes:
-                                print(check_endpoint(unprotected_url + endpoint, method, token) == True)
+                                if not check_endpoint(unprotected_url + endpoint, method, token):
+                                    raise Exception(f'{username} could not access {endpoint}, which should be possible. Try to redeploy.')
                             else:
-                                print(check_endpoint(unprotected_url + endpoint, method, token) == False)
-                            print('------------------------------------------')
+                                if check_endpoint(unprotected_url + endpoint, method, token):
+                                    raise Exception(f'{username} could access {endpoint}, which should not be possible. Try to redeploy.')
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()

@@ -5,6 +5,7 @@ from seleniumwire.utils import decode
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
+# Create a recersive webdriver in case of timeouts
 def recursive_webdriver(cockpit_url, xsa_user, xsa_pass, chromeOptions):
     driver = webdriver.Chrome(options=chromeOptions)
     driver.get(cockpit_url + '/cockpit')

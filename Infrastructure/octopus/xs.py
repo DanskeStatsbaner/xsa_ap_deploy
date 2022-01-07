@@ -195,6 +195,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         banner(f"Assign AD groups to role collections")
         ###############################################################################
 
+        # As XS CLI does not support AD group mapping, we need to using Selenium
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
 
     ###############################################################################
@@ -233,8 +234,8 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
             users += [(username, password, scopes, token)]
 
-            print(username)
-            print(check_scopes(token, scopes, project_name))
+            if not check_scopes(token, scopes, project_name):
+                raise Exception(f'{username} does not have the expected scopes. Please redeploy.')
 
             if environment == 'prd':
                 run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
@@ -276,7 +277,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
                     for username, _, scopes, token in users:
                         for method in data["methods"]:
                             print(unprotected_url + endpoint)
-                            print(username, scopes, data["scope"] in scopes)
+                            print(username, scopes, data["scope"], data["scope"] in scopes)
                             print(check_endpoint(unprotected_url + endpoint, method, token))
                             print(data["scope"] in scopes and check_endpoint(unprotected_url + endpoint, method, token))
                             print('------------------------------------------')

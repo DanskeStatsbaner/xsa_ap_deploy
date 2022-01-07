@@ -1,5 +1,6 @@
 import subprocess, random, string, os, sys, textwrap
 
+# Prints a text surrounded by #
 def banner(title, print_func=print, width=80, padding=2, blank_line='\n'):
     lines = []
     for line in title.split(os.linesep):
@@ -12,6 +13,7 @@ def banner(title, print_func=print, width=80, padding=2, blank_line='\n'):
     print_func(seperator)
     print_func(blank_line)
 
+# Execute terminal commands and capture output
 def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         variable = f'%{pipe}%' if sys.platform == 'win32' else f'${pipe}'
@@ -43,6 +45,7 @@ def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True,
                 exception_handler(message)
     return output
 
+# Execute terminal commands within a docker container
 def docker(cmd, container_name, env={}, print_func=print, pipe=None, work_dir='/', show_output=True, show_cmd=True, ignore_errors=False, exception_handler=None):
     if pipe is not None and pipe in env:
         cmd = f'echo ${pipe}| ' + cmd
@@ -59,6 +62,7 @@ def docker(cmd, container_name, env={}, print_func=print, pipe=None, work_dir='/
 
     return run(docker_cmd, env=env, print_func=print_func, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
 
+# Generate a random password
 def generate_password():
     random_source = string.ascii_letters + string.digits
     # select 1 lowercase

@@ -215,7 +215,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
             # Delete existing users, to ensure that scopes are updated correctly
             if environment != 'prd':
-                run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
+                run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
 
             run(f'xs create-user {username} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
             print(f'User {username} has been created')

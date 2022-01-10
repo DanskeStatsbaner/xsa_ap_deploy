@@ -152,7 +152,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner(f"Push app: {project_name}")
     ###############################################################################
 
-    app_output = run(f'xs push {project_name}')
+    app_output = run(f'xs push {project_name}', ignore_errors=True)
     output = app_router_output if is_web else app_output
 
     app_url = [line.split(':', 1)[1].strip() for line in output.split('\n') if 'urls' in line][0] + (f'/{host}' if is_web else '')
@@ -160,6 +160,9 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     is_running = app_output.rfind('RUNNING') > app_output.rfind('CRASHED')
 
     if not is_running:
+        print('BLANK_LINE')
+        run(f'xs logs {project_name} --recent')
+        print('BLANK_LINE')
         raise Exception('The application crashed')
 
     ###############################################################################

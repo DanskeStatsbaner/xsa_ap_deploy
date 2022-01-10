@@ -131,22 +131,15 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner("Create or update UAA service")
     ###############################################################################
 
-    uaa_service_output = run(f'xs service {uaa_service}', ignore_errors=True).lower()
+    run(f'xs delete-service -f {uaa_service}', ignore_errors=True).lower()
 
     xs_security_flag = '-c xs-security.json' if is_web else ''
 
+    uaa_service_output = run(f'xs create-service xsuaa default {uaa_service} {xs_security_flag}')
     if 'failed' in uaa_service_output:
-        raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
-    elif not 'succeeded' in uaa_service_output:
-        uaa_service_output = run(f'xs create-service xsuaa default {uaa_service} {xs_security_flag}')
-        if 'failed' in uaa_service_output:
-            raise Exception(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in uaa_service_output.split('\n') if 'FAILED' in line]))
-        else:
-            print(f'The service "{uaa_service}" was succesfully created')
-    elif is_web:
-        uaa_service_output = run(f'xs update-service {uaa_service} {xs_security_flag}')
-        if 'failed' in uaa_service_output:
-            raise Exception(f'The service "{uaa_service}" is broken. Try to delete the service with: "xs delete-service {uaa_service}" and restart deployment')
+        raise Exception(f'Creation of the service "{uaa_service}" failed' + '\n'.join([line for line in uaa_service_output.split('\n') if 'FAILED' in line]))
+    else:
+        print(f'The service "{uaa_service}" was succesfully created')
 
     if is_web:
         ###############################################################################

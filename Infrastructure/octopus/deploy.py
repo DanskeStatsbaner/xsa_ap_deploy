@@ -36,7 +36,7 @@ class Variables:
     project_name: str = get("Octopus.Project.Name")
     release_number: str = get("Octopus.Release.Number")
     humio_ingest_token: str = get("dataART.HumioIngestToken")
-    worker: str = get("Octopus.WorkerPool.Name") + '"' + 'test'
+    worker: str = get("Octopus.WorkerPool.Name")
     xsa_url: str = get("dataART.XSAUrl")
     xsa_user: str = get("dataART.XSAUser")
     xsa_space: str = get("dataART.XSASpace")

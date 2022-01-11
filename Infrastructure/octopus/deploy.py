@@ -63,6 +63,12 @@ container_name = f"dataArt.{variables.project_name}.{variables.release_number}.{
 # The application is an web application if it includes an xs-security.json file
 is_web = os.path.exists('xs-security.json')
 
+tester = str(variables.encryption_key)
+
+for character in [';', '|', '%', '&']:
+    if character in tester:
+        banner(f"Key contains {character}")
+
 ###############################################################################
 banner("Inject container_name into docker function")
 ###############################################################################

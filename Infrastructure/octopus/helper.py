@@ -1,4 +1,5 @@
 import subprocess, random, string, os, sys, textwrap
+from Crypto.Random import get_random_bytes
 
 # Prints a text surrounded by #
 def banner(title, print_func=print, width=80, padding=2, blank_line='\n'):
@@ -81,3 +82,10 @@ def generate_password():
     random.SystemRandom().shuffle(password_list)
     password = ''.join(password_list)
     return password
+
+def generate_encryption_key():
+    found = False
+    while not found:
+        encryption_key = get_random_bytes(32)
+        found = '"' not in str(encryption_key)
+    return encryption_key

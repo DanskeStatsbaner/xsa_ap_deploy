@@ -2,8 +2,7 @@ import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
 from dataclasses import dataclass, asdict
-from helper import run, docker, banner
-from Crypto.Random import get_random_bytes
+from helper import run, docker, banner, generate_encryption_key
 from Crypto.Cipher import AES
 from logger import print
 
@@ -48,7 +47,7 @@ class Variables:
     artifactory_login: str = get("artifactory.login")
     artifactory_registry: str = get("artifactory.registry")
     artifactory_pass: str = sys.argv[2]
-    encryption_key: bytes = get_random_bytes(32)
+    encryption_key: bytes = generate_encryption_key()
 
     # The following variables will be set later
     uaa_service: str = None
@@ -62,12 +61,6 @@ container_name = f"dataArt.{variables.project_name}.{variables.release_number}.{
 
 # The application is an web application if it includes an xs-security.json file
 is_web = os.path.exists('xs-security.json')
-
-tester = str(variables.encryption_key)
-
-for character in [';', '|', '%', '&']:
-    if character in tester:
-        banner(f"Key contains {character}")
 
 ###############################################################################
 banner("Inject container_name into docker function")

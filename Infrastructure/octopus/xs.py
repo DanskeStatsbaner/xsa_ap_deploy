@@ -9,6 +9,7 @@ from hdbcli import dbapi
 # Show command and output when using the run method.
 run = partial(run, show_output=True, show_cmd=True)
 
+# As blank lines will be ignored in the log, we need to use a placeholder.
 banner = partial(banner, blank_line='BLANK_LINE')
 
 # Method for obtaining JWT.
@@ -43,7 +44,7 @@ def check_endpoint(url, method, token):
     )
     return response.status_code != 403
 
-# The Python package `click` allows us to transform xs.py to a CLI.
+# The Python package `click` allows us to transform xs.py into a CLI.
 # We are using auto_envvar_prefix to obtain the envirenment variables
 # injected from deploy.py.
 @click.command()
@@ -74,10 +75,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     pwd = Path.cwd().parent
     os.chdir(pwd)
 
-    # The application is an web application if it includes an xs-security.json file
+    # The application is an web application if it includes a xs-security.json file.
     is_web = os.path.exists('xs-security.json')
 
-    # If deployment is a web app, then create the necessary files for the app-router
+    # If deployment is a web app, then create the necessary files for the app-router.
     # Additionally, modify the xs-security.json such that it follows the specification:
     # https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/517895a9612241259d6941dbf9ad81cb.html
     if is_web:
@@ -124,11 +125,14 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         with open('xs-security.json', 'w') as file:
             file.write(xs_security)
 
-    # Log in to SAP HANA using the XS CLI
+    ###############################################################################
+    banner("Log in to SAP HANA using the XS CLI")
+    ###############################################################################
+
     run(f'xs login -u {xsa_user} -p $xsa_pass -a {xsa_url} -o orgname -s {xsa_space}', env={'xsa_pass': xsa_pass})
 
     ###############################################################################
-    banner("Create or update UAA service")
+    banner("Delete existing UAA service and create a new one")
     ###############################################################################
 
     run(f'xs delete-service -f {uaa_service}', ignore_errors=True).lower()
@@ -143,7 +147,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     if is_web:
         ###############################################################################
-        banner(f"Push app_router: {app_router}")
+        banner(f"Push app router: {app_router}")
         ###############################################################################
 
         app_router_output = run(f'xs push {app_router}')

@@ -1,5 +1,4 @@
 import json, traceback, sys, os, ast, click, requests, jwt
-from msilib.schema import Environment
 from pathlib import Path
 from helper import run, generate_password, banner
 from functools import partial

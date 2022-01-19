@@ -1,4 +1,5 @@
 import json, traceback, sys, os, ast, click, requests, jwt
+from msilib.schema import Environment
 from pathlib import Path
 from helper import run, generate_password, banner
 from functools import partial
@@ -221,7 +222,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             scopes = scope_mappings[role_collection] if role_collection in role_collections else []
 
             # Delete existing users, to ensure that scopes are updated correctly
-            if environment != 'prd':
+            if environment == 'dev':
                 run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass}, ignore_errors=True)
 
             run(f'xs create-user {username} $password -p $xsa_pass --no-password-change', env={'password': password, 'xsa_pass': xsa_pass})
@@ -237,7 +238,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             if not check_scopes(token, scopes, project_name):
                 raise Exception(f'{username} does not have the expected scopes. Please redeploy.')
 
-            if environment == 'prd':
+            if environment != 'dev':
                 run(f'xs delete-user -p $xsa_pass {username} -f', env={'xsa_pass': xsa_pass})
                 print(f'User {username} has been deleted')
 
@@ -290,7 +291,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     login_template = ''
 
     if is_web:
-        if environment != 'prd':
+        if environment == 'dev':
             for user, password, scopes, _ in users:
                 login_template += f'<table style="margin-bottom: 1rem;">'
                 login_template += f'<tr><td><strong>Username</strong></td><td>{table_space}</td><td>{user}<td></tr>'

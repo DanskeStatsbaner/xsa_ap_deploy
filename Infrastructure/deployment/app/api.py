@@ -184,6 +184,13 @@ async def openapi():
 def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
 
+from framework.helper import Log
+
+@app.post("/humio", include_in_schema=False)
+def stop_task(message: Log, security_context=Depends(auth(scope='uaa.resource'))) -> dict:
+    humio_client.ingest_json_data(message.content)
+    return {"response": '', "state": 'OK'}
+
 if __name__ == "__main__":
     uvicorn.run(
         "api:app",

@@ -40,6 +40,9 @@ class Message(BaseModel):
     users: Optional[List[str]]
     content: str
 
+class Log(BaseModel):
+    content: List
+
 class Notifier:
     def __init__(self):
         self.connections: List[Tuple[str, WebSocket]] = []

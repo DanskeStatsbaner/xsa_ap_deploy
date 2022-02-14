@@ -5,7 +5,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute, APIWebSocketRoute
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-import uvicorn, os, aiofiles
+import uvicorn, os, aiofiles, traceback
 from framework.env import auth
 from routes import router
 
@@ -187,9 +187,16 @@ def get_health() -> dict:
 from framework.helper import Log
 
 @app.post("/humio", include_in_schema=False)
-def stop_task(message: Log, security_context=Depends(auth(scope='uaa.resource'))) -> dict:
-    humio_client.ingest_json_data(message.content)
-    return {"response": '', "state": 'OK'}
+def send_to_humio(message: Log, security_context=Depends(auth(scope='uaa.resource'))) -> dict:
+    try:
+        humio_client.ingest_json_data(message.content)
+        response = message.content
+        state = 'OK'
+    except Exception as ex:
+        response = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
+        state = 'FAILED'
+
+    return {"response": response, "state": state}
 
 if __name__ == "__main__":
     uvicorn.run(

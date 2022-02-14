@@ -76,7 +76,7 @@ class Task:
     def __init__(self, detach=True):
         self.humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
         self.task_dir = Path.cwd()
-        self.log_file = 'process.log'
+        self.log_file = 'task.log'
         self.argument_parser()
         self.uuid = self.args.uuid
         self.databases = self.args.databases

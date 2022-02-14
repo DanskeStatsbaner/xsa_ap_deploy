@@ -83,7 +83,7 @@ def setup_logging(log_level: int, json: bool):
     # configure loguru
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": json}])
 
-    logger.add("test.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
+    logger.add("api.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
     logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), enqueue=True, backtrace=True, diagnose=True)
 
 

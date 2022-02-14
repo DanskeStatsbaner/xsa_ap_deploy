@@ -140,7 +140,7 @@ async def add_CORS_header(request: Request, call_next):
     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
     return response
 
-app.include_router(router)
+app.include_router(router(logger))
 
 
 @app.post("/upload")
@@ -151,7 +151,7 @@ async def upload(path: str = '', file: UploadFile=File(...), security_context=De
 
     return {"Result": "OK"}
 
-@router.get("/scope-check")
+@app.get("/scope-check")
 async def scope_check(request: Request, security_context=Depends(auth(scope='uaa.resource'))):
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
@@ -180,7 +180,7 @@ async def get_documentation():
 async def openapi():
     return get_openapi(title="OCTOPUS_PROJECT_NAME", version="OCTOPUS_RELEASE_NUMBER", routes=router.routes)
 
-@router.get("/health", include_in_schema=False)
+@app.get("/health", include_in_schema=False)
 def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
 

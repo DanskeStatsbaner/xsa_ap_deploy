@@ -97,12 +97,12 @@ UVICORN_LOGGING_CONFIG = {
     "formatters": {
         "default": {
             "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "%(levelprefix)s %(message)s",
+            "fmt": "%(message)s",
             "use_colors": None,
         },
         "access": {
             "()": "uvicorn.logging.AccessFormatter",
-            "fmt": '%(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s',
+            "fmt": '%(client_addr)s - "%(request_line)s" %(status_code)s',
         },
     },
     "loggers": {

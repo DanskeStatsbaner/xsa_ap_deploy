@@ -121,10 +121,9 @@ class Task:
                         "process_id": record['process'].id,
                         "process_name": record['process'].name,
                         "thread_id": record['thread'].id,
-                        "thread_name": record['thread'].name,
-                        "text": message
+                        "thread_name": record['thread'].name
                     },
-                    "rawstring": record['message']
+                    "rawstring": message
                 }
             ]
         }])

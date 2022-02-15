@@ -85,7 +85,7 @@ def setup_logging(log_level: int, json: bool):
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": json}])
 
     logger.add("api.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
-    logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), enqueue=True, backtrace=True, diagnose=True)
+    logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), format="{message}", enqueue=True, backtrace=True, diagnose=True)
 
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)

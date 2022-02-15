@@ -39,7 +39,7 @@ def humio(source, message, client):
                     "process_name": record['process'].name,
                     "thread_id": record['thread'].id,
                     "thread_name": record['thread'].name,
-                    "text": message.text
+                    "text": message
                 },
                 "rawstring": record['message']
             }

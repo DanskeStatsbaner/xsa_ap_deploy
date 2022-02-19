@@ -5,6 +5,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute, APIWebSocketRoute
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from flask_login import login_required
 import uvicorn, os, aiofiles, traceback
 from framework.env import auth
 from routes import router
@@ -141,7 +142,9 @@ async def add_CORS_header(request: Request, call_next):
     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
     return response
 
-app.include_router(router(logger))
+router = router(logger)
+
+app.include_router(router)
 
 
 @app.post("/upload")

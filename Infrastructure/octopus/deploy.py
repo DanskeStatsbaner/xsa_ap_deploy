@@ -39,7 +39,7 @@ class Variables:
     worker: str = get("Octopus.WorkerPool.Name")
     xsa_url: str = get("dataART.XSAUrl")
     xsa_user: str = get("dataART.XSAUser")
-    xsa_space: str = get("dataART.XSASpace")
+    xsa_space: str = get("dataART.XSASpace") if get("Octopus.Project.Name") != 'AP_TASKCHAIN' else 'SAP'
     xsa_keyuser: str = get("dataART.XSAKeyUser")
     xsa_pass: str = sys.argv[1]
     hana_host: str = get("dataART.Host").split('.')[0]

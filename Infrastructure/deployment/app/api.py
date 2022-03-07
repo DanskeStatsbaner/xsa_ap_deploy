@@ -7,11 +7,11 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 import uvicorn, os, aiofiles, traceback
 from framework.env import auth
+from framework.helper import humio_client
 from routes import router
 
 import logging, sys
 from loguru import logger
-from humiolib.HumioClient import HumioIngestClient
 from datetime import timedelta
 
 def humio(source, message, client):
@@ -46,7 +46,6 @@ def humio(source, message, client):
         ]
     }])
 
-humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
 class InterceptHandler(logging.Handler):
     """
     Default handler from examples in loguru documentaion.
@@ -186,20 +185,6 @@ async def openapi():
 @app.get("/health", include_in_schema=False)
 def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
-
-from framework.helper import Log
-
-@app.post("/humio", include_in_schema=False)
-def send_to_humio(message: Log, security_context=Depends(auth(scope='uaa.resource'))) -> dict:
-    try:
-        humio_client.ingest_json_data(message.content)
-        response = message.content
-        state = 'OK'
-    except Exception as ex:
-        response = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
-        state = 'FAILED'
-
-    return {"response": response, "state": state}
 
 if __name__ == "__main__":
     uvicorn.run(

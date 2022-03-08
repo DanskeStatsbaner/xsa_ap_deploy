@@ -209,7 +209,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     org_guid = requests.get(f'{xsa_url}/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
 
     spaces = requests.get(f'{xsa_url}/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
-    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == 'DEV'][0]
+    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == xsa_space][0]
 
     app_name = 'XSA_KEY_VAULT-db'
     app = requests.get(f'{xsa_url}/v2/apps?q=spaceGuid%3A{space_guid}%3Bname%3A{app_name}', headers=headers).json()

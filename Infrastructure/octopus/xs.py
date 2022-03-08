@@ -202,13 +202,13 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner(f"Insert OAuth 2.0 credentials into XSA_KEY_VAULT")
     ###############################################################################
 
-    xs_token = requests.post('https://uaa-server.xsabinu0.dsb.dk:30033/uaa-security/oauth/token', data={'username': xsa_user, 'password': xsa_pass, 'grant_type': 'password', 'response_type': 'code'}, auth=('cf', '')).json()['access_token']
+    xs_token = requests.post(f"{xsa_url.replace('api', 'uaa-server')}/uaa-security/oauth/token", data={'username': xsa_user, 'password': xsa_pass, 'grant_type': 'password', 'response_type': 'code'}, auth=('cf', '')).json()['access_token']
 
     headers = {'Authorization': f'bearer {xs_token}'}
 
-    org_guid = requests.get('https://api.xsabinu0.dsb.dk:30033/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
+    org_guid = requests.get(f'{xsa_url}/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
 
-    spaces = requests.get(f'https://api.xsabinu0.dsb.dk:30033/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
+    spaces = requests.get(f'{xsa_url}/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
     space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == 'DEV'][0]
 
     app_name = 'XSA_KEY_VAULT-db'

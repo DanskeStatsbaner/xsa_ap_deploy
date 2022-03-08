@@ -64,6 +64,9 @@ def check_endpoint(url, method, token):
 @click.option('--encryption-key')
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment, environment, unprotected_url, encryption_key):
 
+    xsa_space_org = xsa_space
+    xsa_space = xsa_space if xsa_space  != 'AP_TASKCHAIN' else 'SAP'
+
     hana_port = 30015
 
     # Convert encryption_key from string to bytes
@@ -209,14 +212,10 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     org_guid = requests.get(f'{xsa_url}/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
 
     spaces = requests.get(f'{xsa_url}/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
-    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'].lower() == xsa_space.lower()][0]
-
-    print(space_guid)
+    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == xsa_space_org][0]
 
     app_name = 'XSA_KEY_VAULT-db'
     app = requests.get(f'{xsa_url}/v2/apps?q=spaceGuid%3A{space_guid}%3Bname%3A{app_name}', headers=headers).json()
-
-    print(app)
 
     guid = app['applications'][0]['metadata']['guid']
     app_env = requests.get(f'{xsa_url}/v2/apps/{guid}/env', headers=headers).json()

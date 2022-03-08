@@ -278,8 +278,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         '/openapi.json',
         '/upload',
         '/scope-check',
-        '/health',
-        '/humio'
+        '/health'
     ]
 
     table_space = '&nbsp;' * 10

@@ -202,7 +202,26 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner(f"Insert OAuth 2.0 credentials into XSA_KEY_VAULT")
     ###############################################################################
 
-    conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_keyuser, password = xsa_pass)
+    xs_token = requests.post('https://uaa-server.xsabinu0.dsb.dk:30033/uaa-security/oauth/token', data={'username': xsa_user, 'password': xsa_pass, 'grant_type': 'password', 'response_type': 'code'}, auth=('cf', '')).json()['access_token']
+
+    headers = {'Authorization': f'bearer {xs_token}'}
+
+    org_guid = requests.get('https://api.xsabinu0.dsb.dk:30033/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
+
+    spaces = requests.get(f'https://api.xsabinu0.dsb.dk:30033/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
+    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == 'DEV'][0]
+
+    app_name = 'XSA_KEY_VAULT-db'
+    app = requests.get(f'{xsa_url}/v2/apps?q=spaceGuid%3A{space_guid}%3Bname%3A{app_name}', headers=headers).json()
+
+    guid = app['applications'][0]['metadata']['guid']
+    app_env = requests.get(f'{xsa_url}/v2/apps/{guid}/env', headers=headers).json()
+    hana_credentials = json.loads(app_env['system_env_json'][0]['value'])['hana'][0]['credentials']
+
+    xsa_key_vault_user = hana_credentials['user']
+    xsa_key_vault_pass = hana_credentials['password']
+
+    conn = dbapi.connect(address = hana_host, port = hana_port, user = xsa_key_vault_user, password = xsa_key_vault_pass)
     conn.cursor().execute(f"""
         UPSERT "XSA_KEY_VAULT"."XSA_KEY_VAULT.db.Tables::Key_Vault.Keys" VALUES ('{project_name}', '{json.dumps(credentials)}') WHERE APPNAME = '{project_name}'
     """)

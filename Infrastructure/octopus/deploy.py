@@ -169,7 +169,7 @@ environment_variables = {
 }
 
 for variable, value in environment_variables.items():
-    paths = docker(f"grep -rwl -e '{variable}'", work_dir='/data/app').strip().split('\n')
+    paths = docker(f"grep -rwl -e '{variable}'", work_dir='/data/app', ignore_errors=True).strip().split('\n')
     paths = [path for path in paths if path != '']
 
     for path in paths:

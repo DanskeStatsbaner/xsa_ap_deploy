@@ -65,7 +65,7 @@ def check_endpoint(url, method, token):
 def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment, environment, unprotected_url, encryption_key):
 
     xsa_space_org = xsa_space
-    xsa_space = xsa_space if project_name != 'AP_TASKCHAIN' else 'SAP'
+    xsa_space = xsa_space
 
     hana_port = 30015
 

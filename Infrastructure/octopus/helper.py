@@ -26,10 +26,10 @@ def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True,
             print_func(f'$ {cmd}')
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding=False)
+    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
     output = ''
     while popen.poll() is None:
-        line = popen.stdout.readline().strip().decode('utf-8')
+        line = popen.stdout.readline()
         output += line
         if show_output:
             if len(line.strip()) > 0:

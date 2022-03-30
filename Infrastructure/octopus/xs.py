@@ -1,4 +1,5 @@
 import json, traceback, sys, os, ast, click, requests, jwt
+import re
 from pathlib import Path
 from helper import run, generate_password, banner
 from functools import partial
@@ -35,8 +36,16 @@ def check_scopes(token, scopes, project_name):
 
 # Method for checking whether an endpoint is accesible with a given JWT.
 def check_endpoint(url, method, token):
-    func = requests.get if method == 'GET' else requests.post
-    response = func(
+    functions = {
+        'GET': requests.get,
+        'POST': requests.post,
+        'PATCH': requests.patch,
+        'PUT': requests.put,
+        'DELETE': requests.delete
+    }
+    if method not in functions.keys():
+        raise Exception(f'The method "{method}" is not supported by the pipeline.')
+    response = functions[method](
         url,
         headers = {
             'Authorization': f'Bearer {token}'
@@ -288,23 +297,22 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     scope_template = ''
     for title, endpoints in endpoint_collection.items():
-        endpoints = {endpoint: data for endpoint, data in endpoints.items() if endpoint not in predefined_endpoints}
         if len(endpoints) > 0:
             scope_template += f'<h3>{title}</h3>'
             scope_template += f'<table>'
             scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
-            for endpoint, data in endpoints.items():
-                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{data["scope"]}</td><td>{table_space}</td><td>{", ".join(data["methods"])}</td></tr>'
+            for endpoint_dict in endpoints:
+                endpoint, method, scope = endpoint_dict.values()
+                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td><td>{table_space}</td><td>{method}</td></tr>'
                 if 'websocket' not in title and is_web:
                     print(f'Checking {unprotected_url + endpoint}')
                     for username, _, scopes, token in users:
-                        for method in data["methods"]:
-                            if data["scope"] in scopes:
-                                if not check_endpoint(unprotected_url + endpoint, method, token):
-                                    raise Exception(f'{username} could not access {endpoint}, which should be possible. Try to redeploy.')
-                            else:
-                                if check_endpoint(unprotected_url + endpoint, method, token):
-                                    raise Exception(f'{username} could access {endpoint}, which should not be possible. Try to redeploy.')
+                        if scope in scopes:
+                            if not check_endpoint(unprotected_url + endpoint, method, token):
+                                raise Exception(f'{username} could not access {endpoint}, which should be possible. Try to redeploy.')
+                        else:
+                            if check_endpoint(unprotected_url + endpoint, method, token):
+                                raise Exception(f'{username} could access {endpoint}, which should not be possible. Try to redeploy.')
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()

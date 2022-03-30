@@ -158,16 +158,16 @@ async def scope_check(request: Request, security_context=Depends(auth(scope='uaa
     endpoints = [route for route in request.app.routes if type(route) == APIRoute]
     websockets = [route for route in request.app.routes if type(route) == APIWebSocketRoute]
 
-    to_dict = lambda methods, scope: {'methods': methods, 'scope': scope}
+    to_dict = lambda endpoint, method, scope: {'endpoint': endpoint, 'method': method, 'scope': scope}
 
-    protected_endpoints = {route.path: to_dict(route.methods, security_requirement.security_scheme.scope) for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements}
-    unprotected_endpoints = {route.path: to_dict(route.methods, None) for route in endpoints if route.path not in protected_endpoints.keys()}
+    protected_endpoints = {f'{route.path}{method}': to_dict(route.path, method, security_requirement.security_scheme.scope) for route in endpoints for dependency in route.dependant.dependencies for security_requirement in dependency.security_requirements for method in route.methods}
+    unprotected_endpoints = [to_dict(route.path, method, None) for route in endpoints if f'{route.path}{"".join(route.methods)}' not in protected_endpoints.keys() for method in route.methods]
 
-    protected_websockets = {route.path: to_dict(['-'], route.dependant.dependencies[0].call.keywords['scope']) for route in websockets if len(route.dependant.dependencies) > 0}
-    unprotected_websockets = {route.path: to_dict(['-'], None) for route in websockets if len(route.dependant.dependencies) == 0}
+    protected_websockets = [to_dict(route.path, '-', route.dependant.dependencies[0].call.keywords['scope']) for route in websockets if len(route.dependant.dependencies) > 0]
+    unprotected_websockets = [to_dict(route.path, '-', None) for route in websockets if len(route.dependant.dependencies) == 0]
 
     return {
-        "Protected endpoints": protected_endpoints,
+        "Protected endpoints": list(protected_endpoints.values()),
         "Unprotected endpoints": unprotected_endpoints,
         "Protected websockets": protected_websockets,
         "Unprotected websockets": unprotected_websockets

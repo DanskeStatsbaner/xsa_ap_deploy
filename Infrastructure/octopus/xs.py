@@ -41,7 +41,8 @@ def check_endpoint(url, method, token):
         'POST': requests.post,
         'PATCH': requests.patch,
         'PUT': requests.put,
-        'DELETE': requests.delete
+        'DELETE': requests.delete,
+        'HEAD': requests.head
     }
     if method not in functions.keys():
         raise Exception(f'The method "{method}" is not supported by the pipeline.')

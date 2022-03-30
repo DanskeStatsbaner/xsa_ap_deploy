@@ -304,16 +304,17 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
             for endpoint_dict in endpoints:
                 endpoint, method, scope = endpoint_dict.values()
-                scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td><td>{table_space}</td><td>{method}</td></tr>'
-                if 'websocket' not in title and is_web:
-                    print(f'Checking {unprotected_url + endpoint}')
-                    for username, _, scopes, token in users:
-                        if scope in scopes:
-                            if not check_endpoint(unprotected_url + endpoint, method, token):
-                                raise Exception(f'{username} could not access {endpoint}, which should be possible. Try to redeploy.')
-                        else:
-                            if check_endpoint(unprotected_url + endpoint, method, token):
-                                raise Exception(f'{username} could access {endpoint}, which should not be possible. Try to redeploy.')
+                if method not in predefined_endpoints:
+                    scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td><td>{table_space}</td><td>{method}</td></tr>'
+                    if 'websocket' not in title and is_web:
+                        print(f'Checking {unprotected_url + endpoint}')
+                        for username, _, scopes, token in users:
+                            if scope in scopes:
+                                if not check_endpoint(unprotected_url + endpoint, method, token):
+                                    raise Exception(f'{username} could not access {endpoint}, which should be possible. Try to redeploy.')
+                            else:
+                                if check_endpoint(unprotected_url + endpoint, method, token):
+                                    raise Exception(f'{username} could access {endpoint}, which should not be possible. Try to redeploy.')
             scope_template += f'</table>'
 
     scope_template = scope_template.strip()

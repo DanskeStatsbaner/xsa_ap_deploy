@@ -304,7 +304,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
             scope_template += f'<tr><td><strong>Endpoint</strong></td><td>{table_space}</td><td><strong>Scope</strong></td><td>{table_space}</td><td><strong>Method</strong></td></tr>'
             for endpoint_dict in endpoints:
                 endpoint, method, scope = endpoint_dict.values()
-                if method not in predefined_endpoints:
+                if endpoint not in predefined_endpoints:
                     scope_template += f'<tr><td>{endpoint}</td><td>{table_space}</td><td>{scope}</td><td>{table_space}</td><td>{method}</td></tr>'
                     if 'websocket' not in title and is_web:
                         print(f'Checking {unprotected_url + endpoint}')

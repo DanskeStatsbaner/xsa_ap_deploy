@@ -93,6 +93,7 @@ class Task:
         self.url = url
         logger.add(self.log_file, rotation="1 week", enqueue=True)
         logger.add(lambda message: self.humio(self.log_file, message), format="{message}", enqueue=True)
+        self.logger = logger
 
     def connect_db(self, container):
         container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]

@@ -91,8 +91,8 @@ class Task:
             detach=detach
         )
         self.url = url
-        logger.add(self.log_file, rotation="1 week")
-        logger.add(lambda message: self.humio(self.log_file, message), format="{message}")
+        logger.add(self.log_file, rotation="1 week", enqueue=True)
+        logger.add(lambda message: self.humio(self.log_file, message), format="{message}", enqueue=True)
 
     def connect_db(self, container):
         container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]

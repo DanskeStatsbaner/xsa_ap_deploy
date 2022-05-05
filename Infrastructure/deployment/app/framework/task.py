@@ -8,7 +8,7 @@ from datetime import timedelta
 from pathlib import Path
 from hdbcli import dbapi
 from framework.env import url
-import aiohttp
+import aiohttp, requests
 
 class CustomDaemon(Daemon):
     def __init__(self, *args, **kwargs):
@@ -72,7 +72,7 @@ def exception_handler(func):
             raise Exception('Something went wrong')
     return catch
 
-async def humio(message):
+async def humio_async(message):
     async with aiohttp.ClientSession() as session:
         record = message.record
         data = json.dumps([{
@@ -110,6 +110,41 @@ async def humio(message):
             print(response.status)
             print(await response.text())
 
+def humio(message):
+    record = message.record
+    data = json.dumps([{
+        "tags": {
+            "host": "Linux VM",
+            "source": "task.log"
+        },
+        "events": [
+            {
+                "timestamp": record['time'].isoformat(),
+                "attributes": {
+                    "elapsed": record['elapsed'] / timedelta(milliseconds=1),
+                    "exception": record['exception'],
+                    "file_name": record['file'].name,
+                    "file_path": record['file'].path,
+                    "function": record['function'],
+                    "level": record['level'].name,
+                    "line": record['line'],
+                    "module": record['module'],
+                    "name": record['name'],
+                    "process_id": record['process'].id,
+                    "process_name": record['process'].name,
+                    "thread_id": record['thread'].id,
+                    "thread_name": record['thread'].name
+                },
+                "rawstring": message
+            }
+        ]
+    }])
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer f6274d6c-3287-4417-806b-2d2d981748cd',
+    }
+    response = requests.post('https://cloud.humio.com/api/v1/ingest/humio-structured', headers=headers, data=data)
+
 class Task:
     def __init__(self, detach=True):
         self.task_dir = Path.cwd()
@@ -128,8 +163,8 @@ class Task:
             detach=detach
         )
         self.url = url
-        logger.add(self.log_file, rotation="1 week")
         logger.add(humio, format="{message}")
+        logger.add(self.log_file, rotation="1 week")
 
     def connect_db(self, container):
         container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]
@@ -168,7 +203,6 @@ class Task:
             logger.critical(f'{self.__class__.__name__} failed (UUID {self.uuid})')
             with open(f'{self.uuid}.state', 'w') as f:
                 f.write('failed')
-
 
     def do_action(self, action):
         self.daemon.do_action(action)

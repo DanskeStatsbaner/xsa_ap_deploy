@@ -5,10 +5,10 @@ from daemonocle import Daemon, expose_action
 from loguru import logger
 from time import sleep
 from datetime import timedelta
-from humiolib.HumioClient import HumioIngestClient
 from pathlib import Path
 from hdbcli import dbapi
 from framework.env import url
+import aiohttp
 
 class CustomDaemon(Daemon):
     def __init__(self, *args, **kwargs):
@@ -72,38 +72,13 @@ def exception_handler(func):
             raise Exception('Something went wrong')
     return catch
 
-class Task:
-    def __init__(self, detach=True):
-        self.humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
-        self.task_dir = Path.cwd()
-        self.log_file = 'task.log'
-        self.argument_parser()
-        self.uuid = self.args.uuid
-        self.databases = self.args.databases
-        self.daemon = CustomDaemon(
-            worker=self._main,
-            shutdown_callback=self._shutdown,
-            name=self.uuid,
-            pid_file=f'{self.task_dir}/{self.uuid}.pid',
-            stderr_file=self.log_file,
-            stdout_file=self.log_file,
-            work_dir=self.task_dir,
-            detach=detach
-        )
-        self.url = url
-        logger.add(self.log_file, rotation="1 week")
-        logger.add(lambda message: self.humio(self.log_file, message), format="{message}")
-
-    def connect_db(self, container):
-        container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]
-        return dbapi.connect(**self.databases[container])
-
-    def humio(self, file, message):
+async def humio(message):
+    async with aiohttp.ClientSession() as session:
         record = message.record
-        self.humio_client.ingest_json_data([{
+        data = json.dumps([{
             "tags": {
                 "host": "Linux VM",
-                "source": file
+                "source": "task.log"
             },
             "events": [
                 {
@@ -127,6 +102,38 @@ class Task:
                 }
             ]
         }])
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer f6274d6c-3287-4417-806b-2d2d981748cd',
+        }
+        async with session.post('https://cloud.humio.com/api/v1/ingest/humio-structured', headers=headers, data=data) as response:
+            print(response.status)
+            print(await response.text())
+
+class Task:
+    def __init__(self, detach=True):
+        self.task_dir = Path.cwd()
+        self.argument_parser()
+        self.log_file = 'task.log'
+        self.uuid = self.args.uuid
+        self.databases = self.args.databases
+        self.daemon = CustomDaemon(
+            worker=self._main,
+            shutdown_callback=self._shutdown,
+            name=self.uuid,
+            pid_file=f'{self.task_dir}/{self.uuid}.pid',
+            stderr_file=self.log_file,
+            stdout_file=self.log_file,
+            work_dir=self.task_dir,
+            detach=detach
+        )
+        self.url = url
+        logger.add(self.log_file, rotation="1 week")
+        logger.add(humio, format="{message}")
+
+    def connect_db(self, container):
+        container = [database for database in self.databases if container.replace('-container', '') == database.replace('-container', '')][0]
+        return dbapi.connect(**self.databases[container])
 
     def argument_parser(self):
         self.parser = argparse.ArgumentParser()

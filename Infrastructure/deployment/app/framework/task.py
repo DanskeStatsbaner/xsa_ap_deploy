@@ -104,7 +104,7 @@ async def humio_async(message):
         }])
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer f6274d6c-3287-4417-806b-2d2d981748cd',
+            'Authorization': 'Bearer OCTOPUS_HUMIO_INGEST_TOKEN',
         }
         async with session.post('https://cloud.humio.com/api/v1/ingest/humio-structured', headers=headers, data=data) as response:
             print(response.status)
@@ -141,7 +141,7 @@ def humio(message):
     }])
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer f6274d6c-3287-4417-806b-2d2d981748cd',
+        'Authorization': 'Bearer OCTOPUS_HUMIO_INGEST_TOKEN',
     }
     response = requests.post('https://cloud.humio.com/api/v1/ingest/humio-structured', headers=headers, data=data)
 

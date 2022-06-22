@@ -61,9 +61,7 @@ def cockpit(xsa_user, xsa_pass, xsa_url, mappings):
 
         response = run(cmd, show_cmd=False, show_output=False)
 
-        print(f'DEBUG: {response}')
-
-        if response != 'null':
+        if response != '""':
             print(f'Creation of mapping {role_collection} -> {attribute_value} failed')
             sys.exit(1)
         else:

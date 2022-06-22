@@ -1,29 +1,46 @@
-import yaml
+import re, yaml, os
 from cfenv import AppEnv
 from framework.auth import AuthCheck, websocket_jwt
 
-with open('manifest') as file:
-    manifest_yaml = file.read()
-    manifest = yaml.safe_load(manifest_yaml)
-    application = manifest['applications'][0]
-    services = set(application['services'])
-    containers = {service for service in services if '-uaa' not in service}
-    uaa = list(services - containers)[0]
-    host = application['host']
-    url = 'OCTOPUS_APP_URL'
+find_url = lambda x: [url[0] for url in re.findall(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))", x) if len(url[0]) > 0][0]
 
-    # if it is a web app
-    if len(manifest['applications']) > 1:
+if os.path.exists('manifest'):
+    with open('manifest') as file:
+        manifest_yaml = file.read()
+        manifest = yaml.safe_load(manifest_yaml)
+        application = manifest['applications'][0]
         app_router = manifest['applications'][1]
-        secure_url = f'OCTOPUS_APP_ROUTER_URL/{host}'
+        services = set(application['services'])
+        containers = {service for service in services if '-uaa' not in service}
+        uaa = list(services - containers)[0]
+        url = find_url(manifest_yaml)
+        host = application['host']
+        secure_url = url.replace(f"{host}.", f"{app_router['host']}.") + f'/{host}'
+else:
+    with open('../manifest.yml') as file:
+        manifest_yaml = file.read()
+        manifest = yaml.safe_load(manifest_yaml)
+        containers = manifest['services']
+        uaa = None
 
 env = AppEnv()
 
 databases = {}
 for container in containers:
-    credentials = env.get_service(name=container).credentials
-    databases[container] = dict(address=credentials['host'], port=int(credentials['port']), user=credentials['user'], password=credentials['password'])
+    service = env.get_service(name=container)
+    if service is not None:
+        credentials = service.credentials
+        databases[container] = dict(address=credentials['host'], port=int(credentials['port']), user=credentials['user'], password=credentials['password'])
+    else:
+        # TO DO: Collect container credentials using XS CLI and HANA API endpoints
+        databases[container] = {}
 
-uaa_service = env.get_service(name=uaa).credentials
+service = env.get_service(name=uaa)
+if service is not None:
+    uaa_service = service.credentials
+else:
+    # TO DO: Collect uaa service credentials using XS CLI and HANA API endpoints
+    uaa_service = {}
+
 auth = lambda scope: AuthCheck(scope=scope, uaa_service=uaa_service)
 websocket_auth = lambda scope: websocket_jwt(scope=scope, uaa_service=uaa_service)

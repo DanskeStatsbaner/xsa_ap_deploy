@@ -208,7 +208,7 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
         banner(f"Assign AD groups to role collections")
         ###############################################################################
 
-        # As XS CLI does not support AD group mapping, we need to using Selenium
+        # As XS CLI does not support AD group mapping, we need to use Selenium
         cockpit(xsa_user, xsa_pass, xsa_url, ad_mappings)
 
     ###############################################################################

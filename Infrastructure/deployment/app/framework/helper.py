@@ -1,4 +1,4 @@
-import subprocess, json, asyncio, httpx
+import subprocess, json, asyncio, httpx, os
 from typing import Optional, List, Tuple
 from hdbcli.dbapi import Connection
 from functools import partial
@@ -7,7 +7,10 @@ from pydantic import BaseModel
 from framework.env import uaa_service
 from humiolib.HumioClient import HumioIngestClient
 
-humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
+if os.path.exists('../manifest'):
+    humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
+else:
+    humio_client = None
 
 def run(file_path: str, action: str, uuid: str, databases: dict = None, params: dict = None) -> str:
     try:

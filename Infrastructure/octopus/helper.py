@@ -26,7 +26,7 @@ def run(cmd, env={}, print_func=print, pipe=None, worker=None, show_output=True,
             print_func(f'$ {cmd}')
     existing_env = os.environ.copy()
     existing_env.update(env)
-    popen = subprocess.Popen(cmd, env=existing_env, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
+    popen = subprocess.Popen(cmd, env=existing_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
     output = ''
     while popen.poll() is None:
         line = popen.stdout.readline().encode('ascii', 'ignore').decode()

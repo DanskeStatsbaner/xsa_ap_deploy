@@ -30,7 +30,7 @@ fail = lambda message: failstep(message)
 banner("Get Octopus variables")
 ###############################################################################
 
-@dataclass
+#@dataclass - disable dataclass for Python 3.6
 class Variables:
     environment: str = get("Octopus.Environment.Name").lower()
     project_name: str = get("Octopus.Project.Name")

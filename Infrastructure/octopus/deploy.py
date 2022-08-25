@@ -1,10 +1,15 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from dataclasses import dataclass, asdict
 from helper import run, docker, banner, generate_encryption_key
 from Crypto.Cipher import AES
 from logger import print
+
+#from dataclasses import dataclass, asdict - disable dataclass for Python 3.6
+
+# Polyfill for Python 3.6
+def asdict(instance):
+    return dict((name, getattr(instance, name)) for name in dir(instance) if not name.startswith('__'))
 
 # Inject the print method from the logger module into the banner method
 banner = partial(banner, print_func=print)
@@ -31,7 +36,7 @@ banner("Get Octopus variables")
 ###############################################################################
 
 #@dataclass - disable dataclass for Python 3.6
-class Variables:
+class Variables(object):
     environment: str = get("Octopus.Environment.Name").lower()
     project_name: str = get("Octopus.Project.Name")
     release_number: str = get("Octopus.Release.Number")

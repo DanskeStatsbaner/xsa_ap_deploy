@@ -59,7 +59,7 @@ def docker(cmd, container_name, env={}, print_func=print, pipe=None, work_dir='/
     if show_cmd:
         print_func(f'docker {work_dir} $ {cmd}')
 
-    docker_cmd = f'docker exec {" ".join(docker_variables)} -i {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
+    docker_cmd = f'docker exec -u root {" ".join(docker_variables)} -i {container_name} /bin/sh -c "cd {work_dir} && {cmd}"'
 
     return run(docker_cmd, env=env, print_func=print_func, show_output=show_output, show_cmd=False, ignore_errors=ignore_errors, exception_handler=exception_handler)
 

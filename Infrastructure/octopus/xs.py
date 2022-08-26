@@ -202,7 +202,9 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     app_guid = get_app_guid(project_name)
     env_json = requests.get(f'{xsa_url}/v2/apps/{app_guid}/env', headers=headers).json()
-    credentials = {key: value for key, value in env_json['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
+    app_credentials = [json.loads(item['value']) for item in env_json['system_env_json'] if item['key'] == 'VCAP_SERVICES'][0]['xsuaa'][0]['credentials']
+
+    credentials = {key: value for key, value in app_credentials.items() if key in ['clientid', 'clientsecret', 'url']}
 
     if is_web:
         ###############################################################################

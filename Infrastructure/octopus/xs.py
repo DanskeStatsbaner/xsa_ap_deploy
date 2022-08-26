@@ -202,11 +202,9 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
 
     run(f'xs env {project_name} --export-json env.json')
 
-    with open('env.json') as env_json:
-        credentials = json.load(env_json)
-        credentials = {key: value for key, value in credentials['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
-
-    os.remove('env.json')
+    app_guid = get_app_guid(project_name)
+    env_json = requests.get(f'{xsa_url}/v2/apps/{app_guid}/env', headers=headers).json()
+    credentials = {key: value for key, value in env_json['VCAP_SERVICES']['xsuaa'][0]['credentials'].items() if key in ['clientid', 'clientsecret', 'url']}
 
     if is_web:
         ###############################################################################

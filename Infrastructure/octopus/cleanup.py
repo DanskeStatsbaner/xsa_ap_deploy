@@ -1,5 +1,4 @@
 from functools import partial
-from dataclasses import dataclass
 from helper import run, banner
 from logger import print
 
@@ -16,7 +15,6 @@ fail = lambda message: failstep(message)
 banner("Get Octopus variables")
 ###############################################################################
 
-@dataclass
 class Variables:
     environment: str = get("Octopus.Environment.Name").lower()
     project_name: str = get("Octopus.Project.Name")

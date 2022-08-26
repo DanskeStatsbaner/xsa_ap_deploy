@@ -1,5 +1,4 @@
 import json, traceback, sys, os, ast, click, requests, jwt
-import re
 from pathlib import Path
 from helper import run, generate_password, banner
 from functools import partial
@@ -55,7 +54,7 @@ def check_endpoint(url, method, token):
     return response.status_code != 403
 
 # The Python package `click` allows us to transform xs.py into a CLI.
-# We are using auto_envvar_prefix to obtain the envirenment variables
+# We are using auto_envvar_prefix to obtain the environment variables
 # injected from deploy.py.
 @click.command()
 @click.option('--xsa-user')
@@ -65,19 +64,34 @@ def check_endpoint(url, method, token):
 @click.option('--uaa-service')
 @click.option('--project-name')
 @click.option('--hana-host')
-@click.option('--xsa-keyuser')
 @click.option('--app-router')
 @click.option('--host')
 @click.option('--hana-environment')
 @click.option('--environment')
 @click.option('--unprotected-url')
 @click.option('--encryption-key')
-def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, xsa_keyuser, app_router, host, hana_environment, environment, unprotected_url, encryption_key):
+def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_host, app_router, host, hana_environment, environment, unprotected_url, encryption_key):
 
     xsa_space_org = xsa_space
     xsa_space = xsa_space
 
     hana_port = 30015
+
+    # Get OAuth token for XS user
+    xs_token = requests.post(f"{xsa_url.replace('api', 'uaa-server')}/uaa-security/oauth/token", data={'username': xsa_user, 'password': xsa_pass, 'grant_type': 'password', 'response_type': 'code'}, auth=('cf', '')).json()['access_token']
+    headers = {'Authorization': f'bearer {xs_token}'}
+
+    # Get XS organizations
+    org_guid = requests.get(f'{xsa_url}/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
+
+    # Get space guid
+    spaces = requests.get(f'{xsa_url}/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
+    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == xsa_space_org][0]
+
+    # Helper function for getting xs app guid
+    def get_app_guid(app_name):
+        app = requests.get(f'{xsa_url}/v2/apps?q=spaceGuid%3A{space_guid}%3Bname%3A{app_name}', headers=headers).json()
+        return app['applications'][0]['metadata']['guid']
 
     # Convert encryption_key from string to bytes
     encryption_key = ast.literal_eval(encryption_key)
@@ -215,20 +229,8 @@ def xs(xsa_user, xsa_url, xsa_space, xsa_pass, uaa_service, project_name, hana_h
     banner(f"Insert OAuth 2.0 credentials into XSA_KEY_VAULT")
     ###############################################################################
 
-    xs_token = requests.post(f"{xsa_url.replace('api', 'uaa-server')}/uaa-security/oauth/token", data={'username': xsa_user, 'password': xsa_pass, 'grant_type': 'password', 'response_type': 'code'}, auth=('cf', '')).json()['access_token']
-
-    headers = {'Authorization': f'bearer {xs_token}'}
-
-    org_guid = requests.get(f'{xsa_url}/v2/organizations', headers=headers).json()['organizations'][0]['metadata']['guid']
-
-    spaces = requests.get(f'{xsa_url}/v2/spaces?q=organizationGuid%3A{org_guid}', headers=headers).json()['spaces']
-    space_guid = [space['metadata']['guid'] for space in spaces if space['spaceEntity']['name'] == xsa_space_org][0]
-
-    app_name = 'XSA_KEY_VAULT-db'
-    app = requests.get(f'{xsa_url}/v2/apps?q=spaceGuid%3A{space_guid}%3Bname%3A{app_name}', headers=headers).json()
-
-    guid = app['applications'][0]['metadata']['guid']
-    app_env = requests.get(f'{xsa_url}/v2/apps/{guid}/env', headers=headers).json()
+    app_guid = get_app_guid('XSA_KEY_VAULT-db')
+    app_env = requests.get(f'{xsa_url}/v2/apps/{app_guid}/env', headers=headers).json()
     hana_credentials = json.loads(app_env['system_env_json'][0]['value'])['hana'][0]['credentials']
 
     xsa_key_vault_user = hana_credentials['user']

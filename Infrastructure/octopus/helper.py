@@ -89,3 +89,7 @@ def generate_encryption_key():
         encryption_key = get_random_bytes(32)
         found = '"' not in str(encryption_key)
     return encryption_key
+
+# Extract attributes from class instance into dict
+def asdict(instance):
+    return dict((name, getattr(instance, name)) for name in dir(instance) if not name.startswith('__'))

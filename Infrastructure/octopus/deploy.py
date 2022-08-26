@@ -1,15 +1,9 @@
 import os, json, yaml, sys
 from pathlib import Path
 from functools import partial
-from helper import run, docker, banner, generate_encryption_key
+from helper import run, docker, banner, generate_encryption_key, asdict
 from Crypto.Cipher import AES
 from logger import print
-
-#from dataclasses import dataclass, asdict - disable dataclass for Python 3.6
-
-# Polyfill for Python 3.6
-def asdict(instance):
-    return dict((name, getattr(instance, name)) for name in dir(instance) if not name.startswith('__'))
 
 # Inject the print method from the logger module into the banner method
 banner = partial(banner, print_func=print)
@@ -35,7 +29,6 @@ fail = lambda message: failstep(message)
 banner("Get Octopus variables")
 ###############################################################################
 
-#@dataclass - disable dataclass for Python 3.6
 class Variables(object):
     environment: str = get("Octopus.Environment.Name").lower()
     project_name: str = get("Octopus.Project.Name")
@@ -45,7 +38,6 @@ class Variables(object):
     xsa_url: str = get("dataART.XSAUrl")
     xsa_user: str = get("dataART.XSAUser")
     xsa_space: str = get("dataART.XSASpace")
-    xsa_keyuser: str = get("dataART.XSAKeyUser")
     xsa_pass: str = sys.argv[1]
     hana_host: str = get("dataART.Host").split('.')[0]
     hana_environment: str = get("dataART.Database").lower()

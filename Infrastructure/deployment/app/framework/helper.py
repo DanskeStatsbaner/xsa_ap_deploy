@@ -1,4 +1,4 @@
-import subprocess, json, asyncio, httpx, os
+import subprocess, json, asyncio, httpx
 from typing import Optional, List, Tuple
 from hdbcli.dbapi import Connection
 from functools import partial
@@ -6,17 +6,21 @@ from fastapi import WebSocket
 from pydantic import BaseModel
 from framework.env import uaa_service
 from humiolib.HumioClient import HumioIngestClient
+from os import cpu_count
 
+# maximum combined CPU usage in percentage (accross all python tasks, excluding server runtime)
+max_usage = 0.25
 
 humio_client = HumioIngestClient(base_url= "https://cloud.humio.com", ingest_token="OCTOPUS_HUMIO_INGEST_TOKEN")
-
 
 def run(file_path: str, action: str, uuid: str, databases: dict = None, params: dict = None) -> str:
     try:
         uuid = '' if uuid is None else f"-u {json.dumps(uuid)}"
         databases = '' if databases is None else f"-d '{json.dumps(databases)}'"
         params = '' if params is None else f"-p '{json.dumps(params)}'"
-        spawn_task = subprocess.check_output(f".buildpack/python/bin/python {file_path} {action} {uuid} {databases} {params}", stderr=subprocess.STDOUT, shell=True)
+        available_cores = cpu_count()
+        cores = [str(core) for core in range(max(available_cores - int(available_cores * (max(min(max_usage, 1), 0))), 8), available_cores)]
+        spawn_task = subprocess.check_output(f"numactl -C {','.join(cores)} .buildpack/python/bin/python {file_path} {action} {uuid} {databases} {params}", stderr=subprocess.STDOUT, shell=True)
         output = spawn_task.decode("utf-8").rstrip('\n')
     except subprocess.CalledProcessError as e:
         output = e.output.decode('utf-8').rstrip('\n')

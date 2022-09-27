@@ -19,7 +19,7 @@ def run(file_path: str, action: str, uuid: str, databases: dict = None, params: 
         databases = '' if databases is None else f"-d '{json.dumps(databases)}'"
         params = '' if params is None else f"-p '{json.dumps(params)}'"
         available_cores = cpu_count()
-        cores = [str(core) for core in range(max(available_cores - int(available_cores * (max(min(max_usage, 1), 0))), 8), available_cores)]
+        cores = [str(core) for core in range(max(available_cores - max(int(available_cores * (max(min(max_usage, 1), 0))), 1), 8), available_cores)]
         spawn_task = subprocess.check_output(f"numactl -C {','.join(cores)} .buildpack/python/bin/python {file_path} {action} {uuid} {databases} {params}", stderr=subprocess.STDOUT, shell=True)
         output = spawn_task.decode("utf-8").rstrip('\n')
     except subprocess.CalledProcessError as e:

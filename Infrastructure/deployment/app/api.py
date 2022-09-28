@@ -204,8 +204,8 @@ if __name__ == "__main__":
         "api:app",
         log_config=UVICORN_LOGGING_CONFIG,
         log_level=20,
-        debug=True,
+        debug='OCTOPUS_ENVIRONMENT' == 'dev',
         host="0.0.0.0",
         port=int(os.environ.get('PORT', 3000)),
-        reload=True
+        reload='OCTOPUS_ENVIRONMENT' == 'dev'
     )

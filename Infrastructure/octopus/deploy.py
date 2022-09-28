@@ -51,6 +51,7 @@ class Variables(object):
     app_router: str = None
     host: str = None
     unprotected_url: str = None
+    app_router_host_url: str = None
 
 variables = Variables()
 
@@ -113,6 +114,7 @@ variables.uaa_service = uaa_service
 variables.app_router = app_router
 variables.host = host
 variables.unprotected_url = unprotected_url
+variables.app_router_host_url = url(app_router_host)
 
 manifest_dict = {
     'applications': [
@@ -157,12 +159,13 @@ banner("Define environment variables for deployment")
 # TO DO: Use xs set-env instead of modifying the source code.
 
 environment_variables = {
-    'OCTOPUS_APP_ROUTER_URL': url(app_router_host),
+    'OCTOPUS_APP_ROUTER_URL': variables.app_router_host_url,
     'OCTOPUS_HUMIO_INGEST_TOKEN': variables.humio_ingest_token,
     'OCTOPUS_PROJECT_NAME': variables.project_name,
     'OCTOPUS_RELEASE_NUMBER': variables.release_number,
-    'OCTOPUS_APP_URL': unprotected_url,
-    'OCTOPUS_XSA_SPACE': variables.xsa_space
+    'OCTOPUS_APP_URL': variables.unprotected_url,
+    'OCTOPUS_XSA_SPACE': variables.xsa_space,
+    'OCTOPUS_ENVIRONMENT': variables.environment
 }
 
 for variable, value in environment_variables.items():

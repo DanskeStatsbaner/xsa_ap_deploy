@@ -200,12 +200,17 @@ def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
 
 if __name__ == "__main__":
+
+    development = 'OCTOPUS_ENVIRONMENT' == 'dev'
+
     uvicorn.run(
         "api:app",
         log_config=UVICORN_LOGGING_CONFIG,
         log_level=20,
-        debug='OCTOPUS_ENVIRONMENT' == 'dev',
+        debug=development,
         host="0.0.0.0",
         port=int(os.environ.get('PORT', 3000)),
-        reload='OCTOPUS_ENVIRONMENT' == 'dev'
+        reload=development,
+        reload_includes=['*.py'] if development else None,
+        reload_delay=1 if development else None
     )

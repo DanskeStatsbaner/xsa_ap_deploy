@@ -16,37 +16,40 @@ from datetime import timedelta
 
 development = 'OCTOPUS_ENVIRONMENT' == 'dev'
 
+disabled_humio_loggers = ['watchfiles.main']
+
 def humio(source, message, client):
     record = message.record
-    client.ingest_json_data([{
-        "tags": {
-            "host": "Linux VM",
-            "source": source
-        },
-        "events": [
-            {
-                "timestamp": record['time'].isoformat(),
-                "attributes": {
-                    "elapsed": record['elapsed'] / timedelta(milliseconds=1),
-                    "exception": repr(record['exception'].value) if hasattr(record['exception'], 'value') else None,
-                    "traceback": repr(record['exception'].traceback) if hasattr(record['exception'], 'traceback') else None,
-                    "file_name": record['file'].name,
-                    "file_path": record['file'].path,
-                    "function": record['function'],
-                    "level": record['level'].name,
-                    "line": record['line'],
-                    "module": record['module'],
-                    "name": record['name'],
-                    "process_id": record['process'].id,
-                    "process_name": record['process'].name,
-                    "thread_id": record['thread'].id,
-                    "thread_name": record['thread'].name,
-                    "text": message
-                },
-                "rawstring": record['message']
-            }
-        ]
-    }])
+    if record['name'] not in disabled_humio_loggers:
+        client.ingest_json_data([{
+            "tags": {
+                "host": "Linux VM",
+                "source": source
+            },
+            "events": [
+                {
+                    "timestamp": record['time'].isoformat(),
+                    "attributes": {
+                        "elapsed": record['elapsed'] / timedelta(milliseconds=1),
+                        "exception": repr(record['exception'].value) if hasattr(record['exception'], 'value') else None,
+                        "traceback": repr(record['exception'].traceback) if hasattr(record['exception'], 'traceback') else None,
+                        "file_name": record['file'].name,
+                        "file_path": record['file'].path,
+                        "function": record['function'],
+                        "level": record['level'].name,
+                        "line": record['line'],
+                        "module": record['module'],
+                        "name": record['name'],
+                        "process_id": record['process'].id,
+                        "process_name": record['process'].name,
+                        "thread_id": record['thread'].id,
+                        "thread_name": record['thread'].name,
+                        "text": message
+                    },
+                    "rawstring": record['message']
+                }
+            ]
+        }])
 
 class InterceptHandler(logging.Handler):
     """

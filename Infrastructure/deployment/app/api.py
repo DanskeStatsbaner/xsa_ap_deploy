@@ -14,6 +14,8 @@ import logging, sys
 from loguru import logger
 from datetime import timedelta
 
+development = 'OCTOPUS_ENVIRONMENT' == 'dev'
+
 def humio(source, message, client):
     record = message.record
     client.ingest_json_data([{
@@ -83,9 +85,9 @@ def setup_logging(log_level: int, json: bool):
     # configure loguru
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": json}])
 
-    logger.add("api.log", rotation="1 week", enqueue=True, backtrace=True, diagnose=True)
+    logger.add("api.log", rotation="1 week", enqueue=True, backtrace=development, diagnose=development)
     if os.path.exists('manifest'):
-        logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), format="{message}", enqueue=True, backtrace=True, diagnose=True)
+        logger.add(lambda message: humio('OCTOPUS_PROJECT_NAME', message, humio_client), format="{message}", enqueue=True, backtrace=development, diagnose=development)
 
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
@@ -200,9 +202,6 @@ def get_health() -> dict:
     return {"message": f"The XSA application OCTOPUS_PROJECT_NAME is running"}
 
 if __name__ == "__main__":
-
-    development = 'OCTOPUS_ENVIRONMENT' == 'dev'
-
     uvicorn.run(
         "api:app",
         log_config=UVICORN_LOGGING_CONFIG,

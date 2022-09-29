@@ -211,6 +211,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get('PORT', 3000)),
         reload=development,
-        reload_includes=['*.py'] if development else None,
+        reload_includes=['routes.py'] if development else None,
         reload_delay=1 if development else None
     )

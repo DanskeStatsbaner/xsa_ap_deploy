@@ -209,7 +209,6 @@ if __name__ == "__main__":
         "api:app",
         log_config=UVICORN_LOGGING_CONFIG,
         log_level=20,
-        debug=development,
         host="0.0.0.0",
         port=int(os.environ.get('PORT', 3000)),
         reload=development,

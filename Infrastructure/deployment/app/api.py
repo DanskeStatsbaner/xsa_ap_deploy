@@ -96,6 +96,9 @@ def setup_logging(log_level: int, json: bool):
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
 
+router = router(logger)
+app.include_router(router)
+
 LOG_LEVEL = "INFO"
 UVICORN_LOGGING_CONFIG = {
     "version": 1,
@@ -161,15 +164,11 @@ if os.path.exists('static'):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["OCTOPUS_APP_ROUTER_URL"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-router = router(logger)
-
-app.include_router(router)
 
 
 @app.post("/upload")

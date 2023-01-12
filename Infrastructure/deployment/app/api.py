@@ -159,13 +159,9 @@ if os.path.exists('static'):
 #     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
 #     return response
 
-origins = [
-    "OCTOPUS_APP_ROUTER_URL",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request, File, UploadFile, Depends
 from fastapi.responses import Response, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute, APIWebSocketRoute
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -96,9 +95,6 @@ def setup_logging(log_level: int, json: bool):
 
 app = FastAPI(redoc_url=None, docs_url=None, openapi_url=None, default_response_class=ORJSONResponse)
 
-router = router(logger)
-app.include_router(router)
-
 LOG_LEVEL = "INFO"
 UVICORN_LOGGING_CONFIG = {
     "version": 1,
@@ -128,47 +124,43 @@ app.add_middleware(GZipMiddleware)
 if os.path.exists('static'):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ALLOWED_ORIGINS = 'OCTOPUS_APP_ROUTER_URL'
-# ALLOWED_METHODS = 'POST, GET, DELETE, OPTIONS'
-# ALLOWED_HEADERS = 'Authorization, Content-Type'
+ALLOWED_ORIGINS = 'OCTOPUS_APP_ROUTER_URL'
+ALLOWED_METHODS = 'POST, GET, DELETE, OPTIONS'
+ALLOWED_HEADERS = 'Authorization, Content-Type'
 
-# # handle CORS preflight requests
-# @app.options('/{rest_of_path:path}')
-# async def preflight_handler(request: Request, rest_of_path: str) -> Response:
-#     response = Response()
-#     response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGINS
-#     response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
-#     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
-#     return response
+# handle CORS preflight requests
+@app.options('/{rest_of_path:path}')
+async def preflight_handler(request: Request, rest_of_path: str) -> Response:
+    response = Response()
+    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGINS
+    response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
+    response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
+    return response
 
-# # set CORS headers
-# @app.middleware("http")
-# async def add_CORS_header(request: Request, call_next):
+# set CORS headers
+@app.middleware("http")
+async def add_CORS_header(request: Request, call_next):
 
-#     # Inject access token for local development
+    # Inject access token for local development
 
-#     # access_token = '*****'
+    # access_token = '*****'
 
-#     # request.headers.__dict__["_list"].append(
-#     #     (
-#     #         "authorization".encode(),
-#     #         f"Bearer {access_token}".encode(),
-#     #     )
-#     # )
+    # request.headers.__dict__["_list"].append(
+    #     (
+    #         "authorization".encode(),
+    #         f"Bearer {access_token}".encode(),
+    #     )
+    # )
 
-#     response = await call_next(request)
-#     response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGINS
-#     response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
-#     response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
-#     return response
+    response = await call_next(request)
+    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGINS
+    response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
+    response.headers['Access-Control-Allow-Headers'] = ALLOWED_HEADERS
+    return response
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["OCTOPUS_APP_ROUTER_URL"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = router(logger)
+
+app.include_router(router)
 
 
 @app.post("/upload")

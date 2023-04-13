@@ -39,7 +39,7 @@ class Variables(object):
     xsa_user: str = get("dataART.XSAUser")
     xsa_space: str = get("dataART.XSASpace")
     xsa_pass: str = sys.argv[1]
-    hana_host: str = get("dataART.Host").split('.')[0]
+    hana_host: str = get("dataART.Host").split(':')[0]
     hana_environment: str = get("dataART.Database").lower()
     artifactory_login: str = get("artifactory.login")
     artifactory_registry: str = get("artifactory.registry")

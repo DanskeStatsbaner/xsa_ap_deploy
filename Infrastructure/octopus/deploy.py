@@ -199,7 +199,7 @@ with open('xs_output.bin', 'rb') as file:
     iv = file.read(16)
     ciphered_data = file.read()
 
-cipher = AES.new(variables.encryption_key, AES.MODE_CFB, iv=iv)
+cipher = AES.new(variables.encryption_key, AES.MODE_CFB, iv)
 xs_output = cipher.decrypt(ciphered_data)
 xs_output = json.loads(xs_output)
 

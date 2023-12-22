@@ -14,7 +14,7 @@ pipeline {
     environment {
         projectName  = "xsa_ap_deploy"
         deployTo = "sit"
-        version = "1.0.0.${env.BUILD_NUMBER}"
+        version = "2.0.0.${env.BUILD_NUMBER}"
         suffix = "${env.GIT_COMMIT}-${env.GIT_BRANCH.replace('/', '-')}"
         packageVersion = "${version}-${suffix}"
         jobName = "xsa_ap_deploy"
